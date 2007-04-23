@@ -1,4 +1,5 @@
 4.9
+* new menu placement to not cover panel; used in menu in taskbar
 * taskbar: icons were added to task's menu (raise, iconify, close)
 * access to WM_HINTS is done via XGetWMHints only and not via get_xa_property;
   in taskbar it fixes failure to see existing icon pixmap
