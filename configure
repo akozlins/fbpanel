@@ -39,6 +39,14 @@ while [ $# -gt 0 ]; do
     shift
 done
 echo "Installation prefix is $PREFIX"
+echo "checking for packages"
+if ! (pkg-config --libs glib-2.0 gmodule-2.0 gthread-2.0 gtk+-2.0 \
+          gdk-pixbuf-2.0 gdk-pixbuf-xlib-2.0 > /dev/null \
+      && \
+      pkg-config --cflags glib-2.0 gmodule-2.0 gthread-2.0 gtk+-2.0 \
+          gdk-pixbuf-2.0 gdk-pixbuf-xlib-2.0 > /dev/null ); then
+    exit 1
+fi
 echo "creating config.h"
 echo "//created by ./configure script" > config.h
 echo "#define PREFIX \"$PREFIX\"" >> config.h

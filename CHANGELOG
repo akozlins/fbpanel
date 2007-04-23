@@ -1,3 +1,6 @@
+4.9
+* 1704709: config checks for installed devel packages
+
 4.8
 * help text in configurator was made selectable
 * pager shows desktop wallpaper
