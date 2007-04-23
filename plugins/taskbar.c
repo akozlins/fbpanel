@@ -1186,22 +1186,29 @@ taskbar_make_menu(taskbar *tb)
     ENTER;
     menu = gtk_menu_new ();
 
-    mi = gtk_menu_item_new_with_label ("Raise");
+    mi = gtk_image_menu_item_new_with_label ("Raise");
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
+          gtk_image_new_from_stock(GTK_STOCK_GO_UP, GTK_ICON_SIZE_MENU));
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", (GCallback)menu_raise_window, tb);
     gtk_widget_show (mi);
 
-    mi = gtk_menu_item_new_with_label ("Iconify");
+    mi = gtk_image_menu_item_new_with_label ("Iconify");
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
+          gtk_image_new_from_stock(GTK_STOCK_UNDO, GTK_ICON_SIZE_MENU));
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", (GCallback)menu_iconify_window, tb);
     gtk_widget_show (mi);
 
+
+    mi = gtk_separator_menu_item_new();
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
+    gtk_widget_show (mi);
+    
     /* we want this item to be farest from mouse pointer */
-    mi = gtk_menu_item_new_with_label ("Close Window");
-    if (tb->plug->panel->edge == EDGE_BOTTOM)
-        gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), mi);
-    else
-        gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
+    //mi = gtk_menu_item_new_with_label ("Close Window");
+    mi = gtk_image_menu_item_new_from_stock(GTK_STOCK_CLOSE, NULL);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", (GCallback)menu_close_window, tb);
     gtk_widget_show (mi);
 
