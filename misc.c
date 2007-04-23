@@ -496,26 +496,26 @@ get_net_wm_state(Window win, net_wm_state *nws)
     DBG( "%x: netwm state = { ", (unsigned int)win);
     while (--num3 >= 0) {
         if (state[num3] == a_NET_WM_STATE_SKIP_PAGER) {
-            DBG("NET_WM_STATE_SKIP_PAGER ");
+            DBGE("NET_WM_STATE_SKIP_PAGER ");
             nws->skip_pager = 1;
         } else if (state[num3] == a_NET_WM_STATE_SKIP_TASKBAR) {
-            DBG( "NET_WM_STATE_SKIP_TASKBAR ");	    
+            DBGE("NET_WM_STATE_SKIP_TASKBAR ");	    
 	    nws->skip_taskbar = 1;
 	} else if (state[num3] == a_NET_WM_STATE_STICKY) {
-            DBG( "NET_WM_STATE_STICKY ");
+            DBGE("NET_WM_STATE_STICKY ");
 	    nws->sticky = 1;
         } else if (state[num3] == a_NET_WM_STATE_HIDDEN) {
-            DBG( "NET_WM_STATE_HIDDEN ");
+            DBGE("NET_WM_STATE_HIDDEN ");
             nws->hidden = 1;
 	} else if (state[num3] == a_NET_WM_STATE_SHADED) {
-            DBG( "NET_WM_STATE_SHADED ");
+            DBGE("NET_WM_STATE_SHADED ");
             nws->shaded = 1;
 	} else {
-	    DBG( "... ");
+	    DBGE("... ");
 	}
     }
     XFree(state);
-    DBG( "}\n");
+    DBGE( "}\n");
     RET();
 }
 

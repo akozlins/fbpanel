@@ -39,7 +39,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 echo "Installation prefix is $PREFIX"
-echo "checking for packages"
+echo "checking for installed devel packages"
 if ! (pkg-config --libs glib-2.0 gmodule-2.0 gthread-2.0 gtk+-2.0 \
           gdk-pixbuf-2.0 gdk-pixbuf-xlib-2.0 > /dev/null \
       && \

@@ -132,23 +132,28 @@ static void tk_raise_window( task *tk, guint32 time );
 static int
 task_visible(taskbar *tb, task *tk)
 {
+    int ret;
+
     ENTER;
-    if (tk->desktop != -1 && !tb->show_all_desks && tk->desktop != tb->cur_desk)
-        RET(0);
-    if (tk->iconified) {
-        if (!tb->show_iconified)
-            RET(0);
-    } else {
-        if (!tb->show_mapped)
-            RET(0);
-    }
-    RET(1);
+    if ( (tb->show_all_desks || tk->desktop == -1 || (tk->desktop == tb->cur_desk))
+        && ((tk->iconified && tb->show_iconified) || (!tk->iconified && tb->show_mapped)) )
+	ret = 1;
+    else
+    	ret = 0;
+    DBG("%lx: %d desktop=%d iconified=%d \n", tk->win, ret, tk->desktop, tk->iconified);
+    RET(ret);
+
 }
 
 static int
 accept_net_wm_state(net_wm_state *nws, int accept_skip_pager)
 {
     ENTER;
+    DBG("accept_skip_pager=%d  skip_taskbar=%d skip_pager=%d\n", 
+    	accept_skip_pager, 
+	nws->skip_taskbar,
+	nws->skip_pager);
+
     RET(!(nws->skip_taskbar || (accept_skip_pager && nws->skip_pager)));
 }
 
@@ -156,6 +161,8 @@ static int
 accept_net_wm_window_type(net_wm_window_type *nwwt)
 {
     ENTER;
+    DBG("desktop=%d dock=%d splash=%d\n", nwwt->desktop, nwwt->dock, nwwt->splash);
+
     RET(!(nwwt->desktop || nwwt->dock || nwwt->splash));
 }
 
@@ -548,7 +555,8 @@ tk_update_icon (taskbar *tb, task *tk, Atom a)
     RET();
 }
 
-static gboolean on_flash_win( task *tk )
+static gboolean 
+on_flash_win( task *tk )
 {
     tk->flash_state = !tk->flash_state;
     gtk_widget_set_state(tk->button,
@@ -616,7 +624,8 @@ tk_callback_enter( GtkWidget *widget, task *tk )
     RET();
 }
 
-static gboolean delay_active_win(task* tk)
+static gboolean 
+delay_active_win(task* tk)
 {
     tk_raise_window(tk, CurrentTime);
     tk->tb->dnd_activate = 0;
@@ -776,7 +785,7 @@ tk_update(gpointer key, task *tk, taskbar *tb)
 	gtk_widget_show(tk->button);
 
         if (tb->tooltips) {
-            //DBG2("tip %x %s\n", tk->win, tk->name);
+            //DBG("tip %x %s\n", tk->win, tk->name);
             gtk_tooltips_set_tip(tb->tips, tk->button, tk->name, NULL);
         }
 	RET();

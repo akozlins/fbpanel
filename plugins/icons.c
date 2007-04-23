@@ -131,6 +131,7 @@ get_user_icon(icons *ics, task *tk)
     wmpix_t *tmp;
 
     ENTER;
+    DBG("ch.res_class=%s ch.res_name=%s\n", tk->ch.res_class, tk->ch.res_name);
     if (tk->ch.res_class) {
         for (tmp = ics->wmpix; tmp; tmp = tmp->next) {
             if ((!tmp->ch.res_name || !strcmp(tmp->ch.res_name, tk->ch.res_name))
@@ -291,7 +292,7 @@ ics_propertynotify(icons *ics, XEvent *ev)
     ENTER;
     win = ev->xproperty.window;
     at = ev->xproperty.atom;
-    DBG("win=%x at=%d\n", win, at);
+    DBG("win=%lx at=%ld\n", win, at);
     if (win != GDK_ROOT_WINDOW()) {
 	task *tk = find_task(ics, win);
         
@@ -355,6 +356,7 @@ read_application(plugin *p)
             goto error;
         }
     }
+    DBG("appname=%s classname=%s\n", appname, classname);
     if (!(fname || iname))
         goto error;
     gp = fb_pixbuf_new_from_icon_file(iname, fname, 48, 48);  
