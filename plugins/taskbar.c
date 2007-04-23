@@ -132,17 +132,10 @@ static void tk_raise_window( task *tk, guint32 time );
 static int
 task_visible(taskbar *tb, task *tk)
 {
-    int ret;
-
     ENTER;
-    if ( (tb->show_all_desks || tk->desktop == -1 || (tk->desktop == tb->cur_desk))
-        && ((tk->iconified && tb->show_iconified) || (!tk->iconified && tb->show_mapped)) )
-	ret = 1;
-    else
-    	ret = 0;
     DBG("%lx: %d desktop=%d iconified=%d \n", tk->win, ret, tk->desktop, tk->iconified);
-    RET(ret);
-
+    RET( (tb->show_all_desks || tk->desktop == -1 || (tk->desktop == tb->cur_desk))
+          && ((tk->iconified && tb->show_iconified) || (!tk->iconified && tb->show_mapped)) );
 }
 
 static int
