@@ -481,7 +481,8 @@ get_wm_icon(Window tkwin, int iw, int ih)
     GdkPixbuf *ret, *masked, *pixmap, *mask = NULL;
  
     ENTER;
-    hints = (XWMHints *) get_xaproperty (tkwin, XA_WM_HINTS, XA_WM_HINTS, 0);
+    hints = XGetWMHints(GDK_DISPLAY(), tkwin);
+    DBG("\nwm_hints %s\n", hints ? "ok" : "failed");
     if (!hints)
         RET(NULL);
     
@@ -489,14 +490,15 @@ get_wm_icon(Window tkwin, int iw, int ih)
         xpixmap = hints->icon_pixmap;
     if ((hints->flags & IconMaskHint))
         xmask = hints->icon_mask;
-
+    DBG("flag=%ld xpixmap=%lx flag=%ld xmask=%lx\n", (hints->flags & IconPixmapHint), xpixmap,
+         (hints->flags & IconMaskHint),  xmask);
     XFree(hints);
     if (xpixmap == None)
         RET(NULL);
     
     if (!XGetGeometry (GDK_DISPLAY(), xpixmap, &win, &sd, &sd, &w, &h,
               (guint *)&sd, (guint *)&sd)) {
-        LOG(LOG_WARN,"XGetGeometry failed for %x pixmap\n", (unsigned int)xpixmap);
+        DBG("XGetGeometry failed for %x pixmap\n", (unsigned int)xpixmap);
         RET(NULL);
     }
     DBG("tkwin=%x icon pixmap w=%d h=%d\n", tkwin, w, h);
@@ -536,22 +538,26 @@ tk_update_icon (taskbar *tb, task *tk, Atom a)
     GdkPixbuf *pixbuf;
     
     ENTER;
-    g_assert ((tb != NULL) && (tk != NULL));
-    g_return_if_fail(tk != NULL);
-
+    DBG("%lx: ", tk->win);
     pixbuf = tk->pixbuf;
     if (a == a_NET_WM_ICON || a == None) {
         tk->pixbuf = get_netwm_icon(tk->win, tb->iconsize, tb->iconsize);
         tk->using_netwm_icon = (tk->pixbuf != NULL);
+        DBGE("netwm_icon=%d ", tk->using_netwm_icon);
     }
-    if (!tk->using_netwm_icon) 
+    if (!tk->using_netwm_icon) {
         tk->pixbuf = get_wm_icon(tk->win, tb->iconsize, tb->iconsize);
-    if (!tk->pixbuf)
+        DBGE("wm_icon=%d ", (tk->pixbuf != NULL));
+    }
+    if (!tk->pixbuf) {
         tk->pixbuf = get_generic_icon(tb); // always exists
+        DBGE("generic_icon=1");
+    }
     if (pixbuf != tk->pixbuf) {
         if (pixbuf)
             g_object_unref(pixbuf);
     }
+    DBGE("\n");
     RET();
 }
 

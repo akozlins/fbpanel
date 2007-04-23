@@ -1,4 +1,5 @@
 4.9
+* taskbar now correctly get WM_HINTS to find icon pxmap id
 * 1704709: config checks for installed devel packages
 
 4.8
