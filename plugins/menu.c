@@ -216,6 +216,7 @@ run_command(GtkWidget *widget, void (*cmd)(void))
     RET();
 }
 
+#if 0
 static void
 menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *widget)
 {
@@ -248,6 +249,7 @@ menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *widget)
     *push_in = TRUE;
     RET();
 }
+#endif
 
 static gboolean
 my_button_pressed(GtkWidget *widget, GdkEventButton *event, GtkMenu *menu)

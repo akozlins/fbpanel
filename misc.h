@@ -71,4 +71,7 @@ GtkWidget *fb_button_new_from_icon_file_with_label(gchar *iname, gchar *fname, i
 GtkWidget *fb_image_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
       gboolean keep_ratio);
 GdkPixbuf *fb_pixbuf_new_from_icon_file(gchar *iname, gchar *fname, int width, int height);
+
+void menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *widget);
+
 #endif

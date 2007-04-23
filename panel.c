@@ -32,7 +32,7 @@ int log_level;
 FILE *pconf; // plugin part of profile file
 
 panel *p;
-
+panel *the_panel;
 
 /****************************************************
  *         panel's handlers for WM events           *
@@ -818,7 +818,7 @@ main(int argc, char *argv[], char *env[])
     do {
         if (!(pfp = open_profile(cprofile)))
             exit(1);
-        p = g_new0(panel, 1);
+        the_panel = p = g_new0(panel, 1);
         g_return_val_if_fail (p != NULL, 1);
         if (!panel_start(p, pfp)) {
             ERR( "fbpanel: can't start panel\n");
