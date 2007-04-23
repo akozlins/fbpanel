@@ -1,5 +1,6 @@
 4.9
-* taskbar now correctly get WM_HINTS to find icon pxmap id
+* access to WM_HINTS is done via XGetWMHints only and not via get_xa_property;
+  in taskbar it fixes failure to see existing icon pixmap
 * 1704709: config checks for installed devel packages
 
 4.8

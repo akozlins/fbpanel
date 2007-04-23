@@ -113,7 +113,7 @@ get_dicon_maybe(icons *ics, task *tk)
         RET(NULL);
     }
     
-    hints = (XWMHints *) get_xaproperty (tk->win, XA_WM_HINTS, XA_WM_HINTS, 0);
+    hints = XGetWMHints(GDK_DISPLAY(), tk->win);
     if (hints) {
         if ((hints->flags & IconPixmapHint) || (hints->flags & IconMaskHint)) {
             XFree (hints);

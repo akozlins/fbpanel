@@ -1051,7 +1051,7 @@ tk_has_urgency( task* tk )
     XWMHints* hints;
     
     tk->urgency = 0;
-    hints = (XWMHints *) get_xaproperty (tk->win, XA_WM_HINTS, XA_WM_HINTS, 0);
+    hints = XGetWMHints(GDK_DISPLAY(), tk->win);
     if (hints) {
         if (hints->flags & XUrgencyHint) /* Got urgency hint */
             tk->urgency = 1;
