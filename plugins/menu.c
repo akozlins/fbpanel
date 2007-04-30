@@ -31,11 +31,12 @@ static GHashTable *ht;
 typedef struct {
     gchar *name;
     gchar *icon;
+    gchar *local_name;
     GtkWidget *menu;
 } cat_info;
 
 static cat_info main_cats[] = {
-    { "AudioVideo", "gnome-multimedia" },
+    { "AudioVideo", "gnome-multimedia", "Audio & Video" },
     { "Development","gnome-devel" },
     { "Education",  "gnome-applications" },
     { "Game",       "gnome-joystick" },
@@ -163,7 +164,7 @@ do_app_dir(plugin *p, const gchar *path)
             mi = gtk_image_menu_item_new_with_label(title);
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
                   fb_image_new_from_icon_file(icon, icon, 22, 22, TRUE));
-            g_signal_connect(G_OBJECT(mi), "activate", (GCallback)spawn_app, exec);
+            g_signal_connect(G_OBJECT(mi), "activate", (GCallback)spawn_app,g_strdup(exec));
             if (!(*menu))
                 *menu = gtk_menu_new();
             g_object_set_data_full(G_OBJECT(mi), "item-name", title, g_free);
@@ -213,9 +214,11 @@ make_fdo_menu(plugin *p, GtkWidget *menu)
     //build menu
     for (i = 0; i < G_N_ELEMENTS(main_cats); i++) {
         GtkWidget *mi, *img;
-    
+        gchar *name;
+        
         if (main_cats[i].menu) {
-            mi = gtk_image_menu_item_new_with_label(main_cats[i].name);
+            name = main_cats[i].local_name ? main_cats[i].local_name : main_cats[i].name;
+            mi = gtk_image_menu_item_new_with_label(name);
             img = fb_image_new_from_icon_file(main_cats[i].icon, NULL, m->iconsize, m->iconsize, TRUE);
             gtk_widget_show(img);
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), img);
