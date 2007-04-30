@@ -85,6 +85,24 @@ spawn_app(GtkWidget *widget, gpointer data)
     RET();
 }
 
+static gint
+_menu_shell_insert_sorted(GtkMenuShell *menu_shell, GtkWidget *mi, const gchar *name)
+{
+    GList *items;
+    gint i;
+    gchar *cmpname;
+
+    //TRACE("dummy");
+
+    items = gtk_container_get_children(GTK_CONTAINER(menu_shell));
+    for(i=0; items; items=items->next, i++)  {
+        cmpname = (gchar *)g_object_get_data(G_OBJECT(items->data), "item-name");
+        if(cmpname && g_ascii_strcasecmp(name, cmpname) < 0)
+            break;
+    }
+    gtk_menu_shell_insert(menu_shell, mi, i);
+    return i;
+}
 
 static void
 do_app_dir(plugin *p, const gchar *path)
@@ -119,13 +137,14 @@ do_app_dir(plugin *p, const gchar *path)
         if (!(cats = g_key_file_get_string_list(file, desktop_ent, "Categories", NULL, NULL)))
             continue;
         if (!(exec = g_key_file_get_string(file, desktop_ent, "Exec", NULL)))
-            continue;
+            goto free_cats;
         while ((dot = strchr(exec, '%'))) {
             if (dot[1] != '\0')
                 dot[0] = dot[1] = ' ';
         }
         DBG("exec: %s\n", exec);
-        title = g_key_file_get_locale_string(file, desktop_ent, "Name", NULL, NULL);
+        if (!(title = g_key_file_get_locale_string(file, desktop_ent, "Name", NULL, NULL)))
+            goto free_exec;
         DBG("title: %s\n", title);
         icon = g_key_file_get_string(file, desktop_ent, "Icon", NULL);
         if (icon) {
@@ -133,7 +152,6 @@ do_app_dir(plugin *p, const gchar *path)
             if(icon[0] !='/' && dot )
                 *dot = '\0';
         }
-
         DBG("icon: %s\n", icon);
         for (tmp = cats; *tmp; tmp++) {
             GtkWidget **menu, *mi;
@@ -142,20 +160,24 @@ do_app_dir(plugin *p, const gchar *path)
             if (!(menu = g_hash_table_lookup(ht, tmp[0])))
                 continue;
 
-            mi = gtk_image_menu_item_new_with_label(title ? title : exec);
+            mi = gtk_image_menu_item_new_with_label(title);
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
-                  fb_image_new_from_icon_file(icon, icon, 20, 20, TRUE));
+                  fb_image_new_from_icon_file(icon, icon, 22, 22, TRUE));
             g_signal_connect(G_OBJECT(mi), "activate", (GCallback)spawn_app, exec);
-            //g_object_set_data_full(G_OBJECT(mi), "activate", exec, g_free);
             if (!(*menu))
                 *menu = gtk_menu_new();
-            gtk_menu_shell_prepend(GTK_MENU_SHELL(*menu), mi);
+            g_object_set_data_full(G_OBJECT(mi), "item-name", title, g_free);
+            _menu_shell_insert_sorted(GTK_MENU_SHELL(*menu), mi, title);
+            //gtk_menu_shell_prepend(GTK_MENU_SHELL(*menu), mi);
             gtk_widget_show_all(mi);
             DBG("added =======================================\n");
+            break;
         }
         g_free(icon);
-        g_free(title);
-        //g_free(exec);
+    free_exec:
+        g_free(exec);
+    free_cats:
+        g_strfreev(cats);
     }
     g_chdir(cwd);
     g_free(cwd);
@@ -539,7 +561,7 @@ menu_constructor(plugin *p)
         m->paneliconsize = p->panel->aw
             - 2* GTK_WIDGET(p->panel->box)->style->xthickness;
 #endif
-    m->iconsize = 24;       
+    m->iconsize = 22;       
 
     m->box = gtk_hbox_new(FALSE, 0);
     gtk_container_set_border_width(GTK_CONTAINER(m->box), 0);
