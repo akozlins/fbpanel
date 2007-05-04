@@ -21,20 +21,22 @@
 
 
 typedef enum {
-  CURSOR_STANDARD,
-  CURSOR_DND
+    CURSOR_STANDARD,
+    CURSOR_DND
 } CursorType;
 
 enum {
-  TARGET_URILIST,
-  TARGET_UTF8_STRING,
-  TARGET_STRING,
-  TARGET_TEXT,
-  TARGET_COMPOUND_TEXT
+    TARGET_URILIST,
+    TARGET_MOZ_URL,
+    TARGET_UTF8_STRING,
+    TARGET_STRING,
+    TARGET_TEXT,
+    TARGET_COMPOUND_TEXT
 };
 
 static const GtkTargetEntry target_table[] = {
     { "text/uri-list", 0, TARGET_URILIST},
+    { "text/x-moz-url", 0, TARGET_MOZ_URL},
     { "UTF8_STRING", 0, TARGET_UTF8_STRING },
     { "COMPOUND_TEXT", 0, 0 },
     { "TEXT",          0, 0 },
@@ -113,6 +115,7 @@ drag_data_received_cb (GtkWidget        *widget,
     ENTER;
     if (sd->length <= 0)
         RET();
+    
     if (info == TARGET_URILIST) {
         DBG("uri drag received: info=%d len=%d data=%s\n", info, sd->length, sd->data);
         s = (gchar *)sd->data;
@@ -143,6 +146,24 @@ drag_data_received_cb (GtkWidget        *widget,
         g_free(str);
         
         //gtk_drag_finish (context, TRUE, FALSE, time);
+    } else if (info == TARGET_MOZ_URL) {
+        gchar *utf8, *tmp;
+        
+	utf8 = g_utf16_to_utf8((gunichar2 *) sd->data, (glong) sd->length,
+              NULL, NULL, NULL);
+        tmp = utf8 ? strchr(utf8, '\n') : NULL;
+	if (!tmp) {
+            ERR("Invalid UTF16 from text/x-moz-url target");
+            g_free(utf8);
+            gtk_drag_finish(context, FALSE, FALSE, time);
+            RET();
+	}
+	*tmp = '\0';
+        tmp = g_strdup_printf("%s %s", b->action, utf8);
+        g_spawn_command_line_async(tmp, NULL);
+        DBG("%s %s\n", b->action, utf8);
+        g_free(utf8);
+        g_free(tmp);
     }
     RET();
 }
