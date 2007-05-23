@@ -34,10 +34,10 @@ typedef struct {
     char *cfmt;
     struct tm time;
     char *action;
-    short lastDay;
     int timer;
     GdkPixbuf *glyphs; //vert row of '0'-'9' and ':'
     GdkPixbuf *clock;
+    guint32 color;
 } dclock;
 
 //static dclock me;
@@ -101,6 +101,39 @@ clock_update(dclock *dc )
     RET(TRUE);
 }
 
+#define BLUE_R    0
+#define BLUE_G    0
+#define BLUE_B    0xFF
+
+static void
+dclock_set_color(GdkPixbuf *glyphs, guint32 color)
+{
+    guchar *p1, *p2;
+    int w, h;
+    guint r, g, b;
+    
+    ENTER;
+    p1 = gdk_pixbuf_get_pixels(glyphs);
+    h = gdk_pixbuf_get_height(glyphs);
+    r = (color & 0x00ff0000) >> 16;
+    g = (color & 0x0000ff00) >> 8;
+    b = (color & 0x000000ff);
+    DBG("%dx%d: %02x %02x %02x %02x\n",
+          gdk_pixbuf_get_width(glyphs), gdk_pixbuf_get_height(glyphs),
+          r, g, b, a);
+    while (h--) {
+        for (p2 = p1, w = gdk_pixbuf_get_width(glyphs); w; w--, p2 += 4) {
+            DBG("here %02x %02x %02x %02x\n", p2[0], p2[1], p2[2], p2[3]);
+            if (p2[3] == 0 || !(p2[0] || p2[1] || p2[2])) continue;
+            p2[0] = r;
+            p2[1] = g;
+            p2[2] = b;
+        }
+        p1 += gdk_pixbuf_get_rowstride(glyphs);
+    }
+    DBG("here\n");
+    RET();
+}
 
 static int
 dclock_constructor(plugin *p)
@@ -109,7 +142,7 @@ dclock_constructor(plugin *p)
     dclock *dc;
     
     ENTER;
-    ERR("dclock: use 'tclock' plugin for text version of a clock\n");
+    ERR("dclock: use 'tclock' plugin for text version of a time and date\n");
     dc = g_new0(dclock, 1);
     g_return_val_if_fail(dc != NULL, 0);
     p->priv = dc;
@@ -124,6 +157,7 @@ dclock_constructor(plugin *p)
     gdk_pixbuf_fill(dc->clock, 0);
     s.len = 256;
     dc->cfmt = dc->tfmt = dc->action = 0;
+    dc->color = 0xff000000;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {
             ERR( "dclock: illegal token %s\n", s.str);
@@ -132,7 +166,7 @@ dclock_constructor(plugin *p)
         if (s.type == LINE_VAR) {
             if (!g_ascii_strcasecmp(s.t[0], "TooltipFmt"))
                 dc->tfmt = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "ClockFmt"))
+            else if (!g_ascii_strcasecmp(s.t[0], "ClockFmt")) {
                 if (strcmp(s.t[0], CLOCK_12H_FMT) &&
                       strcmp(s.t[0], CLOCK_24H_FMT)) {
                     ERR("dclock: in this version ClockFmt is limited to one of these\n");
@@ -140,7 +174,11 @@ dclock_constructor(plugin *p)
                     ERR("dclock: %s\n", CLOCK_24H_FMT);
                 } else 
                     dc->cfmt = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "Action"))
+            } else if (!g_ascii_strcasecmp(s.t[0], "Color")) {
+                GdkColor color;
+                if (gdk_color_parse (s.t[1], &color)) 
+                    dc->color = gcolor2rgb24(&color);
+            }  else if (!g_ascii_strcasecmp(s.t[0], "Action"))
                 dc->action = g_strdup(s.t[1]);
             else {
                 ERR( "dclock: unknown var %s\n", s.t[0]);
@@ -155,6 +193,8 @@ dclock_constructor(plugin *p)
         dc->cfmt = g_strdup(CLOCK_24H_FMT);
     if (!dc->tfmt)
         dc->tfmt = g_strdup(DEFAULT_TIP_FORMAT);
+    if (dc->color != 0xff000000)
+        dclock_set_color(dc->glyphs, dc->color);
     dc->main = gtk_image_new_from_pixbuf(dc->clock);
     gtk_misc_set_alignment(GTK_MISC(dc->main), 0.5, 0.5);
     gtk_misc_set_padding(GTK_MISC(dc->main), 4, 0);

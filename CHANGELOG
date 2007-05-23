@@ -3,6 +3,16 @@ New Fetures:
 * tclock: dclock was renamed to tclock = text clock
 * dclock: digital blue clock. adopted from blueclock by 
     Jochen Baier <email@Jochen-Baier.de>
+* dclock: cumstom clock color can be set with 'color' option
+  Plugin {
+     type = dclock
+     config {
+         TooltipFmt = %A %x
+         Action = xterm &
+         color = wheat
+     }
+  }
+
 * menu: items are sorted by name
 * menu: icon size set to 22
 * launchbar: drag-n-drop now accepts urls draged from web browsers
