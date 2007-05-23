@@ -38,7 +38,7 @@ endif
 all: $(TARGET)
 $(TARGET): $(OBJ)
 	$(call summary,LD  ,$@)
-	$(Q)$(CC) $(LDFLAGS) $(LIBS) $(OBJ) $(EXTRAOBJ) -o $@
+	$(Q)$(CC) $(LDFLAGS) $(OBJ) $(EXTRAOBJ) $(LIBS) -o $@
 ifeq (0,$(DEVEL))
 	$(Q)strip $@
 endif
