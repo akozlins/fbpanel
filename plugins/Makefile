@@ -7,7 +7,7 @@ include $(TOPDIR)/Makefile.common
 INCS += -I../
 SRC = image.c menu.c separator.c taskbar.c wincmd.c \
 	dclock.c launchbar.c pager.c space.c test.c \
-	icons.c deskno.c deskno2.c
+	icons.c deskno.c deskno2.c tclock.c
 
 ifeq ($(PLUGIN_CPU),on)
 SRC += cpu.c

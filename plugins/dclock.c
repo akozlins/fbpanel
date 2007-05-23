@@ -1,3 +1,4 @@
+/* dclock is an adaptation of blueclock by Jochen Baier <email@Jochen-Baier.de> */
 
 #include <time.h>
 #include <sys/time.h>
@@ -5,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 
 #include "panel.h"
@@ -16,18 +18,26 @@
 
 
 #define DEFAULT_TIP_FORMAT    "%A %x"
-#define DEFAULT_CLOCK_FORMAT  "%R"
+#define CLOCK_24H_FMT  "%R"
+#define CLOCK_12H_FMT  "%I:%M"
+#define COLON_WIDTH   7
+#define DIGIT_WIDTH   11
+#define DIGIT_HEIGHT  15
+#define DIGIT_PAD_H   1
+#define COLON_PAD_H   3
 
 typedef struct {
-    GtkWidget *eb;
     GtkWidget *main;
-    GtkWidget *clockw;
+    GtkWidget *pwid;
     GtkTooltips *tip;
     char *tfmt;
     char *cfmt;
+    struct tm time;
     char *action;
     short lastDay;
     int timer;
+    GdkPixbuf *glyphs; //vert row of '0'-'9' and ':'
+    GdkPixbuf *clock;
 } dclock;
 
 //static dclock me;
@@ -35,44 +45,59 @@ typedef struct {
 
 
 static  gboolean
-clicked( GtkWidget *widget, gpointer dummy, dclock *dc)
+clicked(GtkWidget *widget, gpointer dummy, dclock *dc)
 {
-    ENTER2;
+    ENTER;
     DBG("%s\n", dc->action);
     system (dc->action);
-    RET2(TRUE);
+    RET(TRUE);
 }
 
 
 
 static gint
-clock_update(gpointer data )
+clock_update(dclock *dc )
 {
-    char output[64], str[64];
+    char output[64], *tmp, *utf8;
     time_t now;
     struct tm * detail;
-    dclock *dc;
-    gchar *utf8;
+    int i, w;
     
     ENTER;
-    g_assert(data != NULL);
-    dc = (dclock *)data;
-    
     time(&now);
     detail = localtime(&now);
-    strftime(output, sizeof(output), dc->cfmt, detail) ;
-    g_snprintf(str, 64, "<b>%s</b>", output);
-    gtk_label_set_markup (GTK_LABEL(dc->clockw), str) ;
-
-    if (detail->tm_mday != dc->lastDay) {
-	dc->lastDay = detail->tm_mday ;
-
-	strftime (output, sizeof(output), dc->tfmt, detail) ;
-        if ((utf8 = g_locale_to_utf8(output, -1, NULL, NULL, NULL))) {
-            gtk_tooltips_set_tip(dc->tip, dc->main, utf8, NULL) ;
-            g_free(utf8);
+    if (detail->tm_min == dc->time.tm_min &&
+          detail->tm_hour == dc->time.tm_hour)
+        RET(TRUE);
+    dc->time = *detail;
+    if (!strftime(output, sizeof(output), dc->cfmt, detail))
+        RET(TRUE);
+    DBG("making new clock pixbuf ");
+    gdk_pixbuf_fill(dc->clock, 0);
+    for (tmp = output, w = 0; *tmp; tmp++) {
+        DBGE("%c", *tmp);
+        if (isdigit(*tmp)) {
+            i = *tmp - '0';
+            gdk_pixbuf_copy_area(dc->glyphs, i * 20, 0, DIGIT_WIDTH, DIGIT_HEIGHT,
+                  dc->clock, w, DIGIT_PAD_H);
+            w += DIGIT_WIDTH;
+        } else if (*tmp == ':') {
+            gdk_pixbuf_copy_area(dc->glyphs, 10 * 20, 0, COLON_WIDTH, DIGIT_HEIGHT - 3,
+                  dc->clock, w, COLON_PAD_H + DIGIT_PAD_H);
+            w += COLON_WIDTH;
+        } else {
+            ERR("dclock: got %c while expecting for digit or ':'\n", *tmp);
         }
     }
+    DBG("\n");
+    gtk_widget_queue_draw(dc->main);
+    strftime (output, sizeof(output), dc->tfmt, detail) ;
+    if ((utf8 = g_locale_to_utf8(output, -1, NULL, NULL, NULL))) {
+        gtk_tooltips_set_tip(dc->tip, dc->pwid, utf8, NULL) ;
+        g_free(utf8);
+    }
+  
+
     RET(TRUE);
 }
 
@@ -82,15 +107,21 @@ dclock_constructor(plugin *p)
 {
     line s;
     dclock *dc;
-    char output [40] ;
-    time_t now ;
-    struct tm * detail ;
     
     ENTER;
+    ERR("dclock: use 'tclock' plugin for text version of a clock\n");
     dc = g_new0(dclock, 1);
     g_return_val_if_fail(dc != NULL, 0);
     p->priv = dc;
-    
+    dc->pwid = p->pwid;
+    dc->glyphs = gdk_pixbuf_new_from_file(
+        PREFIX "/share/fbpanel/images/dclock_glyphs.png", NULL);
+    if (!dc->glyphs)
+        RET(0);
+
+    dc->clock = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8,
+          COLON_WIDTH + 4 * DIGIT_WIDTH, DIGIT_HEIGHT + DIGIT_PAD_H);
+    gdk_pixbuf_fill(dc->clock, 0);
     s.len = 256;
     dc->cfmt = dc->tfmt = dc->action = 0;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
@@ -99,10 +130,16 @@ dclock_constructor(plugin *p)
             goto error;
         }
         if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "ClockFmt")) 
-                dc->cfmt = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "TooltipFmt"))
+            if (!g_ascii_strcasecmp(s.t[0], "TooltipFmt"))
                 dc->tfmt = g_strdup(s.t[1]);
+            else if (!g_ascii_strcasecmp(s.t[0], "ClockFmt"))
+                if (strcmp(s.t[0], CLOCK_12H_FMT) &&
+                      strcmp(s.t[0], CLOCK_24H_FMT)) {
+                    ERR("dclock: in this version ClockFmt is limited to one of these\n");
+                    ERR("dclock: %s\n", CLOCK_12H_FMT);
+                    ERR("dclock: %s\n", CLOCK_24H_FMT);
+                } else 
+                    dc->cfmt = g_strdup(s.t[1]);
             else if (!g_ascii_strcasecmp(s.t[0], "Action"))
                 dc->action = g_strdup(s.t[1]);
             else {
@@ -115,28 +152,21 @@ dclock_constructor(plugin *p)
         }
     }
     if (!dc->cfmt)
-        dc->cfmt = g_strdup(DEFAULT_CLOCK_FORMAT);
+        dc->cfmt = g_strdup(CLOCK_24H_FMT);
     if (!dc->tfmt)
         dc->tfmt = g_strdup(DEFAULT_TIP_FORMAT);
-    dc->main = gtk_event_box_new();
-    //gtk_widget_add_events (dc->main, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
-    //button = gtk_button_new();
-    //gtk_container_add(GTK_CONTAINER(dc->main), button);
-    if (dc->action)
-        g_signal_connect (G_OBJECT (dc->main), "button_press_event",
-              G_CALLBACK (clicked), (gpointer) dc);
-    time(&now);
-    detail = localtime(&now);
-    strftime(output, sizeof(output), dc->cfmt, detail) ;
-    dc->clockw = gtk_label_new(output);
-    gtk_misc_set_alignment(GTK_MISC(dc->clockw), 0.5, 0.5);
-    gtk_misc_set_padding(GTK_MISC(dc->clockw), 4, 0);
+    dc->main = gtk_image_new_from_pixbuf(dc->clock);
+    gtk_misc_set_alignment(GTK_MISC(dc->main), 0.5, 0.5);
+    gtk_misc_set_padding(GTK_MISC(dc->main), 4, 0);
+    gtk_container_add(GTK_CONTAINER(p->pwid), dc->main);
     //gtk_widget_show(dc->clockw);
-    gtk_container_add(GTK_CONTAINER(dc->main), dc->clockw);
+    if (dc->action)
+        g_signal_connect (G_OBJECT (dc->pwid), "button_press_event",
+              G_CALLBACK (clicked), (gpointer) dc);
     gtk_widget_show_all(dc->main);
     dc->tip = gtk_tooltips_new();
     dc->timer = g_timeout_add(1000, (GSourceFunc) clock_update, (gpointer)dc);
-    gtk_container_add(GTK_CONTAINER(p->pwid), dc->main);
+    
     RET(1);
 
  error:
@@ -172,7 +202,7 @@ plugin_class dclock_plugin_class = {
     type : "dclock",
     name : "Digital Clock",
     version: "1.0",
-    description : "Display Digital clock and Tooltip",
+    description : "Digital blue clock with tooltip",
 
     constructor : dclock_constructor,
     destructor  : dclock_destructor,
