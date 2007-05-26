@@ -198,7 +198,7 @@ gtk_bgbox_realize (GtkWidget *widget)
           &attributes, attributes_mask);
     gdk_window_set_user_data (widget->window, widget);
     widget->style = gtk_style_attach (widget->style, widget->window);
-    gtk_bgbox_set_background(widget, BG_STYLE, 0, 0);
+    //gtk_bgbox_set_background(widget, BG_STYLE, 0, 0);
     RET();
 }
 
@@ -297,7 +297,8 @@ gtk_bgbox_free_bg(GtkWidget *bgbox)
     ENTER;
     priv = GTK_BGBOX_GET_PRIVATE (bgbox);
     if (priv->bg_type == BG_ROOT) {
-        g_object_unref(priv->pixmap);
+        if (priv->pixmap)
+            g_object_unref(priv->pixmap);
         priv->pixmap = NULL;
         g_signal_handlers_disconnect_by_func(priv->bg, gtk_bgbox_bg_changed, bgbox);
         g_object_unref(priv->bg);
@@ -356,14 +357,16 @@ gtk_bgbox_set_bg_root(GtkWidget *widget, GtkBgboxPrivate *priv)
     
     ENTER;
     priv->pixmap = fb_bg_get_xroot_pix_for_win(priv->bg, widget);
-    DBG("here\n");
     if (!priv->pixmap || priv->pixmap ==  GDK_NO_BG) {
-        priv->bg_type = BG_NONE;
+        //priv->bg_type = BG_NONE;
+        priv->pixmap = NULL;
+        gtk_style_set_background(widget->style, widget->window, widget->state);
+        gtk_widget_queue_draw_area(widget, 0, 0,
+              widget->allocation.width, widget->allocation.height);
+        DBG("no root pixmap was found\n");
         RET();
     }
-    DBG("here\n");
     fb_bg_composite(priv->pixmap, widget->style->black_gc, priv->tintcolor, priv->alpha);
-    DBG("here\n");
     gdk_window_set_back_pixmap(widget->window, priv->pixmap, FALSE);
     //gdk_window_clear(widget->window);
     rect.x = widget->allocation.x;
