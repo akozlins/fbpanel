@@ -573,22 +573,6 @@ get_net_wm_window_type(Window win, net_wm_window_type *nwwt)
 
 
     
-
-int
-get_wm_state (Window win)
-{
-    unsigned long *data;
-    int ret = 0;
-
-    ENTER;
-    data = get_xaproperty (win, a_WM_STATE, a_WM_STATE, 0);
-    if (data) {
-        ret = data[0];
-        XFree (data);
-    }
-    RET(ret);
-}
-
 static void
 calculate_width(int scrw, int wtype, int allign, int margin,
       int *panw, int *x)

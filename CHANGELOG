@@ -20,6 +20,8 @@ Fixed Bugs:
 * menu: forgoten g_free's were added
 * 1723786: linkage problems with --as-needed flag
 * 1724852: crash if root bg is not set
+* WM_STATE usage is dropped. NET_WM_STATE is used instead. affected plugins are 
+  taskbar and pager
 
 4.9
 * new menu placement to not cover panel; used in menu and taskbar

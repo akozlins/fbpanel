@@ -941,7 +941,7 @@ tb_net_client_list(GtkWidget *widget, taskbar *tb)
             tb->num_tasks++;
             tk->win = tb->wins[i];
             tk->tb = tb;
-            tk->iconified = (get_wm_state(tk->win) == IconicState);
+            tk->iconified = nws.hidden;
             tk->desktop = get_net_wm_desktop(tk->win);
             tk->nws = nws;
             tk->nwwt = nwwt;
@@ -1076,19 +1076,10 @@ tb_propertynotify(taskbar *tb, XEvent *ev)
             DBG("NET_WM_DESKTOP\n");
 	    tk->desktop = get_net_wm_desktop(win);
 	    tb_display(tb);	
-	}  else if (at == XA_WM_NAME) {
+	} else if (at == XA_WM_NAME) {
             DBG("WM_NAME\n");
             if (!tb->icons_only) {
                 tk_get_names(tk);
-                tk_set_names(tk);
-            }
-	}  else if (at == XA_WM_CLASS) {
-            DBG("WM_CLASS\n");
-	} else if (at == a_WM_STATE)    {
-            DBG("WM_STATE\n");
-	    /* iconified state changed? */
-            if (!tb->icons_only) {
-                tk->iconified = (get_wm_state (tk->win) == IconicState);
                 tk_set_names(tk);
             }
 	} else if (at == XA_WM_HINTS)	{
@@ -1113,7 +1104,10 @@ tb_propertynotify(taskbar *tb, XEvent *ev)
             if (!accept_net_wm_state(&nws, tb->accept_skip_pager)) {
 		del_task(tb, tk, 1);
 		tb_display(tb);
-	    }
+	    } else if (!tb->icons_only){
+                tk->iconified = nws.hidden;
+                tk_set_names(tk);
+            }
 	} else if (at == a_NET_WM_ICON) {
 	    DBG("_NET_WM_ICON\n");
             DBG("#0 %d\n", GDK_IS_PIXBUF (tk->pixbuf));

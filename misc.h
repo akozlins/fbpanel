@@ -47,7 +47,6 @@ void resolve_atoms();
 int get_net_number_of_desktops();
 int get_net_current_desktop ();
 int get_net_wm_desktop(Window win);
-int get_wm_state (Window win);
 void get_net_wm_state(Window win, net_wm_state *nws);
 void get_net_wm_window_type(Window win, net_wm_window_type *nwwt);
 

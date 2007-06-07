@@ -50,7 +50,6 @@ typedef struct task {
     guint stacking;
     guint desktop;
     char *name, *iname;
-    int ws;
     net_wm_state nws;
     net_wm_window_type nwwt;
     guint focused:1;
@@ -89,10 +88,9 @@ struct _pager {
 
 
 
-#define TASK_VISIBLE(tk) \
- (!( ((tk)->ws != NormalState) || (tk)->nws.hidden || (tk)->nws.skip_pager ))
+#define TASK_VISIBLE(tk)                            \
+ (!( (tk)->nws.hidden || (tk)->nws.skip_pager ))
 
-//if (t->nws.skip_pager || t->nwwt.desktop /*|| t->nwwt.dock || t->nwwt.splash*/ )
    
 static void pager_rebuild_all(FbEv *ev, pager *pg);
 static void desk_draw_bg(pager *pg, desk *d1);
@@ -180,8 +178,8 @@ task_update_pix(task *t, desk *d)
     
     ENTER;
     g_return_if_fail(d->pix != NULL);
-    if (!TASK_VISIBLE(t))
-        RET();;
+    if (!TASK_VISIBLE(t)) 
+        RET();
 
     if (t->desktop < p->desknum &&
           t->desktop != d->no)
@@ -583,7 +581,6 @@ do_net_client_list_stacking(FbEv *ev, pager *p)
             t = g_new0(task, 1);
             t->refcount++;
             t->win = p->wins[i];
-            t->ws = get_wm_state (t->win);
             t->desktop = get_net_wm_desktop(t->win);
             get_net_wm_state(t->win, &t->nws);
             get_net_wm_window_type(t->win, &t->nwwt);
@@ -648,10 +645,7 @@ pager_propertynotify(pager *p, XEvent *ev)
         RET();
       
     DBG("window=0x%lx\n", t->win);
-    if (at == a_WM_STATE)    {
-        DBG("event=WM_STATE\n");
-        t->ws = get_wm_state (t->win);
-    } else if (at == a_NET_WM_STATE) {
+    if (at == a_NET_WM_STATE) {
         DBG("event=NET_WM_STATE\n");
         get_net_wm_state(t->win, &t->nws);
     } else if (at == a_NET_WM_DESKTOP) {	   
