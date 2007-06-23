@@ -23,6 +23,7 @@ Fixed Bugs:
 * WM_STATE usage is dropped. NET_WM_STATE is used instead. affected plugins are 
   taskbar and pager
 * fixed bug where pager used unupdated panel->desknum instead of pager->desknum
+* all Cardinal vars were changed to guint from int
 
 4.9
 * new menu placement to not cover panel; used in menu and taskbar

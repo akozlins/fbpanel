@@ -44,9 +44,9 @@ char **get_utf8_property_list(Window win, Atom atom, int *count);
 
 void resolve_atoms();
 //Window Select_Window(Display *dpy);
-int get_net_number_of_desktops();
-int get_net_current_desktop ();
-int get_net_wm_desktop(Window win);
+guint get_net_number_of_desktops();
+guint get_net_current_desktop ();
+guint get_net_wm_desktop(Window win);
 void get_net_wm_state(Window win, net_wm_state *nws);
 void get_net_wm_window_type(Window win, net_wm_window_type *nwwt);
 

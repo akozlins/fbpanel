@@ -433,10 +433,10 @@ get_textproperty(Window win, Atom atom)
 }
 
 
-int
+guint
 get_net_number_of_desktops()
 {
-    int desknum;
+    guint desknum;
     guint32 *data;
 
     ENTER;
@@ -451,10 +451,10 @@ get_net_number_of_desktops()
 }
 
     
-int
+guint
 get_net_current_desktop ()
 {
-    int desk;
+    guint desk;
     guint32 *data;
 
     ENTER;
@@ -467,11 +467,11 @@ get_net_current_desktop ()
     RET(desk);
 }
 
-int
+guint
 get_net_wm_desktop(Window win)
 {
-    int desk = 0;
-    guint32 *data;
+    guint desk = 0;
+    guint *data;
 
     ENTER;
     data = get_xaproperty (win, a_NET_WM_DESKTOP, XA_CARDINAL, 0);

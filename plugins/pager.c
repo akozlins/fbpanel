@@ -64,7 +64,7 @@ struct _desk {
     Pixmap xpix;
     GdkPixmap *gpix;
     GdkPixmap *pix;
-    int no, dirty, first;
+    guint no, dirty, first;
     gfloat scalew, scaleh;
     pager *pg; 
 };
