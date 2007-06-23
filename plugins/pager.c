@@ -39,7 +39,6 @@
 #include "dbg.h"
 
 
-extern panel *p;
 
 /* managed window: all related info that wm holds about its managed windows */
 typedef struct task {
@@ -181,7 +180,7 @@ task_update_pix(task *t, desk *d)
     if (!TASK_VISIBLE(t)) 
         RET();
 
-    if (t->desktop < p->desknum &&
+    if (t->desktop < d->pg->desknum &&
           t->desktop != d->no)
         RET();
           
