@@ -137,13 +137,13 @@ get_line(FILE *fp, line *s)
 
     ENTER;
     s->type = LINE_NONE;
-    if (!fp)       
+    if (!fp)
         RET(s->type);
     while (fgets(s->str, s->len, fp)) {
         g_strstrip(s->str);
-     
+
         if (s->str[0] == '#' || s->str[0] == 0) {
-	    continue;
+        continue;
         }
         DBG( ">> %s\n", s->str);
         if (!g_ascii_strcasecmp(s->str, "}")) {
@@ -184,8 +184,8 @@ get_line_as_is(FILE *fp, line *s)
     s->type = LINE_NONE;
     while (fgets(s->str, s->len, fp)) {
         g_strstrip(s->str);
-        if (s->str[0] == '#' || s->str[0] == 0) 
-	    continue;
+        if (s->str[0] == '#' || s->str[0] == 0)
+        continue;
         DBG( ">> %s\n", s->str);
         if (!g_ascii_strcasecmp(s->str, "}")) {
             s->type = LINE_BLOCK_END;
@@ -210,14 +210,14 @@ get_line_as_is(FILE *fp, line *s)
 void resolve_atoms()
 {
     ENTER;
-    
+
     a_UTF8_STRING                = XInternAtom(GDK_DISPLAY(), "UTF8_STRING", False);
     a_XROOTPMAP_ID               = XInternAtom(GDK_DISPLAY(), "_XROOTPMAP_ID", False);
     a_WM_STATE                   = XInternAtom(GDK_DISPLAY(), "WM_STATE", False);
     a_WM_CLASS                   = XInternAtom(GDK_DISPLAY(), "WM_CLASS", False);
     a_WM_DELETE_WINDOW           = XInternAtom(GDK_DISPLAY(), "WM_DELETE_WINDOW", False);
     a_WM_PROTOCOLS               = XInternAtom(GDK_DISPLAY(), "WM_PROTOCOLS", False);
-    a_NET_WORKAREA               = XInternAtom(GDK_DISPLAY(), "_NET_WORKAREA", False);    
+    a_NET_WORKAREA               = XInternAtom(GDK_DISPLAY(), "_NET_WORKAREA", False);
     a_NET_CLIENT_LIST            = XInternAtom(GDK_DISPLAY(), "_NET_CLIENT_LIST", False);
     a_NET_CLIENT_LIST_STACKING   = XInternAtom(GDK_DISPLAY(), "_NET_CLIENT_LIST_STACKING", False);
     a_NET_NUMBER_OF_DESKTOPS     = XInternAtom(GDK_DISPLAY(), "_NET_NUMBER_OF_DESKTOPS", False);
@@ -250,7 +250,7 @@ void resolve_atoms()
     a_NET_WM_ICON                = XInternAtom(GDK_DISPLAY(), "_NET_WM_ICON", False);
     a_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR
                                  = XInternAtom(GDK_DISPLAY(), "_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR", False);
-                                
+
     RET();
 }
 
@@ -300,17 +300,17 @@ get_utf8_property(Window win, Atom atom)
     gchar *val, *retval;
     int result;
     guchar *tmp = NULL;
-    
+
     type = None;
     retval = NULL;
     result = XGetWindowProperty (GDK_DISPLAY(), win, atom, 0, G_MAXLONG, False,
-          a_UTF8_STRING, &type, &format, &nitems, 
+          a_UTF8_STRING, &type, &format, &nitems,
           &bytes_after, &tmp);
     if (result != Success || type == None)
         return NULL;
     val = (gchar *) tmp;
     if (val) {
-        if (type == a_UTF8_STRING && format == 8 && nitems != 0) 
+        if (type == a_UTF8_STRING && format == 8 && nitems != 0)
             retval = g_strndup (val, nitems);
         XFree (val);
     }
@@ -330,9 +330,9 @@ get_utf8_property_list(Window win, Atom atom, int *count)
     guchar *tmp = NULL;
 
     *count = 0;
-    result = XGetWindowProperty(GDK_DISPLAY(), win, atom, 0, G_MAXLONG, False, 
-          a_UTF8_STRING, &type, &format, &nitems, 
-          &bytes_after, &tmp);  
+    result = XGetWindowProperty(GDK_DISPLAY(), win, atom, 0, G_MAXLONG, False,
+          a_UTF8_STRING, &type, &format, &nitems,
+          &bytes_after, &tmp);
     if (result != Success || type != a_UTF8_STRING || tmp == NULL)
         return NULL;
 
@@ -358,7 +358,7 @@ get_utf8_property_list(Window win, Atom atom, int *count)
         }
     }
     XFree (tmp);
-  
+
     return retval;
 
 }
@@ -371,7 +371,7 @@ get_xaproperty (Window win, Atom prop, Atom type, int *nitems)
     unsigned long items_ret;
     unsigned long after_ret;
     unsigned char *prop_data;
-    
+
     ENTER;
     prop_data = NULL;
     if (XGetWindowProperty (GDK_DISPLAY(), win, prop, 0, 0x7fffffff, False,
@@ -389,7 +389,7 @@ text_property_to_utf8 (const XTextProperty *prop)
   char **list;
   int count;
   char *retval;
-  
+
   ENTER;
   list = NULL;
   count = gdk_text_property_to_utf8_list (gdk_x11_xatom_to_atom (prop->encoding),
@@ -404,7 +404,7 @@ text_property_to_utf8 (const XTextProperty *prop)
 
   retval = list[0];
   list[0] = g_strdup (""); /* something to free */
-  
+
   g_strfreev (list);
 
   RET(retval);
@@ -415,7 +415,7 @@ get_textproperty(Window win, Atom atom)
 {
     XTextProperty text_prop;
     char *retval;
-    
+
     ENTER;
     if (XGetTextProperty(GDK_DISPLAY(), win, &text_prop, atom)) {
         DBG("format=%d enc=%d nitems=%d value=%s   \n",
@@ -450,7 +450,7 @@ get_net_number_of_desktops()
     RET(desknum);
 }
 
-    
+
 guint
 get_net_current_desktop ()
 {
@@ -487,33 +487,33 @@ get_net_wm_state(Window win, net_wm_state *nws)
 {
     Atom *state;
     int num3;
-    
-    
+
+
     ENTER;
     bzero(nws, sizeof(nws));
     if (!(state = get_xaproperty(win, a_NET_WM_STATE, XA_ATOM, &num3)))
         RET();
-    
+
     DBG( "%x: netwm state = { ", (unsigned int)win);
     while (--num3 >= 0) {
         if (state[num3] == a_NET_WM_STATE_SKIP_PAGER) {
             DBGE("NET_WM_STATE_SKIP_PAGER ");
             nws->skip_pager = 1;
         } else if (state[num3] == a_NET_WM_STATE_SKIP_TASKBAR) {
-            DBGE("NET_WM_STATE_SKIP_TASKBAR ");	    
-	    nws->skip_taskbar = 1;
-	} else if (state[num3] == a_NET_WM_STATE_STICKY) {
+            DBGE("NET_WM_STATE_SKIP_TASKBAR ");
+            nws->skip_taskbar = 1;
+        } else if (state[num3] == a_NET_WM_STATE_STICKY) {
             DBGE("NET_WM_STATE_STICKY ");
-	    nws->sticky = 1;
+            nws->sticky = 1;
         } else if (state[num3] == a_NET_WM_STATE_HIDDEN) {
             DBGE("NET_WM_STATE_HIDDEN ");
             nws->hidden = 1;
-	} else if (state[num3] == a_NET_WM_STATE_SHADED) {
+        } else if (state[num3] == a_NET_WM_STATE_SHADED) {
             DBGE("NET_WM_STATE_SHADED ");
             nws->shaded = 1;
-	} else {
-	    DBGE("... ");
-	}
+        } else {
+            DBGE("... ");
+        }
     }
     XFree(state);
     DBGE( "}\n");
@@ -528,42 +528,42 @@ get_net_wm_window_type(Window win, net_wm_window_type *nwwt)
 {
     Atom *state;
     int num3;
-    
-    
+
+
     ENTER;
     bzero(nwwt, sizeof(nwwt));
     if (!(state = get_xaproperty(win, a_NET_WM_WINDOW_TYPE, XA_ATOM, &num3)))
         RET();
-    
+
     DBG( "%x: netwm state = { ", (unsigned int)win);
     while (--num3 >= 0) {
         if (state[num3] == a_NET_WM_WINDOW_TYPE_DESKTOP) {
             DBG("NET_WM_WINDOW_TYPE_DESKTOP ");
             nwwt->desktop = 1;
         } else if (state[num3] == a_NET_WM_WINDOW_TYPE_DOCK) {
-            DBG( "NET_WM_WINDOW_TYPE_DOCK ");	    
-	    nwwt->dock = 1;
-	} else if (state[num3] == a_NET_WM_WINDOW_TYPE_TOOLBAR) {
+            DBG( "NET_WM_WINDOW_TYPE_DOCK ");
+            nwwt->dock = 1;
+        } else if (state[num3] == a_NET_WM_WINDOW_TYPE_TOOLBAR) {
             DBG( "NET_WM_WINDOW_TYPE_TOOLBAR ");
-	    nwwt->toolbar = 1;
+            nwwt->toolbar = 1;
         } else if (state[num3] == a_NET_WM_WINDOW_TYPE_MENU) {
             DBG( "NET_WM_WINDOW_TYPE_MENU ");
             nwwt->menu = 1;
-	} else if (state[num3] == a_NET_WM_WINDOW_TYPE_UTILITY) {
+        } else if (state[num3] == a_NET_WM_WINDOW_TYPE_UTILITY) {
             DBG( "NET_WM_WINDOW_TYPE_UTILITY ");
             nwwt->utility = 1;
-	} else if (state[num3] == a_NET_WM_WINDOW_TYPE_SPLASH) {
+        } else if (state[num3] == a_NET_WM_WINDOW_TYPE_SPLASH) {
             DBG( "NET_WM_WINDOW_TYPE_SPLASH ");
             nwwt->splash = 1;
-	} else if (state[num3] == a_NET_WM_WINDOW_TYPE_DIALOG) {
+        } else if (state[num3] == a_NET_WM_WINDOW_TYPE_DIALOG) {
             DBG( "NET_WM_WINDOW_TYPE_DIALOG ");
             nwwt->dialog = 1;
-	} else if (state[num3] == a_NET_WM_WINDOW_TYPE_NORMAL) {
+        } else if (state[num3] == a_NET_WM_WINDOW_TYPE_NORMAL) {
             DBG( "NET_WM_WINDOW_TYPE_NORMAL ");
             nwwt->normal = 1;
-	} else {
-	    DBG( "... ");
-	}
+        } else {
+            DBG( "... ");
+        }
     }
     XFree(state);
     DBG( "}\n");
@@ -572,7 +572,7 @@ get_net_wm_window_type(Window win, net_wm_window_type *nwwt)
 
 
 
-    
+
 static void
 calculate_width(int scrw, int wtype, int allign, int margin,
       int *panw, int *x)
@@ -632,7 +632,7 @@ calculate_position(panel *np)
         ssheight = gdk_screen_height();
 
     }
-    
+
     if (np->edge == EDGE_TOP || np->edge == EDGE_BOTTOM) {
         np->aw = np->width;
         np->ax = minx;
@@ -713,7 +713,7 @@ Select_Window(Display *dpy)
                 buttons--;
             break;
         }
-    } 
+    }
 
     XUngrabPointer(dpy, CurrentTime);      /* Done with pointer */
     RET(target_win);
@@ -761,9 +761,9 @@ gtk_image_new_from_file_scaled(const gchar *file, gint width,
 
     ENTER;
     if ((pb = gdk_pixbuf_new_from_file_at_size(file, width, height, NULL))) {
-        img = gtk_image_new_from_pixbuf(pb);			
+        img = gtk_image_new_from_pixbuf(pb);
         g_object_unref(pb);
-    } else 
+    } else
         img = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE,
               GTK_ICON_SIZE_BUTTON);
     RET(img);
@@ -794,19 +794,19 @@ get_button_spacing(GtkRequisition *req, GtkContainer *parent, gchar *name)
     RET();
 }
 
-    
+
 guint32 gcolor2rgb24(GdkColor *color)
 {
     guint32 i;
     guint16 r, g, b;
-    
+
     ENTER;
 
     r = color->red * 0xFF / 0xFFFF;
     g = color->green * 0xFF / 0xFFFF;
     b = color->blue * 0xFF / 0xFFFF;
     DBG("%x %x %x ==> %x %x %x\n", color->red, color->green, color->blue, r, g, b);
-    
+
     i = (color->red * 0xFF / 0xFFFF) & 0xFF;
     i <<= 8;
     i |= (color->green * 0xFF / 0xFFFF) & 0xFF;
@@ -824,7 +824,7 @@ fb_button_enter (GtkImage *widget, GdkEventCrossing *event)
     int i;
     gulong hicolor;
     guchar *src, *up, extra[3];
- 
+
     ENTER;
     if (gtk_image_get_storage_type(widget) != GTK_IMAGE_PIXBUF)
         RET(TRUE);
@@ -855,21 +855,21 @@ fb_button_enter (GtkImage *widget, GdkEventCrossing *event)
     g_object_set_data_full (G_OBJECT(widget), "dark", dark, g_object_unref);
     gtk_image_set_from_pixbuf(widget, light);
     RET(TRUE);
-    
+
 }
 
 static gboolean
 fb_button_leave (GtkImage *widget, GdkEventCrossing *event, gpointer user_data)
 {
     GdkPixbuf *dark;
-    
+
     ENTER;
     if (gtk_image_get_storage_type(widget) != GTK_IMAGE_PIXBUF)
         RET(TRUE);
     dark = g_object_get_data(G_OBJECT(widget), "dark");
     if (dark)
         gtk_image_set_from_pixbuf(widget, dark);
-    RET(TRUE);    
+    RET(TRUE);
 }
 
 GtkWidget *
@@ -887,7 +887,7 @@ fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
     GTK_WIDGET_UNSET_FLAGS (b, GTK_CAN_FOCUS);
     //make image
     image = fb_image_new_from_icon_file(iname, fname, width, height, keep_ratio);
-    gtk_container_add(GTK_CONTAINER(b), image);    
+    gtk_container_add(GTK_CONTAINER(b), image);
     //set calbacks
     gtk_misc_set_alignment(GTK_MISC(image), 0, 1);
     g_object_set_data(G_OBJECT(image), "hicolor", (gpointer)hicolor);
@@ -911,7 +911,7 @@ fb_button_new_from_file(gchar *fname, int width, int height, gulong hicolor,
       gboolean keep_ratio)
 {
     GtkWidget *b, *image;
-    
+
     ENTER;
     b = gtk_bgbox_new();
     gtk_container_set_border_width(GTK_CONTAINER(b), 0);
@@ -939,13 +939,13 @@ fb_image_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
 {
     GtkWidget *image;
     GdkPixbuf *pb = NULL;
-    
+
     pb = fb_pixbuf_new_from_icon_file(iname, fname, width, height);
     if (pb) {
         image = gtk_image_new_from_pixbuf(pb);
         DBG("px: w=%d h=%d\n", gdk_pixbuf_get_width(pb), gdk_pixbuf_get_height(pb));
         g_object_unref(pb);
-    } else 
+    } else
         image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
     DBG("image = %p\n", image);
     RET(image);
@@ -955,20 +955,20 @@ GdkPixbuf *
 fb_pixbuf_new_from_icon_file(gchar *iname, gchar *fname, int width, int height)
 {
     GdkPixbuf *pb = NULL;
-	
+
     ENTER;
     if (iname) {
         GtkIconInfo *icon_info;
         icon_info = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
               iname, MAX(width, height), 0);
         if (icon_info) {
-            
+
             DBG("iname = %s file = %s size = %d\n", iname,
                   gtk_icon_info_get_filename(icon_info),
                   MAX(width, height));
             pb = gdk_pixbuf_new_from_file_at_size(gtk_icon_info_get_filename(icon_info),
                   width, height, NULL);
-            
+
             gtk_icon_info_free(icon_info);
         } else
             DBG("icon info failed\n");
@@ -986,7 +986,7 @@ fb_button_new_from_icon_file_with_label(gchar *iname, gchar *fname, int width, i
       gulong hicolor, gboolean keep_ratio, gchar *name)
 {
     GtkWidget *b, *image, *box, *label;
-    
+
     ENTER;
     b = gtk_bgbox_new();
 
@@ -1024,7 +1024,7 @@ void
 menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *widget)
 {
     int ox, oy, w, h;
-    
+
     ENTER;
     if (widget) {
         gdk_window_get_origin(widget->window, &ox, &oy);

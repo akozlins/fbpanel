@@ -113,7 +113,7 @@ DEP = $(SRC:%.c=%.dep)
 
 %.dep : %.c
 	$(call summary,DEP ,$@)
-	$(Q)$(CC) $(CPPFLAGS) $(INCS) -MM $< | sed 's/\($*\).o[ :]*/\1.o $@ :/' > $@
+	$(Q)$(CC) $(CPPFLAGS) $(INCS) -MM $< | sed 's/\($*\)\.o[ :]*/\1.o $@ :/' > $@
 
 
 #########################################

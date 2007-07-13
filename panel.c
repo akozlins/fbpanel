@@ -9,6 +9,7 @@
 #include <locale.h>
 #include <string.h>
 #include <signal.h>
+#include <time.h>
 
 #include "plugin.h"
 #include "panel.h"
@@ -84,15 +85,15 @@ panel_set_wm_strut(panel *p)
     default:
         ERR("wrong edge %d. strut won't be set\n", p->edge);
         RET();
-    }		
+    }
     DBG("type %d. width %d. from %d to %d\n", i, data[i], data[4 + i*2], data[5 + i*2]);
-                
+
     /* if wm supports STRUT_PARTIAL it will ignore STRUT */
-    XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT_PARTIAL, 
+    XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT_PARTIAL,
           XA_CARDINAL, 32, PropModeReplace,  (unsigned char *) data, 12);
     /* old spec, for wms that do not support STRUT_PARTIAL */
-    XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT, 
-          XA_CARDINAL, 32, PropModeReplace,  (unsigned char *) data, 4); 
+    XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT,
+          XA_CARDINAL, 32, PropModeReplace,  (unsigned char *) data, 4);
 
     RET();
 }
@@ -127,23 +128,23 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
     DBG("win = 0x%x\n", ev->xproperty.window);
     if (ev->type != PropertyNotify )
         RET(GDK_FILTER_CONTINUE);
-    
+
     at = ev->xproperty.atom;
     win = ev->xproperty.window;
     DBG("win=%x at=%d\n", win, at);
     if (win == GDK_ROOT_WINDOW()) {
-	if (at == a_NET_CLIENT_LIST) {
+    if (at == a_NET_CLIENT_LIST) {
             DBG("A_NET_CLIENT_LIST\n");
             fb_ev_trigger(fbev, EV_CLIENT_LIST);
-	} else if (at == a_NET_CURRENT_DESKTOP) {
+    } else if (at == a_NET_CURRENT_DESKTOP) {
             DBG("A_NET_CURRENT_DESKTOP\n");
             p->curdesk = get_net_current_desktop();
             fb_ev_trigger(fbev, EV_CURRENT_DESKTOP);
-	} else if (at == a_NET_NUMBER_OF_DESKTOPS) {
+    } else if (at == a_NET_NUMBER_OF_DESKTOPS) {
             DBG("A_NET_NUMBER_OF_DESKTOPS\n");
             p->desknum = get_net_number_of_desktops();
             fb_ev_trigger(fbev, EV_NUMBER_OF_DESKTOPS);
-	} else if (at == a_NET_DESKTOP_NAMES) {
+    } else if (at == a_NET_DESKTOP_NAMES) {
             DBG("A_NET_DESKTOP_NAMES\n");
             fb_ev_trigger(fbev, EV_DESKTOP_NAMES);
         } else if (at == a_NET_ACTIVE_WINDOW) {
@@ -152,7 +153,7 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
         }else if (at == a_NET_CLIENT_LIST_STACKING) {
             DBG("A_NET_CLIENT_LIST_STACKING\n");
             fb_ev_trigger(fbev, EV_CLIENT_LIST_STACKING);
-	} else if (at == a_NET_WORKAREA) {
+    } else if (at == a_NET_WORKAREA) {
             DBG("A_NET_WORKAREA\n");
             p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
             print_wmdata(p);
@@ -168,7 +169,7 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
  *         panel's handlers for GTK events          *
  ****************************************************/
 
-  
+
 static gint
 panel_delete_event(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
@@ -181,7 +182,7 @@ panel_destroy_event(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
     //panel *p = (panel *) data;
 
-    ENTER;  
+    ENTER;
     //if (!p->self_destroy)
     gtk_main_quit();
     RET(FALSE);
@@ -215,7 +216,7 @@ static gint
 panel_size_alloc(GtkWidget *widget, GtkAllocation *a, panel *p)
 {
     static gint x, y;
-    
+
     ENTER;
     DBG("gtk: size (%d, %d). pos (%d, %d)\n", a->width, a->height, a->x, a->y);
     DBG("our: size (%d, %d). pos (%d, %d)\n", p->aw, p->ah, p->ax, p->ay);
@@ -238,13 +239,38 @@ panel_size_alloc(GtkWidget *widget, GtkAllocation *a, panel *p)
     RET(TRUE);
 }
 
+/* this func will reload entire fbpanel when style is changed. The main and
+ * only reason to do it is themed icons. fbpanel drops icons' configuration
+ * after it has finished to build them and does not keep that info during
+ * runtime. So, the simplest way to change icons when theme changes is to
+ * reload entire fbpanel. I know it's kinda overkill but I have no free time
+ * now to rework all config algorithm in the project.
+ * N.B. if fbpanel is started together with X11, wm and config manager (gconf
+ * or xfce-mcs-manager) it gets 5-7  style requests in a row, so lets reload on
+ * last one
+ */
+static gboolean
+panel_reload()
+{
+    ENTER;
+    p->style_timer = 0;
+    gtk_main_quit();
+    DBG2("reloading\n");
+    RET(FALSE);
+}
+
+
 static void
 panel_style_set(GtkWidget *widget, GtkStyle  *previous_style, panel *p)
 {
     ENTER;
     if (GTK_WIDGET_REALIZED(widget)) {
-        DBG("realized\n");
-        gtk_main_quit();
+        if (p->style_timer) {
+            g_source_remove(p->style_timer);
+            DBG2("cancel prev. reload\n");
+        }
+        p->style_timer = g_timeout_add(2*1000 /*2 secs*/, panel_reload, NULL);
+        DBG2("reload in 2 secs\n");
     }
     RET();
 }
@@ -265,7 +291,7 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
     DBG("here\n");
     DBG("geom: size (%d, %d). pos (%d, %d)\n", e->width, e->height, e->x, e->y);
     RET(FALSE);
-    
+
 }
 
 
@@ -280,7 +306,7 @@ make_round_corners(panel *p)
     void (*box_pack)(GtkBox *, GtkWidget *, gboolean, gboolean, guint);
     gchar *s1, *s2;
 #define IMGPREFIX  PREFIX "/share/fbpanel/images/"
-    
+
     ENTER;
     if (p->edge == EDGE_TOP) {
         s1 = IMGPREFIX "top-left.xpm";
@@ -296,7 +322,7 @@ make_round_corners(panel *p)
         s2 = IMGPREFIX "bottom-right.xpm";
     } else
         RET();
-    
+
     box_new = (p->orientation == ORIENT_HORIZ) ? gtk_vbox_new : gtk_hbox_new;
     b1 = box_new(0, FALSE);
     gtk_widget_show(b1);
@@ -305,7 +331,7 @@ make_round_corners(panel *p)
 
     box_pack = (p->edge == EDGE_TOP || p->edge == EDGE_LEFT) ?
         gtk_box_pack_start : gtk_box_pack_end;
-     
+
     img = gtk_image_new_from_file(s1);
     gtk_widget_show(img);
     box_pack(GTK_BOX(b1), img, FALSE, FALSE, 0);
@@ -314,7 +340,7 @@ make_round_corners(panel *p)
     box_pack(GTK_BOX(b2), img, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(p->lbox), b1, FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(p->lbox), b2, FALSE, FALSE, 0);
-    RET();      
+    RET();
 }
 
 void
@@ -323,8 +349,8 @@ panel_start_gui(panel *p)
     Atom state[3];
     XWMHints wmhints;
     guint32 val;
- 
-    
+
+
     ENTER;
 
     // main toplevel window
@@ -335,7 +361,7 @@ panel_start_gui(panel *p)
     gtk_window_set_title(GTK_WINDOW(p->topgwin), "panel");
     gtk_window_set_position(GTK_WINDOW(p->topgwin), GTK_WIN_POS_NONE);
     gtk_window_set_decorated(GTK_WINDOW(p->topgwin), FALSE);
-    
+
     g_signal_connect(G_OBJECT(p->topgwin), "delete-event",
           G_CALLBACK(panel_delete_event), p);
     g_signal_connect(G_OBJECT(p->topgwin), "destroy-event",
@@ -350,11 +376,11 @@ panel_start_gui(panel *p)
           (GCallback) panel_realize, p);
     g_signal_connect (G_OBJECT (p->topgwin), "style-set",
           (GCallback) panel_style_set, p);
-    
+
     gtk_widget_realize(p->topgwin);
     //gdk_window_set_decorations(p->topgwin->window, 0);
     gtk_widget_set_app_paintable(p->topgwin, TRUE);
-    
+
     // background box all over toplevel
     p->bbox = gtk_bgbox_new();
     gtk_container_add(GTK_CONTAINER(p->topgwin), p->bbox);
@@ -362,7 +388,7 @@ panel_start_gui(panel *p)
     gtk_container_set_border_width(GTK_CONTAINER(p->bbox), 0);
     if (p->transparent) {
         p->bg = fb_bg_get_for_display();
-        gtk_bgbox_set_background(p->bbox, BG_ROOT, p->tintcolor, p->alpha);        
+        gtk_bgbox_set_background(p->bbox, BG_ROOT, p->tintcolor, p->alpha);
     }
 
     // main layout manager as a single child of background widget box
@@ -372,20 +398,20 @@ panel_start_gui(panel *p)
     gtk_widget_show(p->lbox);
     if (p->round_corners)
         make_round_corners(p);
- 
-    p->box = p->my_box_new(FALSE, p->spacing); 
+
+    p->box = p->my_box_new(FALSE, p->spacing);
     gtk_container_set_border_width(GTK_CONTAINER(p->box), 0);
     gtk_box_pack_start(GTK_BOX(p->lbox), p->box, TRUE, TRUE, 0);
     gtk_widget_show(p->box);
-      
+
     p->topxwin = GDK_WINDOW_XWINDOW(GTK_WIDGET(p->topgwin)->window);
     DBG("topxwin = %x\n", p->topxwin);
 
     /* the settings that should be done before window is mapped */
     wmhints.flags = InputHint;
     wmhints.input = 0;
-    XSetWMHints (GDK_DISPLAY(), p->topxwin, &wmhints); 
-#define WIN_HINTS_SKIP_FOCUS      (1<<0)	/* "alt-tab" skips this win */
+    XSetWMHints (GDK_DISPLAY(), p->topxwin, &wmhints);
+#define WIN_HINTS_SKIP_FOCUS      (1<<0)    /* "alt-tab" skips this win */
     val = WIN_HINTS_SKIP_FOCUS;
     XChangeProperty(GDK_DISPLAY(), p->topxwin,
           XInternAtom(GDK_DISPLAY(), "_WIN_HINTS", False), XA_CARDINAL, 32,
@@ -422,7 +448,7 @@ panel_start_gui(panel *p)
     gdk_window_move_resize(p->topgwin->window, p->ax, p->ay, p->aw, p->ah);
     if (p->setstrut)
         panel_set_wm_strut(p);
-  
+
     RET();
 }
 
@@ -431,7 +457,7 @@ panel_parse_global(panel *p, FILE *fp)
 {
     line s;
     s.len = 256;
-    
+
     ENTER;
     while (get_line(fp, &s) != LINE_NONE) {
         if (s.type == LINE_VAR) {
@@ -515,7 +541,7 @@ panel_parse_plugin(panel *p, FILE *fp)
     gchar *type = NULL;
     FILE *tmpfp;
     int expand , padding, border;
-    
+
     ENTER;
     s.len = 256;
     if (!(tmpfp = tmpfile())) {
@@ -554,9 +580,9 @@ panel_parse_plugin(panel *p, FILE *fp)
                         pno++;
                     } else if (s.type == LINE_BLOCK_END) {
                         pno--;
-                    } 
+                    }
                     fprintf(tmpfp, "%s\n", s.str);
-                }              
+                }
             } else {
                 ERR( "fbpanel: unknown block %s\n", s.t[0]);
                 goto error;
@@ -566,7 +592,7 @@ panel_parse_plugin(panel *p, FILE *fp)
             goto error;
         }
     }
-    
+
     if (!type || !(plug = plugin_load(type))) {
         ERR( "fbpanel: can't load %s plugin\n", type);
         goto error;
@@ -587,14 +613,14 @@ panel_parse_plugin(panel *p, FILE *fp)
     p->plugins = g_list_append(p->plugins, plug);
     g_free(type);
     RET(1);
-    
+
  error:
     fclose(tmpfp);
     g_free(type);
     if (plug)
           plugin_put(plug);
     RET(0);
-    
+
 }
 
 
@@ -603,7 +629,7 @@ panel_start(panel *p, FILE *fp)
 {
     line s;
     long pos;
-    
+
     /* parse global section */
     ENTER;
     s.len = 256;
@@ -634,7 +660,7 @@ panel_start(panel *p, FILE *fp)
         RET(0);
     }
     pos = ftell(fp);
-    while (get_line_as_is(fp, &s) != LINE_NONE) 
+    while (get_line_as_is(fp, &s) != LINE_NONE)
         fprintf(pconf, "%s\n", s.str);
     fseek(fp, pos, SEEK_SET);
 
@@ -643,7 +669,7 @@ panel_start(panel *p, FILE *fp)
             ERR( "fbpanel: expecting Plugin section\n");
             RET(0);
         }
-        if (!panel_parse_plugin(p, fp)) 
+        if (!panel_parse_plugin(p, fp))
             RET(0);
     }
     gtk_widget_show_all(p->topgwin);
@@ -658,7 +684,7 @@ delete_plugin(gpointer data, gpointer udata)
     plugin_stop((plugin *)data);
     plugin_put((plugin *)data);
     RET();
-    
+
 }
 
 void panel_stop(panel *p)
@@ -668,7 +694,7 @@ void panel_stop(panel *p)
     g_list_foreach(p->plugins, delete_plugin, NULL);
     g_list_free(p->plugins);
     p->plugins = NULL;
- 
+
     XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), NoEventMask);
     gdk_window_remove_filter(gdk_get_default_root_window (), (GdkFilterFunc)panel_event_filter, p);
     gtk_widget_destroy(p->topgwin);
@@ -722,7 +748,7 @@ open_profile(gchar *profile)
     }
     //ERR("Can't load %s\n", fname);
     g_free(fname);
-    
+
     /* check private configuration directory */
     fname = g_strdup_printf("%s/share/fbpanel/%s", PREFIX, profile);
     fp = fopen(fname, "r");
@@ -813,7 +839,7 @@ main(int argc, char *argv[], char *env[])
     }
 
     gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(),
-	IMGPREFIX);       
+    IMGPREFIX);
     signal(SIGUSR1, sig_usr);
     do {
         if (!(pfp = open_profile(cprofile)))
@@ -831,7 +857,7 @@ main(int argc, char *argv[], char *env[])
         panel_stop(p);
         g_free(p);
     } while (force_quit == 0);
-    
+
     exit(0);
 }
 

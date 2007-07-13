@@ -43,7 +43,7 @@ typedef struct _task{
     XClassHint ch;
     int pos_x;
     int width;
-    int desktop;
+    guint desktop;
     net_wm_state nws;
     net_wm_window_type nwwt;
     guint flash_timeout;
@@ -74,7 +74,7 @@ typedef struct _taskbar{
     int req_width;
     int hbox_width;
     int spacing;
-    int cur_desk;
+    guint cur_desk;
     task *focused;
     task *ptk;
     task *menutask;

@@ -1,9 +1,9 @@
 4.10
 New Fetures:
 * tclock: dclock was renamed to tclock = text clock
-* dclock: digital blue clock. adopted from blueclock by 
+* dclock: digital blue clock. adopted from blueclock by
     Jochen Baier <email@Jochen-Baier.de>
-* dclock: cumstom clock color can be set with 'color' option
+* dclock: custom clock color can be set with 'color' option
   Plugin {
      type = dclock
      config {
@@ -16,14 +16,18 @@ New Fetures:
 * menu: items are sorted by name
 * menu: icon size set to 22
 * launchbar: drag-n-drop now accepts urls draged from web browsers
+* style changes are grouped and only last of them is processed
+
 Fixed Bugs:
 * menu: forgoten g_free's were added
 * 1723786: linkage problems with --as-needed flag
 * 1724852: crash if root bg is not set
-* WM_STATE usage is dropped. NET_WM_STATE is used instead. affected plugins are 
+* WM_STATE usage is dropped. NET_WM_STATE is used instead. affected plugins are
   taskbar and pager
 * fixed bug where pager used unupdated panel->desknum instead of pager->desknum
 * all Cardinal vars were changed to guint from int
+* bug in Makefile.common that generated wrong names in *.dep files
+* style changes are grouped and only last of them is processed
 
 4.9
 * new menu placement to not cover panel; used in menu and taskbar
@@ -45,7 +49,7 @@ Fixed Bugs:
 
 4.7
 New Feature
-* Build application menu from *.desktop files 
+* Build application menu from *.desktop files
 * Using themed icons. Change icon theme and see fbpanel updates itself
 * default config files were updates to use new functionality
 
@@ -54,7 +58,7 @@ New Features
 * [ 1295234 ] Detect Window "Urgency".
 * Raise window when drag target is over its name in taskbar
 * fixing meory leaks from XGetWindowProperty.
-* fix urgency code to catch up urgency of new windows 
+* fix urgency code to catch up urgency of new windows
 * taskbar: correct position of task's label
 * taskbar: remove extra spaces
 * taskbar: do not create event box beneath task button
@@ -109,7 +113,7 @@ Fixed Bugs
 New Feature
 * New code for panel's buttons. Affected plugins are wincmd, launchbar and menu
 * Depreceted option menu widget was replaced by combo box
-* sys tray is packed into shadowed in frame 
+* sys tray is packed into shadowed in frame
 * pad is inserted betwean tasks in a taskbar
 * clock was made flat
 
@@ -121,7 +125,7 @@ New Feature
 4.0
 New Feature
 * plugins get root events via panel's proxy rather then directly
-* added configure option to disable cpu plugin compilation 
+* added configure option to disable cpu plugin compilation
 
 3.18
 New Feature
@@ -203,7 +207,7 @@ New Features
 * menu plugin
 * removed limith for max task size in taskbar
 
-3.4 
+3.4
 * gtk2.2 linkage fix
 * strut fix
 * launchbar segfault on wrong config fix
@@ -230,7 +234,7 @@ New Features
 3.0-rc-1
 * porting to GTK2+. port is based on phako's patch
   "[ 678749 ] make it compile and work with gtk2"
-  
+
 
 2.2
 * support for XEmbed docklets via gtktray utility
@@ -240,7 +244,7 @@ New Features
 * documentation update
 * web site update
 
-2.0 
+2.0
 * complete engine rewrite
 * new plugin API
 * pager fixes
@@ -264,7 +268,7 @@ New Features
 * configurable size and postion of a panel
 * ability to specify what modules to load
 * '~' is accepted in config files
-* 
+*
 
 
 1.0
@@ -280,7 +284,7 @@ New Features
 1.0-rc0
 * added _NET_WM_STRUT support
 * panel now is unfocusable. this fixes iconify bug under sawfish
-* panel's height is calculated at run-time, instead of fixed 22 
+* panel's height is calculated at run-time, instead of fixed 22
 
 0.11
 * improved EWMH/NETWM support
