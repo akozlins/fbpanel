@@ -1,3 +1,7 @@
+4.11
+Fixed Bugs:
+* black background when no bg pixmap and transparency is unset
+
 4.10
 New Fetures:
 * tclock: dclock was renamed to tclock = text clock

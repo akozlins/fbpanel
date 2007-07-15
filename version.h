@@ -3,7 +3,7 @@
 
 
 /* do not change format of this line - Makefile's 'tar' target depends on it */
-#define VERSION "4.10"
+#define VERSION "4.11"
 
 
 #endif
