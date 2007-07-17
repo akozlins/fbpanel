@@ -1,3 +1,6 @@
+4.12
+* menu building is delayed till first button press
+
 4.11
 Fixed Bugs:
 * black background when no bg pixmap and transparency is unset

@@ -792,7 +792,13 @@ main(int argc, char *argv[], char *env[])
     FILE *pfp; /* current profile FP */
     GdkPixbuf* icon;
     ENTER;
-    //printf("sizeof(gulong)=%d\n", sizeof(gulong));
+#if 0
+    printf("sizeof(gulong)=%d\n", sizeof(gulong));
+    printf("sizeof(Atom)=%d\n", sizeof(Atom));
+    printf("sizeof(Window)=%d\n", sizeof(Window));
+    printf("sizeof(gboolean)=%d\n", sizeof(gboolean));
+    RET(1);
+#endif    
     setlocale(LC_CTYPE, "");
     gtk_set_locale();
     gtk_init(&argc, &argv);

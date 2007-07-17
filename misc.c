@@ -143,7 +143,7 @@ get_line(FILE *fp, line *s)
         g_strstrip(s->str);
 
         if (s->str[0] == '#' || s->str[0] == 0) {
-        continue;
+            continue;
         }
         DBG( ">> %s\n", s->str);
         if (!g_ascii_strcasecmp(s->str, "}")) {
