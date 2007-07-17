@@ -14,19 +14,11 @@
 //#define DEBUG
 #include "dbg.h"
 
-/*
- * SuxPanel version 0.1
- * Copyright (c) 2003 Leandro Pereira <leandro@linuxmag.com.br>
- */
-
-/*
- * menu style code was taken from suxpanel
- */
-
 
 static const char desktop_ent[] = "Desktop Entry";
 static const gchar app_dir_name[] = "applications";
 static GHashTable *ht;
+static GtkWidget *read_submenu(plugin *p, gboolean as_item);
 
 typedef struct {
     gchar *name;
@@ -241,49 +233,23 @@ run_command(GtkWidget *widget, void (*cmd)(void))
     RET();
 }
 
-#if 0
-static void
-menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *widget)
-{
-    int ox, oy, w, h;
-    plugin *p;
-    
-    ENTER;
-    p = g_object_get_data(G_OBJECT(widget), "plugin");
-    gdk_window_get_origin(widget->window, &ox, &oy);
-    w = GTK_WIDGET(menu)->requisition.width;
-    h = GTK_WIDGET(menu)->requisition.height;
-    if (p->panel->orientation == ORIENT_HORIZ) {
-        *x = ox;
-        if (*x + w > gdk_screen_width())
-            *x = ox + widget->allocation.width - w;
-        *y = oy - h;
-        if (*y < 0)
-            *y = oy + widget->allocation.height;
-    } else {
-        *x = ox + widget->allocation.width;
-        if (*x > gdk_screen_width())
-            *x = ox - w;
-        *y = oy;
-        if (*y + h >  gdk_screen_height())
-            *y = oy + widget->allocation.height - h;        
-    }
-    DBG("widget: x,y=%d,%d  w,h=%d,%d\n", ox, oy,
-          widget->allocation.width, widget->allocation.height );
-    DBG("w-h %d %d\n", w, h);
-    *push_in = TRUE;
-    RET();
-}
-#endif
 
 static gboolean
-my_button_pressed(GtkWidget *widget, GdkEventButton *event, GtkMenu *menu)
+my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin *p)
 {
-    ENTER;  
+    menup *m;
+    
+    ENTER;
+    m = (menup *)p->priv;
     if ((event->type == GDK_BUTTON_PRESS)
           && (event->x >=0 && event->x < widget->allocation.width)
           && (event->y >=0 && event->y < widget->allocation.height)) {
-        gtk_menu_popup(menu,
+        if (!m->menu) {
+            DBG("building menu\n");
+            fseek(p->fp, 0, SEEK_SET);
+            read_submenu(p, TRUE);
+        }
+        gtk_menu_popup(GTK_MENU(m->menu),
               NULL, NULL, (GtkMenuPositionFunc)menu_pos, widget, 
               event->button, event->time);
     }
@@ -299,7 +265,6 @@ make_button(plugin *p, gchar *iname, gchar *fname, gchar *name, GtkWidget *menu)
     
     ENTER;
     m = (menup *)p->priv;
-    m->menu = menu;
     if (p->panel->orientation == ORIENT_HORIZ) {
         w = 10000;
         h = p->panel->ah;
@@ -316,7 +281,7 @@ make_button(plugin *p, gchar *iname, gchar *fname, gchar *name, GtkWidget *menu)
     
 
     m->handler_id = g_signal_connect (G_OBJECT (m->bg), "button-press-event",
-          G_CALLBACK (my_button_pressed), menu);
+          G_CALLBACK (my_button_pressed), p);
     g_object_set_data(G_OBJECT(m->bg), "plugin", p);
    
     RET(m->bg);
@@ -467,6 +432,8 @@ read_submenu(plugin *p, gboolean as_item)
     DBG("here\n");
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {       
         if (s.type == LINE_BLOCK_START) {
+            if (!as_item)
+                break;
             mi = NULL;
             if (!g_ascii_strcasecmp(s.t[0], "item")) {
                 mi = read_item(p);
@@ -526,6 +493,7 @@ read_submenu(plugin *p, gboolean as_item)
             g_free(fname);
         }
         gtk_menu_item_set_submenu (GTK_MENU_ITEM (mi), menu);
+        m->menu = menu;
         RET(mi);
     } else {
         mi = make_button(p, iname, fname, name, menu);
@@ -554,18 +522,7 @@ menu_constructor(plugin *p)
     m = g_new0(menup, 1);
     g_return_val_if_fail(m != NULL, 0);
     p->priv = m;
-
-    //gtk_rc_parse_string(menu_rc);
-#if 0
-    if  (p->panel->orientation == ORIENT_HORIZ) 
-        m->paneliconsize = p->panel->ah
-            - 2* GTK_WIDGET(p->panel->box)->style->ythickness;
-    else
-        m->paneliconsize = p->panel->aw
-            - 2* GTK_WIDGET(p->panel->box)->style->xthickness;
-#endif
     m->iconsize = 22;       
-
     m->box = gtk_hbox_new(FALSE, 0);
     gtk_container_set_border_width(GTK_CONTAINER(m->box), 0);
     gtk_container_add(GTK_CONTAINER(p->pwid), m->box);
