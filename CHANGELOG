@@ -1,5 +1,12 @@
 4.12
-* menu building is delayed till first button press
+New Features:
+* icon theme change works without reload
+* autohide
+* launchbar buttons use one common bgbox
+
+Fixed Bugs:
+* icons, taskbar do not free all tasks when destroyed
+
 
 4.11
 Fixed Bugs:
