@@ -653,7 +653,12 @@ calculate_position(panel *np)
         np->aw = MAX(PANEL_HEIGHT_MIN, np->aw);
         np->ax = minx + ((np->edge == EDGE_LEFT) ? 0 : (sswidth - np->aw));
     }
-    DBG("%s - x=%d y=%d w=%d h=%d\n", __FUNCTION__, np->ax, np->ay, np->aw, np->ah);
+    if (!np->visible) {
+        DBG("pushing of screen dx=%d dy=%d\n", np->ah_dx, np->ah_dy);
+        np->ax += np->ah_dx;
+        np->ay += np->ah_dy;
+    }
+    DBG("x=%d y=%d w=%d h=%d\n", np->ax, np->ay, np->aw, np->ah);
     RET();
 }
 
@@ -829,7 +834,7 @@ fb_button_enter (GtkImage *widget, GdkEventCrossing *event)
     if (gtk_image_get_storage_type(widget) != GTK_IMAGE_PIXBUF)
         RET(TRUE);
     light = g_object_get_data(G_OBJECT(widget), "light");
-    dark = gtk_image_get_pixbuf(widget);
+    dark = g_object_get_data(G_OBJECT(widget), "normal");
     if (!light) {
         hicolor = (gulong) g_object_get_data(G_OBJECT(widget), "hicolor");
         light = gdk_pixbuf_add_alpha(dark, FALSE, 0, 0, 0);
@@ -851,24 +856,24 @@ fb_button_enter (GtkImage *widget, GdkEventCrossing *event)
         }
         g_object_set_data_full (G_OBJECT(widget), "light", light, g_object_unref);
     }
-    g_object_ref(dark);
-    g_object_set_data_full (G_OBJECT(widget), "dark", dark, g_object_unref);
-    gtk_image_set_from_pixbuf(widget, light);
+    DBG("light=%p, dark=%p\n", light, dark);
+    gtk_image_set_from_pixbuf(GTK_IMAGE(widget), light);
     RET(TRUE);
 
 }
 
 static gboolean
-fb_button_leave (GtkImage *widget, GdkEventCrossing *event, gpointer user_data)
+fb_button_leave (GtkImage *widget, GdkEventCrossing *event)
 {
-    GdkPixbuf *dark;
+    GdkPixbuf *normal;
 
     ENTER;
     if (gtk_image_get_storage_type(widget) != GTK_IMAGE_PIXBUF)
         RET(TRUE);
-    dark = g_object_get_data(G_OBJECT(widget), "dark");
-    if (dark)
-        gtk_image_set_from_pixbuf(widget, dark);
+    normal = g_object_get_data(G_OBJECT(widget), "normal");
+    DBG("dark=%p\n", normal);
+    if (normal)
+        gtk_image_set_from_pixbuf(GTK_IMAGE(widget), normal);
     RET(TRUE);
 }
 
@@ -886,7 +891,9 @@ fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
     gtk_container_set_border_width(GTK_CONTAINER(b), 0);
     GTK_WIDGET_UNSET_FLAGS (b, GTK_CAN_FOCUS);
     //make image
-    image = fb_image_new_from_icon_file(iname, fname, width, height, keep_ratio);
+    image = gtk_fbimage_new(iname, fname, width, height, keep_ratio);
+    if (!image)
+        image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
     gtk_container_add(GTK_CONTAINER(b), image);
     //set calbacks
     gtk_misc_set_alignment(GTK_MISC(image), 0, 1);
@@ -905,34 +912,63 @@ fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
     RET(b);
 }
 
-#if 0
-GtkWidget *
-fb_button_new_from_file(gchar *fname, int width, int height, gulong hicolor,
-      gboolean keep_ratio)
+
+static void
+image_icon_theme_changed(GtkIconTheme *icon_theme, GtkWidget *img)
 {
-    GtkWidget *b, *image;
+    GdkPixbuf *pb;
 
     ENTER;
-    b = gtk_bgbox_new();
-    gtk_container_set_border_width(GTK_CONTAINER(b), 0);
-    GTK_WIDGET_UNSET_FLAGS (b, GTK_CAN_FOCUS);
-    image = gtk_image_new_from_file_scaled(fname, width, height, keep_ratio);
-    gtk_misc_set_alignment(GTK_MISC(image), 0, 0);
-    g_object_set_data(G_OBJECT(image), "hicolor", (gpointer)hicolor);
-    gtk_misc_set_padding (GTK_MISC(image), 0, 0);
-    if (hicolor > 0) {
-        gtk_widget_add_events(b, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-        g_signal_connect_swapped (G_OBJECT (b), "enter-notify-event",
-              G_CALLBACK (fb_button_enter), image);
-        g_signal_connect_swapped (G_OBJECT (b), "leave-notify-event",
-              G_CALLBACK (fb_button_leave), image);
-    }
-    gtk_container_add(GTK_CONTAINER(b), image);
-    gtk_widget_show(image);
-    gtk_widget_show(b);
-    RET(b);
+    pb = fb_pixbuf_new_from_icon_file(
+        g_object_get_data(G_OBJECT(img), "iname"),
+        g_object_get_data(G_OBJECT(img), "fname"),
+        (int) g_object_get_data(G_OBJECT(img), "width"),
+        (int) g_object_get_data(G_OBJECT(img), "height"));
+    gtk_image_set_from_pixbuf(GTK_IMAGE(img), pb);
+    g_object_set_data_full(G_OBJECT(img), "normal", pb, g_object_unref);
+    g_object_set_data(G_OBJECT(img), "light", NULL);
+
+    RET();
 }
-#endif
+static void
+gtk_fbimage_destroy(GObject *img)
+{
+    ENTER2;
+    g_signal_handlers_disconnect_by_func(G_OBJECT(gtk_icon_theme_get_default()),
+        image_icon_theme_changed, img);
+    RET2();
+}
+
+GtkWidget *
+gtk_fbimage_new(gchar *iname, gchar *fname, int width, int height,
+      gboolean keep_ratio)
+{
+    GtkWidget *image = NULL;
+    GdkPixbuf *pb;
+
+    pb = fb_pixbuf_new_from_icon_file(iname, fname, width, height);
+    if (pb) {
+        image = gtk_image_new_from_pixbuf(pb);
+        DBG("px: w=%d h=%d\n", gdk_pixbuf_get_width(pb), gdk_pixbuf_get_height(pb));
+        g_signal_connect (G_OBJECT(gtk_icon_theme_get_default()),
+           "changed", (GCallback) image_icon_theme_changed, image);
+        g_signal_connect (G_OBJECT(image),
+           "destroy", (GCallback) gtk_fbimage_destroy, NULL);
+        if (iname)
+            g_object_set_data_full (G_OBJECT(image), "iname", g_strdup(iname), g_free);
+        if (fname)
+            g_object_set_data_full (G_OBJECT(image), "fname", g_strdup(fname), g_free);
+        g_object_set_data(G_OBJECT(image), "width", (gpointer) width);
+        g_object_set_data(G_OBJECT(image), "height", (gpointer) height);
+        g_object_set_data_full(G_OBJECT(image), "normal", pb, g_object_unref);
+        gtk_widget_show(image);
+    }
+    DBG("image = %p\n", image);
+    RET(image);
+}
+
+
+
 GtkWidget *
 fb_image_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
       gboolean keep_ratio)
@@ -996,7 +1032,9 @@ fb_button_new_from_icon_file_with_label(gchar *iname, gchar *fname, int width, i
     gtk_container_add(GTK_CONTAINER(b), box);
 
     DBG("here\n");
-    image = fb_image_new_from_icon_file(iname, fname, width, height, keep_ratio);
+    image = gtk_fbimage_new(iname, fname, width, height, keep_ratio);
+    if (!image)
+        image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
     g_object_set_data(G_OBJECT(image), "hicolor", (gpointer)hicolor);
     gtk_misc_set_padding (GTK_MISC(image), 0, 0);
     if (hicolor > 0) {
