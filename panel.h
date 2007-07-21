@@ -17,6 +17,7 @@ enum { WIDTH_NONE, WIDTH_REQUEST, WIDTH_PIXEL, WIDTH_PERCENT };
 enum { HEIGHT_NONE, HEIGHT_PIXEL, HEIGHT_REQUEST };
 enum { ORIENT_NONE, ORIENT_VERT, ORIENT_HORIZ };
 enum { POS_NONE, POS_START, POS_END };
+enum { HIDDEN, TO_HIDE, VISIBLE };
 
 #define PANEL_HEIGHT_DEFAULT  26
 #define PANEL_HEIGHT_MAX      200
@@ -46,11 +47,18 @@ typedef struct {
     int widthtype, width;
     int heighttype, height;
 
-    int self_destroy : 1;
-    int setdocktype : 1;
-    int setstrut : 1;
-    int round_corners : 1;
-    int transparent : 1;
+    guint self_destroy : 1;
+    guint setdocktype : 1;
+    guint setstrut : 1;
+    guint round_corners : 1;
+    guint transparent : 1;
+
+    guint autohide : 1;
+    guint visible : 2;
+    int ah_dx, ah_dy; // autohide shift for x and y
+    int height_when_hidden;
+    guint hide_tout;
+    
     int spacing;
 
     guint desknum;
