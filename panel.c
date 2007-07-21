@@ -362,6 +362,15 @@ panel_enter (GtkImage *widget, GdkEventCrossing *event, panel *p)
     RET(TRUE);
 }
 
+static gboolean
+panel_drag_motion (GtkWidget *widget, GdkDragContext *drag_context, gint x, gint y, guint time,
+      panel *p)
+{
+    ENTER;
+    panel_enter (NULL, NULL, p);
+    RET(TRUE);
+}
+
 
 void
 panel_start_gui(panel *p)
@@ -383,7 +392,7 @@ panel_start_gui(panel *p)
     gtk_window_set_decorated(GTK_WINDOW(p->topgwin), FALSE);
     //GTK_WIDGET_UNSET_FLAGS (p->topgwin, GTK_CAN_FOCUS);
     gtk_window_set_accept_focus(GTK_WINDOW(p->topgwin), FALSE);    
-
+   
     g_signal_connect(G_OBJECT(p->topgwin), "delete-event",
           G_CALLBACK(panel_delete_event), p);
     g_signal_connect(G_OBJECT(p->topgwin), "destroy-event",
@@ -396,8 +405,7 @@ panel_start_gui(panel *p)
           (GCallback) panel_configure_event, p);
     g_signal_connect (G_OBJECT (p->topgwin), "realize",
           (GCallback) panel_realize, p);
-
-
+  
     gtk_widget_realize(p->topgwin);
     //gdk_window_set_decorations(p->topgwin->window, 0);
     gtk_widget_set_app_paintable(p->topgwin, TRUE);
@@ -470,9 +478,13 @@ panel_start_gui(panel *p)
     if (p->autohide) {
         gtk_widget_add_events(p->topgwin, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
         g_signal_connect(G_OBJECT (p->topgwin), "enter-notify-event",
-              G_CALLBACK (panel_enter), p);
-        //g_signal_connect(G_OBJECT (p->topgwin), "leave-notify-event",
-        //G_CALLBACK (panel_leave), p);
+              G_CALLBACK (panel_enter), p);    
+        g_signal_connect (G_OBJECT (p->topgwin), "drag-motion",
+          (GCallback) panel_drag_motion, p);
+        gtk_drag_dest_set (p->topgwin, GTK_DEST_DEFAULT_MOTION, 
+              NULL, 0, 0);
+        gtk_drag_dest_set_track_motion(p->topgwin, TRUE);
+
         if (p->edge == EDGE_BOTTOM) {
             p->ah_dx = 0;
             p->ah_dy = p->ah - p->height_when_hidden;
@@ -486,6 +498,7 @@ panel_start_gui(panel *p)
             p->ah_dx = - (p->aw - p->height_when_hidden);
             p->ah_dy = 0;
         }
+        
         panel_enter(NULL, NULL, p);
     }
     calculate_position(p);
