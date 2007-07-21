@@ -217,6 +217,14 @@ set_icon_maybe (icons *ics, task *tk)
 
 
 
+/* tell to remove element with zero refcount */
+static gboolean
+task_remove_all(Window *win, task *tk, gpointer data)
+{
+    g_free(tk);
+    return TRUE;
+}
+
 
 /* tell to remove element with zero refcount */
 static gboolean
@@ -307,17 +315,6 @@ ics_propertynotify(icons *ics, XEvent *ev)
     RET();
 }
 
-static void
-icons_build_gui(plugin *p)
-{
-    icons *ics = (icons *)p->priv;
-    
-    ENTER;
-    g_signal_connect (G_OBJECT (fbev), "client_list",
-          G_CALLBACK (do_net_client_list), (gpointer) ics);
-    gdk_window_add_filter(NULL, (GdkFilterFunc)ics_event_filter, ics );
-    RET();
-}
 
 static int
 read_application(plugin *p)
@@ -410,18 +407,25 @@ read_dicon(icons *ics, gchar *name)
 
 
 static int
-icons_constructor(plugin *p)
+ics_parse_config(GtkIconTheme *icon_theme, plugin *p)
 {
-    icons *ics;
+    icons *ics = (icons *)p->priv;
+    wmpix_t *wp;
     line s;
     
     ENTER;
-    ics = g_new0(icons, 1);
-    ics->plug = p;
-    p->priv = ics;
-    
-    ics->wmpixno           = 0;
-    ics->task_list         = g_hash_table_new(g_int_hash, g_int_equal);
+    while (ics->wmpix) {
+        wp = ics->wmpix;
+        ics->wmpix = ics->wmpix->next;
+        g_free(wp->ch.res_name);
+        g_free(wp->ch.res_class);
+        g_free(wp->data);
+        g_free(wp);
+    }
+
+    ics->wmpixno = 0;
+    g_hash_table_foreach_remove(ics->task_list, (GHRFunc) task_remove_all, (gpointer)ics);
+    fseek(p->fp, 0, SEEK_SET);
     s.len = 256;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {
@@ -451,14 +455,31 @@ icons_constructor(plugin *p)
             goto error;
         }
     }
-  
-    icons_build_gui(p);
     do_net_client_list(NULL, ics);
     RET(1);
-    
- error:
-    icons_destructor(p);
+error:
     RET(0);
+}
+
+static int
+icons_constructor(plugin *p)
+{
+    icons *ics;
+
+    ENTER;
+    ics = g_new0(icons, 1);
+    ics->plug = p;
+    p->priv = ics;
+    ics->wmpixno = 0;
+    ics->task_list = g_hash_table_new(g_int_hash, g_int_equal);
+    ics_parse_config(NULL, p);
+    g_signal_connect (G_OBJECT(gtk_icon_theme_get_default()),
+           "changed", (GCallback) ics_parse_config, p);
+    g_signal_connect (G_OBJECT (fbev), "client_list",
+          G_CALLBACK (do_net_client_list), (gpointer) ics);
+    gdk_window_add_filter(NULL, (GdkFilterFunc)ics_event_filter, ics );
+
+    RET(1);
 }
 
 
@@ -469,7 +490,9 @@ icons_destructor(plugin *p)
     wmpix_t *wp;
     
     ENTER;
-    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), do_net_client_list, ics); 
+    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), do_net_client_list, ics);
+    g_signal_handlers_disconnect_by_func(G_OBJECT(gtk_icon_theme_get_default()),
+        ics_parse_config, ics);
     gdk_window_remove_filter(NULL, (GdkFilterFunc)ics_event_filter, ics );
     while (ics->wmpix) {
         wp = ics->wmpix;
@@ -479,6 +502,8 @@ icons_destructor(plugin *p)
         g_free(wp->data);
         g_free(wp);
     }
+    g_hash_table_foreach_remove(ics->task_list, (GHRFunc) task_remove_all, (gpointer)ics);
+    g_hash_table_destroy(ics->task_list);
     RET();
 }
 
