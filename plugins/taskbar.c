@@ -894,6 +894,14 @@ tk_build_gui(taskbar *tb, task *tk)
 
 /* tell to remove element with zero refcount */
 static gboolean
+tb_remove_all_tasks(Window *win, task *t)
+{
+    g_free(t);
+    return TRUE;
+}
+
+/* tell to remove element with zero refcount */
+static gboolean
 tb_remove_stale_tasks(Window *win, task *tk, gpointer data)
 {
     ENTER;
@@ -1372,7 +1380,8 @@ taskbar_destructor(plugin *p)
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), tb_net_number_of_desktops, tb);
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), tb_net_client_list, tb);   
     gdk_window_remove_filter(NULL, (GdkFilterFunc)tb_event_filter, tb );
-    g_hash_table_destroy(tb->task_list); 
+    g_hash_table_foreach_remove(tb->task_list, (GHRFunc) tb_remove_all_tasks, NULL);
+    g_hash_table_destroy(tb->task_list);
     gtk_widget_destroy(tb->bar);
     gtk_widget_destroy(tb->menu);
   
