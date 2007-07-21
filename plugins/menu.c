@@ -54,9 +54,8 @@ menu_destructor(plugin *p)
 
     ENTER;
     g_signal_handler_disconnect(G_OBJECT(m->bg), m->handler_id);
-    DBG("here\n");
-    gtk_widget_destroy(m->menu);
-    DBG("here\n");
+    if (m->menu)
+        gtk_widget_destroy(m->menu);
     gtk_widget_destroy(m->box);
     DBG("here\n");
     g_free(m);
@@ -155,7 +154,7 @@ do_app_dir(plugin *p, const gchar *path)
 
             mi = gtk_image_menu_item_new_with_label(title);
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
-                  fb_image_new_from_icon_file(icon, icon, 22, 22, TRUE));
+                  gtk_fbimage_new(icon, icon, 22, 22, TRUE));
             g_signal_connect(G_OBJECT(mi), "activate", (GCallback)spawn_app,g_strdup(exec));
             if (!(*menu))
                 *menu = gtk_menu_new();
@@ -205,15 +204,14 @@ make_fdo_menu(plugin *p, GtkWidget *menu)
     g_free(path);
     //build menu
     for (i = 0; i < G_N_ELEMENTS(main_cats); i++) {
-        GtkWidget *mi, *img;
+        GtkWidget *mi;
         gchar *name;
         
         if (main_cats[i].menu) {
             name = main_cats[i].local_name ? main_cats[i].local_name : main_cats[i].name;
             mi = gtk_image_menu_item_new_with_label(name);
-            img = fb_image_new_from_icon_file(main_cats[i].icon, NULL, m->iconsize, m->iconsize, TRUE);
-            gtk_widget_show(img);
-            gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), img);
+            gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
+                gtk_fbimage_new(main_cats[i].icon, NULL, m->iconsize, m->iconsize, TRUE));
             gtk_menu_item_set_submenu (GTK_MENU_ITEM (mi), main_cats[i].menu);
             gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
             gtk_widget_show_all(mi);
@@ -331,11 +329,8 @@ read_item(plugin *p)
     if (name)
         g_free(name);
     if (fname || iname) {
-        GtkWidget *img;
-        
-        img = fb_image_new_from_icon_file(iname, fname, m->iconsize, m->iconsize, TRUE);
-        gtk_widget_show(img);
-        gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), img);
+        gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item),
+            gtk_fbimage_new(iname, fname, m->iconsize, m->iconsize, TRUE));
         g_free(fname);
         g_free(iname);
     }
