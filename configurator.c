@@ -26,6 +26,11 @@ command commands[] = {
     { NULL, NULL },
 };
 
+
+#define FRAME_BORDER   6
+#define INDENT_SIZE    20
+
+
 static GtkWidget *dialog = NULL;
 static GtkSizeGroup *sg;
 
@@ -51,7 +56,10 @@ static GtkWidget *edge_opt;
 static GtkWidget *tr_checkb,  *tr_colorl, *tr_colorb;;
 
 //properties
-static GtkWidget *prop_dt_checkb, *prop_st_checkb;
+static GtkWidget *prop_dt_checkb, *prop_st_checkb, *prop_autohide_checkb;
+static GtkWidget *height_when_hidden_box, *height_when_hidden_spinb;
+static GtkAdjustment *height_when_hidden_adj;
+
 
 extern panel *p;
 extern gchar *cprofile;
@@ -60,6 +68,18 @@ extern FILE *pconf;
 
 void global_config_save(FILE *fp);
 void plugin_config_save(FILE *fp);
+
+static void
+add_hindent_box(GtkWidget *box)
+{
+    GtkWidget  *indent_box;
+    
+    indent_box = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX (box), indent_box, FALSE, TRUE, 0);
+    gtk_widget_set_size_request(indent_box, INDENT_SIZE, 1);
+}
+
+
 
 static int
 mk_profile_dir()
@@ -160,17 +180,17 @@ mk_position()
     ENTER;
     frame = gtk_frame_new(NULL);
     gtk_frame_set_shadow_type(GTK_FRAME (frame), GTK_SHADOW_NONE);
-    gtk_container_set_border_width (GTK_CONTAINER (frame), 6);
+    gtk_container_set_border_width (GTK_CONTAINER (frame), FRAME_BORDER);
     label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL (label),"<span weight=\"bold\">Position</span>");
     gtk_frame_set_label_widget(GTK_FRAME (frame), label);    
 
     hbox2 = gtk_hbox_new(FALSE, 0);
-    gtk_container_set_border_width (GTK_CONTAINER (hbox2), 6);
+    gtk_container_set_border_width (GTK_CONTAINER (hbox2), 0);
     gtk_container_add (GTK_CONTAINER (frame), hbox2);
     
     hbox = gtk_hbox_new(FALSE, 0);
-    gtk_widget_set_size_request(hbox, 20, 1);
+    gtk_widget_set_size_request(hbox, INDENT_SIZE, 1);
     gtk_box_pack_start(GTK_BOX (hbox2), hbox, FALSE, TRUE, 0);
     
     t = gtk_table_new(5, 2, FALSE);
@@ -274,17 +294,17 @@ mk_size()
     ENTER;
     frame = gtk_frame_new(NULL);
     gtk_frame_set_shadow_type(GTK_FRAME (frame), GTK_SHADOW_NONE);
-    gtk_container_set_border_width (GTK_CONTAINER (frame), 6);
+    gtk_container_set_border_width (GTK_CONTAINER (frame), FRAME_BORDER);
     label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL (label),"<span weight=\"bold\">Size</span>");
     gtk_frame_set_label_widget(GTK_FRAME (frame), label);    
 
     hbox2 = gtk_hbox_new(FALSE, 0);
-    gtk_container_set_border_width (GTK_CONTAINER (hbox2), 6);
+    gtk_container_set_border_width (GTK_CONTAINER (hbox2), 0);
     gtk_container_add (GTK_CONTAINER (frame), hbox2);
     
     hbox = gtk_hbox_new(FALSE, 0);
-    gtk_widget_set_size_request(hbox, 20, 1);
+    gtk_widget_set_size_request(hbox, INDENT_SIZE, 1);
     gtk_box_pack_start(GTK_BOX (hbox2), hbox, FALSE, TRUE, 0);
     
     t = gtk_table_new(3, 2, FALSE);
@@ -356,31 +376,29 @@ transparency_toggle(GtkWidget *b, gpointer bp)
 }
 
 GtkWidget *
-mk_transparency()
+mk_effects()
 {
     GtkWidget *hbox, *hbox2, *label, *frame;
    
     ENTER;
     frame = gtk_frame_new(NULL);
     gtk_frame_set_shadow_type(GTK_FRAME (frame), GTK_SHADOW_NONE);
-    gtk_container_set_border_width (GTK_CONTAINER (frame), 6);
+    gtk_container_set_border_width (GTK_CONTAINER (frame), FRAME_BORDER);
     label = gtk_label_new(NULL);
-    gtk_label_set_markup(GTK_LABEL (label),"<span weight=\"bold\">Transparency</span>");
+    gtk_label_set_markup(GTK_LABEL (label),"<span weight=\"bold\">Effects</span>");
     gtk_frame_set_label_widget(GTK_FRAME (frame), label);    
 
-    hbox2 = gtk_hbox_new(FALSE, 0);
-    gtk_container_set_border_width (GTK_CONTAINER (hbox2), 6);
-    gtk_container_add (GTK_CONTAINER (frame), hbox2);
+    hbox = gtk_hbox_new(FALSE, 0);
+    gtk_container_set_border_width (GTK_CONTAINER (hbox2), 0);
+    gtk_container_add (GTK_CONTAINER (frame), hbox);
     
+    add_hindent_box(hbox2);
+
     hbox = gtk_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX (hbox2), hbox, FALSE, TRUE, 0);
-    gtk_widget_set_size_request(hbox, 20, 1);
 
-    hbox = gtk_hbox_new(FALSE, 5);
-    gtk_box_pack_start(GTK_BOX (hbox2), hbox, FALSE, TRUE, 0);
-
-    tr_checkb = gtk_check_button_new_with_label("Enable Transparency");
-    gtk_widget_show(tr_checkb);
+    tr_checkb = gtk_check_button_new_with_label("Transparency");
+    //gtk_widget_show(tr_checkb);
     gtk_box_pack_start(GTK_BOX (hbox), tr_checkb, FALSE, FALSE, 0);
     g_signal_connect(G_OBJECT(tr_checkb), "toggled", G_CALLBACK(transparency_toggle), NULL);
     //gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(tr_checkb), FALSE);
@@ -400,29 +418,37 @@ mk_transparency()
     RET(frame);
 }
 
+static void
+autohide_toggle(GtkWidget *b, gpointer bp)
+{
+    gboolean t;
+
+    ENTER;
+    t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b));
+    gtk_widget_set_sensitive(height_when_hidden_box, t);
+    RET();
+}
+
 GtkWidget *
 mk_properties()
 {
-    GtkWidget *vbox, *hbox, *hbox2, *label, *frame;
+    GtkWidget *vbox, *hbox, *label, *frame, *indent_box;
    
     ENTER;
     frame = gtk_frame_new(NULL);
     gtk_frame_set_shadow_type(GTK_FRAME (frame), GTK_SHADOW_NONE);
-    gtk_container_set_border_width (GTK_CONTAINER (frame), 6);
+    gtk_container_set_border_width (GTK_CONTAINER (frame), FRAME_BORDER);
     label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL (label),"<span weight=\"bold\">Properties</span>");
     gtk_frame_set_label_widget(GTK_FRAME (frame), label);    
 
-    hbox2 = gtk_hbox_new(FALSE, 0);
-    gtk_container_add (GTK_CONTAINER (frame), hbox2);
-    gtk_container_set_border_width (GTK_CONTAINER (hbox2), 6);
-    
     hbox = gtk_hbox_new(FALSE, 0);
-    gtk_box_pack_start(GTK_BOX (hbox2), hbox, FALSE, TRUE, 0);
-    gtk_widget_set_size_request(hbox, 20, 1);
+    gtk_container_add (GTK_CONTAINER (frame), hbox);
+
+    add_hindent_box(hbox);
 
     vbox = gtk_vbox_new(FALSE, 0);
-    gtk_box_pack_start(GTK_BOX (hbox2), vbox, FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX (hbox), vbox, FALSE, TRUE, 0);
     
     prop_dt_checkb = gtk_check_button_new_with_label("Set Dock Type");
     gtk_box_pack_start(GTK_BOX (vbox), prop_dt_checkb, FALSE, FALSE, 0);
@@ -430,6 +456,26 @@ mk_properties()
     prop_st_checkb = gtk_check_button_new_with_label("Set Strut");
     gtk_box_pack_start(GTK_BOX (vbox), prop_st_checkb, FALSE, FALSE, 0);
 
+    prop_autohide_checkb = gtk_check_button_new_with_label("Autohide");
+    gtk_box_pack_start(GTK_BOX (vbox), prop_autohide_checkb, FALSE, FALSE, 0);
+    g_signal_connect(G_OBJECT(prop_autohide_checkb), "toggled", G_CALLBACK(autohide_toggle), NULL);
+
+    height_when_hidden_box = gtk_hbox_new(FALSE, 0);
+    gtk_box_pack_start(GTK_BOX (vbox), height_when_hidden_box, FALSE, FALSE, 0);
+
+    add_hindent_box(height_when_hidden_box);
+    
+    label = gtk_label_new("Height when hidden ");
+    gtk_box_pack_start(GTK_BOX (height_when_hidden_box), label, FALSE, TRUE, 0);
+
+    height_when_hidden_adj = (GtkAdjustment *) gtk_adjustment_new (2.0, 1.0, 10.0, 1.0, 1.0, 1.0);
+    height_when_hidden_spinb = gtk_spin_button_new (height_when_hidden_adj, 1.0, 0);
+    gtk_box_pack_start(GTK_BOX (height_when_hidden_box), height_when_hidden_spinb, FALSE, TRUE, 0);
+
+    label = gtk_label_new(" pixels ");
+    gtk_box_pack_start(GTK_BOX (height_when_hidden_box), label, FALSE, TRUE, 0);
+
+    
     RET(frame);
 }
 
@@ -495,8 +541,8 @@ mk_tab_general()
     frame = mk_size();
     gtk_box_pack_start(GTK_BOX (page), frame, FALSE, TRUE, 0);
     
-    //transparency 
-    frame = mk_transparency();
+    //effects 
+    frame = mk_effects();
     gtk_box_pack_start(GTK_BOX (page), frame, FALSE, TRUE, 0);
     
     //properties 
@@ -618,6 +664,8 @@ configure(void)
 
     update_toggle_button(prop_dt_checkb, p->setdocktype);
     update_toggle_button(prop_st_checkb, p->setstrut);
+    update_toggle_button(prop_autohide_checkb, p->autohide);
+    gtk_adjustment_set_value(height_when_hidden_adj, p->height_when_hidden);
     RET();
 }
 
@@ -648,6 +696,9 @@ global_config_save(FILE *fp)
           num2str(bool_pair, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop_dt_checkb)), "true"));
     fprintf(fp, "    setpartialstrut = %s\n",
           num2str(bool_pair, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop_st_checkb)), "true"));
+    fprintf(fp, "    autohide = %s\n",
+          num2str(bool_pair, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop_autohide_checkb)), "false"));
+    fprintf(fp, "    heightWhenHidden = %d\n", (int) height_when_hidden_adj->value);
 
     fprintf(fp, "}\n\n");
 }

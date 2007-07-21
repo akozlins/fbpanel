@@ -25,6 +25,7 @@ gchar *cprofile = "default";
 int config = 0;
 FbEv *fbev;
 gint force_quit = 0;
+
 //#define DEBUG
 #include "dbg.h"
 
@@ -63,24 +64,28 @@ panel_set_wm_strut(panel *p)
         data[i] = p->aw;
         data[4 + i*2] = p->ay;
         data[5 + i*2] = p->ay + p->ah;
+        if (p->autohide) data[i] = p->height_when_hidden;
         break;
     case EDGE_RIGHT:
         i = 1;
         data[i] = p->aw;
         data[4 + i*2] = p->ay;
         data[5 + i*2] = p->ay + p->ah;
+        if (p->autohide) data[i] = p->height_when_hidden;
         break;
     case EDGE_TOP:
         i = 2;
         data[i] = p->ah;
         data[4 + i*2] = p->ax;
         data[5 + i*2] = p->ax + p->aw;
+        if (p->autohide) data[i] = p->height_when_hidden;
         break;
     case EDGE_BOTTOM:
         i = 3;
         data[i] = p->ah;
         data[4 + i*2] = p->ax;
         data[5 + i*2] = p->ax + p->aw;
+        if (p->autohide) data[i] = p->height_when_hidden;
         break;
     default:
         ERR("wrong edge %d. strut won't be set\n", p->edge);
@@ -239,42 +244,6 @@ panel_size_alloc(GtkWidget *widget, GtkAllocation *a, panel *p)
     RET(TRUE);
 }
 
-/* this func will reload entire fbpanel when style is changed. The main and
- * only reason to do it is themed icons. fbpanel drops icons' configuration
- * after it has finished to build them and does not keep that info during
- * runtime. So, the simplest way to change icons when theme changes is to
- * reload entire fbpanel. I know it's kinda overkill but I have no free time
- * now to rework all config algorithm in the project.
- * N.B. if fbpanel is started together with X11, wm and config manager (gconf
- * or xfce-mcs-manager) it gets 5-7  style requests in a row, so lets reload on
- * last one
- */
-static gboolean
-panel_reload()
-{
-    ENTER;
-    p->style_timer = 0;
-    gtk_main_quit();
-    DBG2("reloading\n");
-    RET(FALSE);
-}
-
-
-static void
-panel_style_set(GtkWidget *widget, GtkStyle  *previous_style, panel *p)
-{
-    ENTER;
-    if (GTK_WIDGET_REALIZED(widget)) {
-        if (p->style_timer) {
-            g_source_remove(p->style_timer);
-            DBG2("cancel prev. reload\n");
-        }
-        p->style_timer = g_timeout_add(2*1000 /*2 secs*/, panel_reload, NULL);
-        DBG2("reload in 2 secs\n");
-    }
-    RET();
-}
-
 static  gboolean
 panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
 {
@@ -343,6 +312,57 @@ make_round_corners(panel *p)
     RET();
 }
 
+
+static gboolean
+panel_leave_real(panel *p)
+{
+    static GdkDisplay *display;
+    static int count;
+    gint x, y;
+    
+    ENTER;
+    if (!display)
+        display = gdk_display_get_default();
+    
+    if (gdk_display_pointer_is_grabbed(display)) {
+        count = 0;
+        RET(TRUE);
+    }
+    gdk_display_get_pointer(display, NULL, &x, &y, NULL);
+    if ((p->cx <= x && x <= (p->cx + p->cw))
+          && (p->cy <= y && y <= (p->cy + p->ch))) {
+        count = 0;
+        RET(TRUE);
+    }
+    DBG("count=%d\n", count);
+    if (count++ == 0)
+        RET(TRUE);
+    gtk_widget_hide(p->lbox);
+    p->visible = HIDDEN;    
+    p->hide_tout = 0;
+    DBG("hide panel\n");
+    count = 0;
+    RET(FALSE);
+}
+
+
+
+
+static gboolean
+panel_enter (GtkImage *widget, GdkEventCrossing *event, panel *p)
+{
+    ENTER;
+    if (p->hide_tout)
+        RET(FALSE);
+
+    p->hide_tout = g_timeout_add(500, (GSourceFunc) panel_leave_real, p);
+    gtk_widget_show(p->lbox);
+    p->visible = VISIBLE;
+    DBG("show panel\n");
+    RET(TRUE);
+}
+
+
 void
 panel_start_gui(panel *p)
 {
@@ -361,6 +381,8 @@ panel_start_gui(panel *p)
     gtk_window_set_title(GTK_WINDOW(p->topgwin), "panel");
     gtk_window_set_position(GTK_WINDOW(p->topgwin), GTK_WIN_POS_NONE);
     gtk_window_set_decorated(GTK_WINDOW(p->topgwin), FALSE);
+    //GTK_WIDGET_UNSET_FLAGS (p->topgwin, GTK_CAN_FOCUS);
+    gtk_window_set_accept_focus(GTK_WINDOW(p->topgwin), FALSE);    
 
     g_signal_connect(G_OBJECT(p->topgwin), "delete-event",
           G_CALLBACK(panel_delete_event), p);
@@ -374,8 +396,7 @@ panel_start_gui(panel *p)
           (GCallback) panel_configure_event, p);
     g_signal_connect (G_OBJECT (p->topgwin), "realize",
           (GCallback) panel_realize, p);
-    g_signal_connect (G_OBJECT (p->topgwin), "style-set",
-          (GCallback) panel_style_set, p);
+
 
     gtk_widget_realize(p->topgwin);
     //gdk_window_set_decorations(p->topgwin->window, 0);
@@ -444,11 +465,33 @@ panel_start_gui(panel *p)
     XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), PropertyChangeMask);
     gdk_window_add_filter(gdk_get_default_root_window (), (GdkFilterFunc)panel_event_filter, p);
 
+
+
+    if (p->autohide) {
+        gtk_widget_add_events(p->topgwin, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+        g_signal_connect(G_OBJECT (p->topgwin), "enter-notify-event",
+              G_CALLBACK (panel_enter), p);
+        //g_signal_connect(G_OBJECT (p->topgwin), "leave-notify-event",
+        //G_CALLBACK (panel_leave), p);
+        if (p->edge == EDGE_BOTTOM) {
+            p->ah_dx = 0;
+            p->ah_dy = p->ah - p->height_when_hidden;
+        } else if (p->edge == EDGE_TOP) {
+            p->ah_dx = 0;
+            p->ah_dy = - (p->ah - p->height_when_hidden);
+        } else if (p->edge == EDGE_LEFT) {
+            p->ah_dx = p->aw - p->height_when_hidden;
+            p->ah_dy = 0;
+        } else if (p->edge == EDGE_RIGHT) {
+            p->ah_dx = - (p->aw - p->height_when_hidden);
+            p->ah_dy = 0;
+        }
+        panel_enter(NULL, NULL, p);
+    }
     calculate_position(p);
     gdk_window_move_resize(p->topgwin->window, p->ax, p->ay, p->aw, p->ah);
     if (p->setstrut)
         panel_set_wm_strut(p);
-
     RET();
 }
 
@@ -483,6 +526,10 @@ panel_parse_global(panel *p, FILE *fp)
                 p->setstrut = str2num(bool_pair, s.t[1], 0);
             } else if (!g_ascii_strcasecmp(s.t[0], "RoundCorners")) {
                 p->round_corners = str2num(bool_pair, s.t[1], 0);
+            } else if (!g_ascii_strcasecmp(s.t[0], "autohide")) {
+                p->autohide = str2num(bool_pair, s.t[1], 0);
+            } else if (!g_ascii_strcasecmp(s.t[0], "heightWhenHidden")) {
+                p->height_when_hidden = atoi(s.t[1]);                
             } else if (!g_ascii_strcasecmp(s.t[0], "Transparent")) {
                 p->transparent = str2num(bool_pair, s.t[1], 0);
             } else if (!g_ascii_strcasecmp(s.t[0], "Alpha")) {
@@ -643,6 +690,9 @@ panel_start(panel *p, FILE *fp)
     p->setdocktype = 1;
     p->setstrut = 1;
     p->round_corners = 0;
+    p->autohide = 0;
+    p->visible = VISIBLE;
+    p->height_when_hidden = 2;
     p->transparent = 0;
     p->alpha = 127;
     p->tintcolor = 0xFFFFFFFF;
@@ -798,7 +848,7 @@ main(int argc, char *argv[], char *env[])
     printf("sizeof(Window)=%d\n", sizeof(Window));
     printf("sizeof(gboolean)=%d\n", sizeof(gboolean));
     RET(1);
-#endif    
+#endif
     setlocale(LC_CTYPE, "");
     gtk_set_locale();
     gtk_init(&argc, &argv);
