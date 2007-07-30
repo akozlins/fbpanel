@@ -54,8 +54,11 @@ menu_destructor(plugin *p)
 
     ENTER;
     g_signal_handler_disconnect(G_OBJECT(m->bg), m->handler_id);
-    if (m->menu)
+    if (m->menu) {
+        DBG("destroy(m->menu)\n");
         gtk_widget_destroy(m->menu);
+    }
+    DBG("destroy(m->box)\n");
     gtk_widget_destroy(m->box);
     DBG("here\n");
     g_free(m);
@@ -67,7 +70,7 @@ spawn_app(GtkWidget *widget, gpointer data)
 {
     GError *error = NULL;
 
-    ENTER;    
+    ENTER;
     if (data) {
         if (! g_spawn_command_line_async(data, &error) ) {
             ERR("can't spawn %s\nError is %s\n", (char *)data, error->message);
@@ -147,7 +150,7 @@ do_app_dir(plugin *p, const gchar *path)
         DBG("icon: %s\n", icon);
         for (tmp = cats; *tmp; tmp++) {
             GtkWidget **menu, *mi;
-            
+
             DBG("cat: %s\n", *tmp);
             if (!(menu = g_hash_table_lookup(ht, tmp[0])))
                 continue;
@@ -184,7 +187,7 @@ make_fdo_menu(plugin *p, GtkWidget *menu)
     int i;
     gchar *path;
     menup *m = (menup *)p->priv;
-    
+
     ENTER;
     ht = g_hash_table_new(g_str_hash, g_str_equal);
     for (i = 0; i < G_N_ELEMENTS(main_cats); i++) {
@@ -193,7 +196,7 @@ make_fdo_menu(plugin *p, GtkWidget *menu)
         if (g_hash_table_lookup(ht, &main_cats[i].name))
             DBG("%s not found\n", main_cats[i].name);
     }
-    
+
     for (i = 0; i < g_strv_length((gchar **)sys_dirs); ++i)    {
         path = g_build_filename(sys_dirs[i], app_dir_name, NULL );
         do_app_dir(p, path);
@@ -206,7 +209,7 @@ make_fdo_menu(plugin *p, GtkWidget *menu)
     for (i = 0; i < G_N_ELEMENTS(main_cats); i++) {
         GtkWidget *mi;
         gchar *name;
-        
+
         if (main_cats[i].menu) {
             name = main_cats[i].local_name ? main_cats[i].local_name : main_cats[i].name;
             mi = gtk_image_menu_item_new_with_label(name);
@@ -226,17 +229,30 @@ make_fdo_menu(plugin *p, GtkWidget *menu)
 static void
 run_command(GtkWidget *widget, void (*cmd)(void))
 {
-    ENTER;    
+    ENTER;
     cmd();
     RET();
 }
 
+static gboolean
+delayed_menu_creation(plugin *p)
+{
+    menup *m;
+
+    ENTER;
+    m = (menup *)p->priv;
+    if (!m->menu) {
+        fseek(p->fp, 0, SEEK_SET);
+        read_submenu(p, TRUE);
+    }
+    RET(FALSE); /* run once */
+}
 
 static gboolean
 my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin *p)
 {
     menup *m;
-    
+
     ENTER;
     m = (menup *)p->priv;
     if ((event->type == GDK_BUTTON_PRESS)
@@ -248,7 +264,7 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin *p)
             read_submenu(p, TRUE);
         }
         gtk_menu_popup(GTK_MENU(m->menu),
-              NULL, NULL, (GtkMenuPositionFunc)menu_pos, widget, 
+              NULL, NULL, (GtkMenuPositionFunc)menu_pos, widget,
               event->button, event->time);
     }
     RET(TRUE);
@@ -260,7 +276,7 @@ make_button(plugin *p, gchar *iname, gchar *fname, gchar *name, GtkWidget *menu)
 {
     int w, h;
     menup *m;
-    
+
     ENTER;
     m = (menup *)p->priv;
     if (p->panel->orientation == ORIENT_HORIZ) {
@@ -272,16 +288,16 @@ make_button(plugin *p, gchar *iname, gchar *fname, gchar *name, GtkWidget *menu)
     }
     DBG("iname=%s\n", iname);
     m->bg = fb_button_new_from_icon_file_with_label(iname, fname, w, h, 0x702020, TRUE, name);
-    gtk_widget_show(m->bg);  
+    gtk_widget_show(m->bg);
     gtk_box_pack_start(GTK_BOX(m->box), m->bg, FALSE, FALSE, 0);
-    if (p->panel->transparent) 
+    if (p->panel->transparent)
         gtk_bgbox_set_background(m->bg, BG_ROOT, p->panel->tintcolor, p->panel->alpha);
-    
+
 
     m->handler_id = g_signal_connect (G_OBJECT (m->bg), "button-press-event",
           G_CALLBACK (my_button_pressed), p);
     g_object_set_data(G_OBJECT(m->bg), "plugin", p);
-   
+
     RET(m->bg);
 }
 
@@ -293,14 +309,14 @@ read_item(plugin *p)
     GtkWidget *item;
     menup *m = (menup *)p->priv;
     void (*cmd)(void);
-    
+
     ENTER;
     s.len = 256;
     name = fname = action = iname = NULL;
     cmd = NULL;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "image")) 
+            if (!g_ascii_strcasecmp(s.t[0], "image"))
                 fname = expand_tilda(s.t[1]);
             else if (!g_ascii_strcasecmp(s.t[0], "name"))
                 name = g_strdup(s.t[1]);
@@ -310,7 +326,7 @@ read_item(plugin *p)
                 action = expand_tilda(s.t[1]);
             else if (!g_ascii_strcasecmp(s.t[0], "command")) {
                 command *tmp;
-                
+
                 for (tmp = commands; tmp->name; tmp++) {
                     if (!g_ascii_strcasecmp(s.t[1], tmp->name)) {
                         cmd = tmp->cmd;
@@ -321,7 +337,7 @@ read_item(plugin *p)
                 ERR( "menu/item: unknown var %s\n", s.t[0]);
                 goto error;
             }
-        } 
+        }
     }
     /* menu button */
     item = gtk_image_menu_item_new_with_label(name ? name : "");
@@ -368,7 +384,7 @@ static void
 read_system_menu(plugin *p, GtkWidget *menu)
 {
     line s;
-    
+
     ENTER;
     s.len = 256;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) ;
@@ -383,7 +399,7 @@ read_include(plugin *p)
     line s;
     menup *m = (menup *)p->priv;
     FILE *fp = NULL;
-    
+
     ENTER;
     s.len = 256;
     name = NULL;
@@ -416,16 +432,16 @@ read_submenu(plugin *p, gboolean as_item)
     gchar name[256], *fname, *iname;
     menup *m = (menup *)p->priv;
 
-    
+
     ENTER;
     s.len = 256;
     menu = gtk_menu_new ();
     gtk_container_set_border_width(GTK_CONTAINER(menu), 0);
-  
+
     iname = fname = NULL;
     name[0] = 0;
     DBG("here\n");
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {       
+    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_BLOCK_START) {
             if (!as_item)
                 break;
@@ -454,7 +470,7 @@ read_submenu(plugin *p, gboolean as_item)
             gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
         } else if (s.type == LINE_VAR) {
             DBG("here\n");
-            if (!g_ascii_strcasecmp(s.t[0], "image")) 
+            if (!g_ascii_strcasecmp(s.t[0], "image"))
                 fname = expand_tilda(s.t[1]);
             else if (!g_ascii_strcasecmp(s.t[0], "name"))
                 strcpy(name, s.t[1]);
@@ -496,9 +512,10 @@ read_submenu(plugin *p, gboolean as_item)
             g_free(fname);
         RET(mi);
     }
-    
+
  error:
     // FIXME: we need to recursivly destroy all child menus and their items
+    DBG("destroy(menu)\n");
     gtk_widget_destroy(menu);
     g_free(fname);
     g_free(name);
@@ -506,6 +523,20 @@ read_submenu(plugin *p, gboolean as_item)
 }
 
 
+static void
+menu_icon_theme_changed(GtkIconTheme *icon_theme, plugin *p)
+{
+    menup *m;
+
+    ENTER;
+    m = (menup *)p->priv;
+    if (m->menu) {
+        DBG("destroy(m->menu)\n");
+        gtk_widget_destroy(m->menu);
+    }
+    m->menu = NULL;
+    g_timeout_add(3000, (GSourceFunc) delayed_menu_creation, p);
+}
 
 
 static int
@@ -517,7 +548,7 @@ menu_constructor(plugin *p)
     m = g_new0(menup, 1);
     g_return_val_if_fail(m != NULL, 0);
     p->priv = m;
-    m->iconsize = 22;       
+    m->iconsize = 22;
     m->box = gtk_hbox_new(FALSE, 0);
     gtk_container_set_border_width(GTK_CONTAINER(m->box), 0);
     gtk_container_add(GTK_CONTAINER(p->pwid), m->box);
@@ -526,6 +557,9 @@ menu_constructor(plugin *p)
         ERR("menu: plugin init failed\n");
         goto error;
     }
+    g_timeout_add(3000, (GSourceFunc) delayed_menu_creation, p);
+    g_signal_connect (G_OBJECT(gtk_icon_theme_get_default()),
+        "changed", (GCallback) menu_icon_theme_changed, p);
     RET(1);
 
  error:

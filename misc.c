@@ -933,10 +933,10 @@ image_icon_theme_changed(GtkIconTheme *icon_theme, GtkWidget *img)
 static void
 gtk_fbimage_destroy(GObject *img)
 {
-    ENTER2;
+    ENTER;
     g_signal_handlers_disconnect_by_func(G_OBJECT(gtk_icon_theme_get_default()),
         image_icon_theme_changed, img);
-    RET2();
+    RET();
 }
 
 GtkWidget *
@@ -950,7 +950,7 @@ gtk_fbimage_new(gchar *iname, gchar *fname, int width, int height,
     if (pb) {
         image = gtk_image_new_from_pixbuf(pb);
         DBG("px: w=%d h=%d\n", gdk_pixbuf_get_width(pb), gdk_pixbuf_get_height(pb));
-        g_signal_connect (G_OBJECT(gtk_icon_theme_get_default()),
+        g_signal_connect_after (G_OBJECT(gtk_icon_theme_get_default()),
            "changed", (GCallback) image_icon_theme_changed, image);
         g_signal_connect (G_OBJECT(image),
            "destroy", (GCallback) gtk_fbimage_destroy, NULL);
