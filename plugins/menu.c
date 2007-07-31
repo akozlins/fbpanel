@@ -496,12 +496,11 @@ read_submenu(plugin *p, gboolean as_item)
     DBG("here\n");
     if (as_item) {
         mi = gtk_image_menu_item_new_with_label(name ? name : "");
-        if (fname) {
-            GtkWidget *img;
-            img = gtk_image_new_from_file_scaled(fname, m->iconsize, m->iconsize, TRUE);
-            gtk_widget_show(img);
-            gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), img);
+        if (fname || iname) {
+            gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
+                gtk_fbimage_new(iname, fname, m->iconsize, m->iconsize, TRUE));
             g_free(fname);
+            g_free(iname);
         }
         gtk_menu_item_set_submenu (GTK_MENU_ITEM (mi), menu);
         m->menu = menu;
@@ -533,8 +532,8 @@ menu_icon_theme_changed(GtkIconTheme *icon_theme, plugin *p)
     if (m->menu) {
         DBG("destroy(m->menu)\n");
         gtk_widget_destroy(m->menu);
+        m->menu = NULL;
     }
-    m->menu = NULL;
     g_timeout_add(3000, (GSourceFunc) delayed_menu_creation, p);
 }
 
