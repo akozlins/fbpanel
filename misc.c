@@ -756,25 +756,6 @@ gdk_pixbuf_scale_ratio(GdkPixbuf *p, int width, int height, GdkInterpType itype,
 
 }
 
-
-GtkWidget *
-gtk_image_new_from_file_scaled(const gchar *file, gint width,
-      gint height, gboolean keep_ratio)
-{
-    GtkWidget *img;
-    GdkPixbuf *pb;
-
-    ENTER;
-    if ((pb = gdk_pixbuf_new_from_file_at_size(file, width, height, NULL))) {
-        img = gtk_image_new_from_pixbuf(pb);
-        g_object_unref(pb);
-    } else
-        img = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE,
-              GTK_ICON_SIZE_BUTTON);
-    RET(img);
-}
-
-
 void
 get_button_spacing(GtkRequisition *req, GtkContainer *parent, gchar *name)
 {

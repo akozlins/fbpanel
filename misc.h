@@ -54,8 +54,7 @@ void calculate_position(panel *np);
 gchar *expand_tilda(gchar *file);
 GdkPixbuf *gdk_pixbuf_scale_ratio(GdkPixbuf *p, int width, int height, GdkInterpType itype,
                                   gboolean keep_ratio);
-GtkWidget *gtk_image_new_from_file_scaled(const gchar *file, gint width, gint height,
-                                          gboolean keep_ratio);
+
 void get_button_spacing(GtkRequisition *req, GtkContainer *parent, gchar *name);
 guint32 gcolor2rgb24(GdkColor *color);
 /*
