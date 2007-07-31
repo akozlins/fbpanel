@@ -1,7 +1,9 @@
 4.12
 New Features:
 * smooth icon theme change without panel reload
-* autohide
+* autohide. Config section is part of 'Global' section
+    autoHide = false
+    heightWhenHidden = 2
 * 3 sec delayed menu creation to improve start-up time
 
 Fixed Bugs:
