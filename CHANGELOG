@@ -1,3 +1,10 @@
+4.13
+New Features:
+* support for "above all" and "below all" layering states. To cofigure gloabl section
+  was added string variable Layer
+  Layer = None | Above | Below
+* to speed start-up, panel does not have window icon, only configuator window has
+
 4.12
 New Features:
 * smooth icon theme change without panel reload

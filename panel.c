@@ -1,3 +1,22 @@
+/*! \file panel.c 
+ *  \brief main code is here
+ *         
+ *             No details
+ *
+ */
+
+/*! \mainpage My Personal Index Page
+ *
+ * \section intro_sec Introduction
+ *
+ * This is the introduction.
+ *
+ * \section install_sec Installation
+ *
+ * \subsection step1 Step 1: Opening the box
+ *  
+ * etc...
+ */
 
 
 #include <stdlib.h>
@@ -18,6 +37,7 @@
 #include "version.h"
 #include "gtkbgbox.h"
 
+/// config file
 static gchar *cfgfile = NULL;
 static gchar version[] = VERSION;
 gchar *cprofile = "default";
@@ -29,7 +49,9 @@ gint force_quit = 0;
 //#define DEBUG
 #include "dbg.h"
 
-int log_level;
+
+/** verbosity level of dbg and log functions */
+int log_level = LOG_WARN;
 
 FILE *pconf; // plugin part of profile file
 
@@ -48,6 +70,15 @@ panel_del_wm_strut(panel *p)
 }
 */
 
+/** realy brie 
+ * cont. detailed follow
+ * sdfsdfdsf
+ * \param p panel yanni
+ * \return nothing or
+ * nothing
+ * \retval 0 tipa nol
+ * \retval !0 - ok
+ */
 
 static void
 panel_set_wm_strut(panel *p)
@@ -193,14 +224,6 @@ panel_destroy_event(GtkWidget * widget, GdkEvent * event, gpointer data)
     RET(FALSE);
 }
 
-
-static void
-panel_realize(GtkWidget *widget, panel *p)
-{
-    ENTER;
-    RET();
-
-}
 static gint
 panel_size_req(GtkWidget *widget, GtkRequisition *req, panel *p)
 {
@@ -274,7 +297,6 @@ make_round_corners(panel *p)
     GtkWidget *(*box_new) (gboolean, gint);
     void (*box_pack)(GtkBox *, GtkWidget *, gboolean, gboolean, guint);
     gchar *s1, *s2;
-#define IMGPREFIX  PREFIX "/share/fbpanel/images/"
 
     ENTER;
     if (p->edge == EDGE_TOP) {
@@ -371,11 +393,22 @@ panel_drag_motion (GtkWidget *widget, GdkDragContext *drag_context, gint x, gint
     RET(TRUE);
 }
 
+static gboolean
+panel_set_layer(panel *p)
+{
+    ENTER;
+    if (p->layer) 
+        Xclimsg(p->topxwin, a_NET_WM_STATE, a_NET_WM_STATE_ADD, 
+              (p->layer == LAYER_ABOVE) ? a_NET_WM_STATE_ABOVE : a_NET_WM_STATE_BELOW, 0, 0, 0);
+    RET(FALSE);
+}
+
+
 
 void
 panel_start_gui(panel *p)
 {
-    Atom state[3];
+    Atom state[4];
     XWMHints wmhints;
     guint32 val;
 
@@ -403,9 +436,7 @@ panel_start_gui(panel *p)
           (GCallback) panel_size_alloc, p);
     g_signal_connect (G_OBJECT (p->topgwin), "configure-event",
           (GCallback) panel_configure_event, p);
-    g_signal_connect (G_OBJECT (p->topgwin), "realize",
-          (GCallback) panel_realize, p);
-  
+
     gtk_widget_realize(p->topgwin);
     //gdk_window_set_decorations(p->topgwin->window, 0);
     gtk_widget_set_app_paintable(p->topgwin, TRUE);
@@ -467,9 +498,17 @@ panel_start_gui(panel *p)
     state[0] = a_NET_WM_STATE_SKIP_PAGER;
     state[1] = a_NET_WM_STATE_SKIP_TASKBAR;
     state[2] = a_NET_WM_STATE_STICKY;
+    if (p->layer == LAYER_ABOVE)
+    	state[3] = a_NET_WM_STATE_ABOVE;
+    else if (p->layer == LAYER_BELOW)
+    	state[3] = a_NET_WM_STATE_BELOW;
     XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STATE, XA_ATOM,
-          32, PropModeReplace, (unsigned char *) state, 3);
+          32, PropModeReplace, (unsigned char *) state, 
+	  (p->layer != LAYER_NONE) ? 4 : 3);
+    DBG("layer is %d\n", p->layer);
 
+    g_timeout_add(1000,  (GSourceFunc) panel_set_layer, p);
+    
     XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), PropertyChangeMask);
     gdk_window_add_filter(gdk_get_default_root_window (), (GdkFilterFunc)panel_event_filter, p);
 
@@ -554,6 +593,8 @@ panel_parse_global(panel *p, FILE *fp)
                     gdk_color_parse ("white", &p->gtintcolor);
                 p->tintcolor = gcolor2rgb24(&p->gtintcolor);
                 DBG("tintcolor=%x\n", p->tintcolor);
+            } else if (!g_ascii_strcasecmp(s.t[0], "Layer")) {
+	    	p->layer = str2num(layer_pair, s.t[1], 0);
             } else {
                 ERR( "fbpanel: %s - unknown var in Global section\n", s.t[0]);
                 RET(0);
@@ -710,6 +751,7 @@ panel_start(panel *p, FILE *fp)
     p->alpha = 127;
     p->tintcolor = 0xFFFFFFFF;
     p->spacing = 0;
+    p->layer = LAYER_NONE;
     fbev = fb_ev_new();
     if ((get_line(fp, &s) != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0], "Global")) {
         ERR( "fbpanel: config file must start from Global section\n");
@@ -853,7 +895,6 @@ main(int argc, char *argv[], char *env[])
     int i;
     void configure();
     FILE *pfp; /* current profile FP */
-    GdkPixbuf* icon;
     ENTER;
 #if 0
     printf("sizeof(gulong)=%d\n", sizeof(gulong));
@@ -867,11 +908,6 @@ main(int argc, char *argv[], char *env[])
     gtk_init(&argc, &argv);
     XSetLocaleModifiers("");
     XSetErrorHandler((XErrorHandler) handle_error);
-    icon = gdk_pixbuf_new_from_file(IMGPREFIX "star.png", NULL);
-    if (icon) {
-        gtk_window_set_default_icon(icon);
-        g_object_unref(icon);
-    }
     resolve_atoms();
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
@@ -907,8 +943,7 @@ main(int argc, char *argv[], char *env[])
         }
     }
 
-    gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(),
-    IMGPREFIX);
+    gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), IMGPREFIX);
     signal(SIGUSR1, sig_usr);
     do {
         if (!(pfp = open_profile(cprofile)))

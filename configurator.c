@@ -580,9 +580,7 @@ mk_dialog()
     g_signal_connect (G_OBJECT(dialog), "delete_event", (GCallback) dialog_delete_event,  NULL);
     gtk_window_set_modal(GTK_WINDOW(dialog), FALSE);
     gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 500);
-
-    //gtk_window_set_skip_taskbar_hint(GTK_WINDOW(dialog), TRUE);
-    //gtk_window_set_skip_pager_hint(GTK_WINDOW(dialog), TRUE);
+    gtk_window_set_icon_from_file(GTK_WINDOW(dialog), IMGPREFIX "star.png", NULL);
       
     nb = gtk_notebook_new();
     gtk_notebook_set_show_border (GTK_NOTEBOOK(nb), FALSE);

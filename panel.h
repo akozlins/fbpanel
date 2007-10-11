@@ -18,11 +18,13 @@ enum { HEIGHT_NONE, HEIGHT_PIXEL, HEIGHT_REQUEST };
 enum { ORIENT_NONE, ORIENT_VERT, ORIENT_HORIZ };
 enum { POS_NONE, POS_START, POS_END };
 enum { HIDDEN, TO_HIDE, VISIBLE };
+enum { LAYER_NONE, LAYER_ABOVE, LAYER_BELOW };
 
 #define PANEL_HEIGHT_DEFAULT  26
 #define PANEL_HEIGHT_MAX      200
 #define PANEL_HEIGHT_MIN      16
 
+#define IMGPREFIX  PREFIX "/share/fbpanel/images/"
 
 typedef struct {
 
@@ -55,6 +57,7 @@ typedef struct {
 
     guint autohide : 1;
     guint visible : 2;
+    guint layer   : 2;
     int ah_dx, ah_dy; // autohide shift for x and y
     int height_when_hidden;
     guint hide_tout;
@@ -129,6 +132,8 @@ extern Atom a_NET_WM_STATE_SKIP_PAGER;
 extern Atom a_NET_WM_STATE_STICKY;
 extern Atom a_NET_WM_STATE_HIDDEN;
 extern Atom a_NET_WM_STATE_SHADED;
+extern Atom a_NET_WM_STATE_ABOVE;
+extern Atom a_NET_WM_STATE_BELOW;
 
 #define a_NET_WM_STATE_REMOVE        0    /* remove/unset property */
 #define a_NET_WM_STATE_ADD           1    /* add/set property */

@@ -29,6 +29,7 @@ extern pair width_pair[];
 extern pair height_pair[];
 extern pair bool_pair[];
 extern pair pos_pair[];
+extern pair layer_pair[];
 
 int str2num(pair *p, gchar *str, int defval);
 gchar *num2str(pair *p, int num, gchar *defval);
@@ -66,10 +67,8 @@ GtkWidget *fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, i
 
 GtkWidget *fb_button_new_from_icon_file_with_label(gchar *iname, gchar *fname, int width, int height,
       gulong hicolor, gboolean keep_ratio, gchar *name);
-GtkWidget *fb_image_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
-      gboolean keep_ratio);
 GdkPixbuf *fb_pixbuf_new_from_icon_file(gchar *iname, gchar *fname, int width, int height);
-GtkWidget *gtk_fbimage_new(gchar *iname, gchar *fname, int width, int height,
+GtkWidget *fb_image_new(gchar *iname, gchar *fname, int width, int height,
       gboolean keep_ratio);
 void menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *widget);
 

@@ -47,6 +47,8 @@ Atom a_NET_WM_STATE_SKIP_PAGER;
 Atom a_NET_WM_STATE_STICKY;
 Atom a_NET_WM_STATE_HIDDEN;
 Atom a_NET_WM_STATE_SHADED;
+Atom a_NET_WM_STATE_ABOVE;
+Atom a_NET_WM_STATE_BELOW;
 Atom a_NET_WM_WINDOW_TYPE;
 Atom a_NET_WM_WINDOW_TYPE_DESKTOP;
 Atom a_NET_WM_WINDOW_TYPE_DOCK;
@@ -104,6 +106,13 @@ pair pos_pair[] = {
     { POS_NONE, "none" },
     { POS_START, "start" },
     { POS_END,  "end" },
+    { 0, NULL},
+};
+
+pair layer_pair[] = {
+    { LAYER_NONE, "none" },
+    { LAYER_ABOVE, "above" },
+    { LAYER_BELOW, "below" },
     { 0, NULL},
 };
 
@@ -232,6 +241,9 @@ void resolve_atoms()
     a_NET_WM_STATE_STICKY        = XInternAtom(GDK_DISPLAY(), "_NET_WM_STATE_STICKY", False);
     a_NET_WM_STATE_HIDDEN        = XInternAtom(GDK_DISPLAY(), "_NET_WM_STATE_HIDDEN", False);
     a_NET_WM_STATE_SHADED        = XInternAtom(GDK_DISPLAY(), "_NET_WM_STATE_SHADED", False);
+    a_NET_WM_STATE_ABOVE         = XInternAtom(GDK_DISPLAY(), "_NET_WM_STATE_ABOVE", False);
+    a_NET_WM_STATE_BELOW         = XInternAtom(GDK_DISPLAY(), "_NET_WM_STATE_BELOW", False);
+    a_NET_WM_STATE_SHADED        = XInternAtom(GDK_DISPLAY(), "_NET_WM_STATE_SHADED", False);
     a_NET_WM_WINDOW_TYPE         = XInternAtom(GDK_DISPLAY(), "_NET_WM_WINDOW_TYPE", False);
 
     a_NET_WM_WINDOW_TYPE_DESKTOP = XInternAtom(GDK_DISPLAY(), "_NET_WM_WINDOW_TYPE_DESKTOP", False);
@@ -262,6 +274,8 @@ Xclimsg(Window win, long type, long l0, long l1, long l2, long l3, long l4)
 
     xev.type = ClientMessage;
     xev.window = win;
+    xev.send_event = True;
+    xev.display = gdk_display;
     xev.message_type = type;
     xev.format = 32;
     xev.data.l[0] = l0;
@@ -872,7 +886,7 @@ fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
     gtk_container_set_border_width(GTK_CONTAINER(b), 0);
     GTK_WIDGET_UNSET_FLAGS (b, GTK_CAN_FOCUS);
     //make image
-    image = gtk_fbimage_new(iname, fname, width, height, keep_ratio);
+    image = fb_image_new(iname, fname, width, height, keep_ratio);
     if (!image)
         image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
     gtk_container_add(GTK_CONTAINER(b), image);
@@ -921,7 +935,7 @@ gtk_fbimage_destroy(GObject *img)
 }
 
 GtkWidget *
-gtk_fbimage_new(gchar *iname, gchar *fname, int width, int height,
+fb_image_new(gchar *iname, gchar *fname, int width, int height,
       gboolean keep_ratio)
 {
     GtkWidget *image = NULL;
@@ -949,24 +963,6 @@ gtk_fbimage_new(gchar *iname, gchar *fname, int width, int height,
 }
 
 
-
-GtkWidget *
-fb_image_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
-      gboolean keep_ratio)
-{
-    GtkWidget *image;
-    GdkPixbuf *pb = NULL;
-
-    pb = fb_pixbuf_new_from_icon_file(iname, fname, width, height);
-    if (pb) {
-        image = gtk_image_new_from_pixbuf(pb);
-        DBG("px: w=%d h=%d\n", gdk_pixbuf_get_width(pb), gdk_pixbuf_get_height(pb));
-        g_object_unref(pb);
-    } else
-        image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
-    DBG("image = %p\n", image);
-    RET(image);
-}
 
 GdkPixbuf *
 fb_pixbuf_new_from_icon_file(gchar *iname, gchar *fname, int width, int height)
@@ -1013,7 +1009,7 @@ fb_button_new_from_icon_file_with_label(gchar *iname, gchar *fname, int width, i
     gtk_container_add(GTK_CONTAINER(b), box);
 
     DBG("here\n");
-    image = gtk_fbimage_new(iname, fname, width, height, keep_ratio);
+    image = fb_image_new(iname, fname, width, height, keep_ratio);
     if (!image)
         image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
     g_object_set_data(G_OBJECT(image), "hicolor", (gpointer)hicolor);
