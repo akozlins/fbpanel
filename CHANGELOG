@@ -7,6 +7,7 @@ New Features:
 * Control-Button3 click launches configureation dialog
 * taskbar was changed to propagate Control-Button3 clicks to parent window i.e to panel
 * launchbar was changed to propagate Control-Button3 clicks to parent window
+* pager was changed to propagate Control-Button3 clicks to parent window
 
 4.12
 New Features:
