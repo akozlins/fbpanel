@@ -93,6 +93,7 @@ typedef struct _taskbar{
     unsigned int icons_only : 1;
     unsigned int use_mouse_wheel : 1;
     unsigned int use_urgency_hint : 1;
+    unsigned int discard_release_event : 1;
 } taskbar;
 
 
@@ -721,9 +722,28 @@ tk_callback_scroll_event (GtkWidget *widget, GdkEventScroll *event, task *tk)
 
 
 static gboolean
+tk_callback_button_press_event(GtkWidget *widget, GdkEventButton *event, task *tk)
+{
+    ENTER;
+    if (event->type == GDK_BUTTON_PRESS && event->button == 3
+          && event->state & GDK_CONTROL_MASK) {
+        tk->tb->discard_release_event = 1;
+        gtk_propagate_event(tk->tb->bar, (GdkEvent *)event); 
+        RET(TRUE);
+    }
+    RET(FALSE);
+}
+
+
+static gboolean
 tk_callback_button_release_event(GtkWidget *widget, GdkEventButton *event, task *tk)
 {
     ENTER;
+    
+    if (event->type == GDK_BUTTON_RELEASE && tk->tb->discard_release_event) {
+        tk->tb->discard_release_event = 0;
+        RET(TRUE);
+    }
     if ((event->type != GDK_BUTTON_RELEASE) || (!GTK_BUTTON(widget)->in_button))
         RET(FALSE);
     DBG("win=%x\n", tk->win);
@@ -769,8 +789,8 @@ tk_callback_button_release_event(GtkWidget *widget, GdkEventButton *event, task 
               event->button, event->time);
         
     }
-    XSync (gdk_display, False);
     gtk_button_released(GTK_BUTTON(widget));
+    XSync (gdk_display, False);
     RET(TRUE);
 }
 
@@ -836,9 +856,11 @@ tk_build_gui(taskbar *tb, task *tk)
     tk->button = gtk_button_new();
     gtk_widget_show(tk->button);
     gtk_container_set_border_width(GTK_CONTAINER(tk->button), 0);
-    gtk_widget_add_events (tk->button, GDK_BUTTON_RELEASE_MASK );
+    gtk_widget_add_events (tk->button, GDK_BUTTON_RELEASE_MASK | GDK_BUTTON_PRESS_MASK);
     g_signal_connect(G_OBJECT(tk->button), "button_release_event",
-          G_CALLBACK(tk_callback_button_release_event), (gpointer)tk);  
+          G_CALLBACK(tk_callback_button_release_event), (gpointer)tk);
+    g_signal_connect(G_OBJECT(tk->button), "button_press_event",
+           G_CALLBACK(tk_callback_button_press_event), (gpointer)tk);  
     g_signal_connect_after (G_OBJECT (tk->button), "leave",
           G_CALLBACK (tk_callback_leave), (gpointer) tk);    
     g_signal_connect_after (G_OBJECT (tk->button), "enter",
@@ -1287,7 +1309,6 @@ taskbar_constructor(plugin *p)
  
     
     ENTER;
-    gtk_widget_set_name(p->pwid, "taskbar");
     gtk_rc_parse_string(taskbar_rc);
     get_button_spacing(&req, GTK_CONTAINER(p->pwid), "");
    

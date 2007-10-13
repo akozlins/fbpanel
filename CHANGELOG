@@ -5,6 +5,7 @@ New Features:
   Layer = None | Above | Below
 * to speed start-up, panel does not have window icon, only configuator window has
 * Control-Button3 click launches configureation dialog
+* taskbar was changed to propagate Control-Button3 clicks to parent window i.e to panel
 
 4.12
 New Features:
