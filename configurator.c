@@ -564,9 +564,11 @@ static GtkWidget *
 mk_dialog()
 {
     GtkWidget *sw, *nb, *label;
-           
+    gchar *name;
+    
     DBG("creating dialog\n");
-    dialog = gtk_dialog_new_with_buttons ("fbpanel configurator",
+    name = g_strdup_printf("fbpanel settings: <%s> profile", cprofile);  
+    dialog = gtk_dialog_new_with_buttons (name,
           NULL,
           0, //GTK_DIALOG_DESTROY_WITH_PARENT,
           GTK_STOCK_APPLY,
@@ -574,6 +576,7 @@ mk_dialog()
           GTK_STOCK_CLOSE,
           GTK_RESPONSE_CLOSE,
           NULL);
+    g_free(name);
     DBG("connecting sugnal to %p\n",  dialog);
     g_signal_connect (G_OBJECT(dialog), "response",     (GCallback) response_event,       NULL);
     g_signal_connect (G_OBJECT(dialog), "destroy",      (GCallback) dialog_destroy_event, NULL);
