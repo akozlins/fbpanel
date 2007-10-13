@@ -43,8 +43,11 @@ static const GtkTargetEntry target_table[] = {
     { "STRING",        0, 0 }
 };
 
+struct launchbarb;
+
 typedef struct btn {
     //GtkWidget *button, *pixmap;
+    struct launchbar *lb;
     gchar *action;
 } btn;
 
@@ -55,6 +58,7 @@ typedef struct launchbar {
     btn btns[MAXBUTTONS];
     int btn_num;
     int iconsize;
+    unsigned int discard_release_event : 1;
 } launchbar;
 
 
@@ -65,6 +69,16 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, btn *b )
     GtkWidget *image;
 
     ENTER;
+    if (event->type == GDK_BUTTON_PRESS && event->button == 3
+          && event->state & GDK_CONTROL_MASK) {
+        b->lb->discard_release_event = 1;
+        gtk_propagate_event(gtk_widget_get_parent(widget), (GdkEvent *)event); 
+        RET(TRUE);
+    }
+    if (event->type == GDK_BUTTON_RELEASE && b->lb->discard_release_event) {
+        b->lb->discard_release_event = 0;
+        RET(TRUE);
+    }
     image = gtk_bin_get_child(GTK_BIN(widget));
     g_assert(b != NULL);
     if (event->type == GDK_BUTTON_RELEASE) {
@@ -264,6 +278,7 @@ read_button(plugin *p)
  
     //gtk_container_add(GTK_CONTAINER(eb), button);
     lb->btns[lb->btn_num].action = action;
+    lb->btns[lb->btn_num].lb     = lb;
     lb->btn_num++;
     
     RET(1);
