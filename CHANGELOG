@@ -4,6 +4,7 @@ New Features:
   was added string variable Layer
   Layer = None | Above | Below
 * to speed start-up, panel does not have window icon, only configuator window has
+* Control-Button3 click launches configureation dialog
 
 4.12
 New Features:

@@ -404,6 +404,20 @@ panel_set_layer(panel *p)
 }
 
 
+gboolean 
+panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p)
+{
+    ENTER;
+    if (event->type == GDK_BUTTON_PRESS && event->button == 3
+          && event->state & GDK_CONTROL_MASK) {
+        DBG("ctrl-btn3\n");
+        configure();
+        RET(TRUE);
+    }
+    RET(FALSE);
+}
+
+
 
 void
 panel_start_gui(panel *p)
@@ -436,7 +450,9 @@ panel_start_gui(panel *p)
           (GCallback) panel_size_alloc, p);
     g_signal_connect (G_OBJECT (p->topgwin), "configure-event",
           (GCallback) panel_configure_event, p);
-
+   g_signal_connect (G_OBJECT (p->topgwin), "button-press-event",
+         (GCallback) panel_button_press_event, p);
+   
     gtk_widget_realize(p->topgwin);
     //gdk_window_set_decorations(p->topgwin->window, 0);
     gtk_widget_set_app_paintable(p->topgwin, TRUE);
@@ -893,8 +909,8 @@ int
 main(int argc, char *argv[], char *env[])
 {
     int i;
-    void configure();
     FILE *pfp; /* current profile FP */
+    
     ENTER;
 #if 0
     printf("sizeof(gulong)=%d\n", sizeof(gulong));

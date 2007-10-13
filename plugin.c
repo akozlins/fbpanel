@@ -189,6 +189,8 @@ void plugin_put(plugin *this)
     RET();
 }
 
+gboolean panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p);
+
 int
 plugin_start(plugin *this)
 {
@@ -208,6 +210,8 @@ plugin_start(plugin *this)
             gtk_bgbox_set_background(this->pwid, BG_ROOT, this->panel->tintcolor, this->panel->alpha);
         }
         DBG("here\n");
+        g_signal_connect (G_OBJECT (this->pwid), "button-press-event",
+              (GCallback) panel_button_press_event, this->panel);
         gtk_widget_show(this->pwid);
         DBG("here\n");
     }
