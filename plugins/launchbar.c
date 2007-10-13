@@ -72,8 +72,7 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, btn *b )
     if (event->type == GDK_BUTTON_PRESS && event->button == 3
           && event->state & GDK_CONTROL_MASK) {
         b->lb->discard_release_event = 1;
-        gtk_propagate_event(gtk_widget_get_parent(widget), (GdkEvent *)event); 
-        RET(TRUE);
+        RET(FALSE);
     }
     if (event->type == GDK_BUTTON_RELEASE && b->lb->discard_release_event) {
         b->lb->discard_release_event = 0;
