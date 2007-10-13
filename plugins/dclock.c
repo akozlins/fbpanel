@@ -45,9 +45,13 @@ typedef struct {
 
 
 static  gboolean
-clicked(GtkWidget *widget, gpointer dummy, dclock *dc)
+clicked(GtkWidget *widget, GdkEventButton *event, dclock *dc)
 {
     ENTER;
+    if (event->type == GDK_BUTTON_PRESS && event->button == 3
+          && event->state & GDK_CONTROL_MASK) {
+        RET(FALSE);
+    }
     DBG("%s\n", dc->action);
     system (dc->action);
     RET(TRUE);
