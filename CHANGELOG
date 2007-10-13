@@ -1,14 +1,15 @@
 4.13
 New Features:
-* support for "above all" and "below all" layering states. To cofigure gloabl section
-  was added string variable Layer
-  Layer = None | Above | Below
+* support for "above all" and "below all" layering states. Global section
+  was added string variable
+      Layer = None | Above | Below
 * to speed start-up, panel does not have window icon, only configuator window has
 * Control-Button3 click launches configureation dialog
 * taskbar was changed to propagate Control-Button3 clicks to parent window i.e to panel
 * launchbar was changed to propagate Control-Button3 clicks to parent window
 * pager was changed to propagate Control-Button3 clicks to parent window
 * dclock was changed to propagate Control-Button3 clicks to parent window
+* menu was changed to propagate Control-Button3 clicks to parent window
 
 4.12
 New Features:

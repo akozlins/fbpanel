@@ -157,7 +157,7 @@ do_app_dir(plugin *p, const gchar *path)
 
             mi = gtk_image_menu_item_new_with_label(title);
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
-                  gtk_fbimage_new(icon, icon, 22, 22, TRUE));
+                  fb_image_new(icon, icon, 22, 22, TRUE));
             g_signal_connect(G_OBJECT(mi), "activate", (GCallback)spawn_app,g_strdup(exec));
             if (!(*menu))
                 *menu = gtk_menu_new();
@@ -214,7 +214,7 @@ make_fdo_menu(plugin *p, GtkWidget *menu)
             name = main_cats[i].local_name ? main_cats[i].local_name : main_cats[i].name;
             mi = gtk_image_menu_item_new_with_label(name);
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
-                gtk_fbimage_new(main_cats[i].icon, NULL, m->iconsize, m->iconsize, TRUE));
+                fb_image_new(main_cats[i].icon, NULL, m->iconsize, m->iconsize, TRUE));
             gtk_menu_item_set_submenu (GTK_MENU_ITEM (mi), main_cats[i].menu);
             gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
             gtk_widget_show_all(mi);
@@ -254,6 +254,10 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin *p)
     menup *m;
 
     ENTER;
+    if (event->type == GDK_BUTTON_PRESS && event->button == 3
+          && event->state & GDK_CONTROL_MASK) {
+        RET(FALSE);
+    }
     m = (menup *)p->priv;
     if ((event->type == GDK_BUTTON_PRESS)
           && (event->x >=0 && event->x < widget->allocation.width)
@@ -346,7 +350,7 @@ read_item(plugin *p)
         g_free(name);
     if (fname || iname) {
         gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item),
-            gtk_fbimage_new(iname, fname, m->iconsize, m->iconsize, TRUE));
+            fb_image_new(iname, fname, m->iconsize, m->iconsize, TRUE));
         g_free(fname);
         g_free(iname);
     }
@@ -498,7 +502,7 @@ read_submenu(plugin *p, gboolean as_item)
         mi = gtk_image_menu_item_new_with_label(name ? name : "");
         if (fname || iname) {
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
-                gtk_fbimage_new(iname, fname, m->iconsize, m->iconsize, TRUE));
+                fb_image_new(iname, fname, m->iconsize, m->iconsize, TRUE));
             g_free(fname);
             g_free(iname);
         }
