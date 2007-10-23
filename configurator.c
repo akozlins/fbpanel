@@ -52,15 +52,20 @@ static GtkWidget *allign_opt;
 //edge
 static GtkWidget *edge_opt;
 
-//transparency
+//effects
 static GtkWidget *tr_checkb, *tr_colorb;;
 static GtkWidget *tr_box;
+static GtkWidget *prop_round_corners_checkb, *round_corners_box, *round_corners_spinb;
+static GtkAdjustment *round_corners_adj;
+
 
 //properties
 static GtkWidget *prop_dt_checkb, *prop_st_checkb, *prop_autohide_checkb;
 static GtkWidget *height_when_hidden_box, *height_when_hidden_spinb;
 static GtkAdjustment *height_when_hidden_adj;
 
+
+static GtkWidget *prop_layer_checkb, *layer_box, *layer_opt;
 
 extern panel *p;
 extern gchar *cprofile;
@@ -365,13 +370,13 @@ mk_size()
 }
 
 static void
-transparency_toggle(GtkWidget *b, gpointer bp)
+sensitive_toggle(GtkWidget *b, GtkWidget *w)
 {
     gboolean t;
 
     ENTER;
     t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b));
-    gtk_widget_set_sensitive(tr_box, t);
+    gtk_widget_set_sensitive(w, t);
     RET();
 }
 
@@ -400,9 +405,9 @@ mk_effects()
     
     tr_checkb = gtk_check_button_new_with_label("Transparency");
     gtk_box_pack_start(GTK_BOX (vbox), tr_checkb, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(tr_checkb), "toggled", G_CALLBACK(transparency_toggle), NULL);
 
     tr_box = gtk_hbox_new(FALSE, 0);
+    g_signal_connect(G_OBJECT(tr_checkb), "toggled", G_CALLBACK(sensitive_toggle), tr_box);
     gtk_box_pack_start(GTK_BOX (vbox), tr_box, FALSE, FALSE, 0);
 
     add_hindent_box(tr_box);
@@ -417,20 +422,39 @@ mk_effects()
     gtk_color_button_set_alpha (GTK_COLOR_BUTTON(tr_colorb), 65535/256*125);
     gtk_box_pack_start(GTK_BOX (tr_box), tr_colorb, FALSE, FALSE, 5);
     //gtk_widget_set_sensitive(tr_colorb, FALSE);
+
+
+
+    prop_round_corners_checkb = gtk_check_button_new_with_label("Round Corners");
+    gtk_box_pack_start(GTK_BOX (vbox), prop_round_corners_checkb, FALSE, FALSE, 0);
+
+    round_corners_box = gtk_hbox_new(FALSE, 0);
+    g_signal_connect(G_OBJECT(prop_round_corners_checkb), "toggled", G_CALLBACK(sensitive_toggle),
+          round_corners_box);
+    gtk_box_pack_start(GTK_BOX (vbox), round_corners_box, FALSE, FALSE, 0);
+
+    add_hindent_box(round_corners_box);
+    
+    label = gtk_label_new("Radius is ");
+    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+    gtk_box_pack_start(GTK_BOX (round_corners_box), label, FALSE, TRUE, 0);
+
+    round_corners_adj = (GtkAdjustment *) gtk_adjustment_new (
+        p->round_corners_radius, 0, MIN(p->cw, p->ch)/2, 1.0, 1.0, 1.0);
+    round_corners_spinb = gtk_spin_button_new (round_corners_adj, 1.0, 0);
+    gtk_box_pack_start(GTK_BOX (round_corners_box), round_corners_spinb, FALSE, TRUE, 5);
+
+    label = gtk_label_new("pixels");
+    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+    gtk_box_pack_start(GTK_BOX (round_corners_box), label, FALSE, TRUE, 0);
+
+
+
+    
      
     RET(frame);
 }
 
-static void
-autohide_toggle(GtkWidget *b, gpointer bp)
-{
-    gboolean t;
-
-    ENTER;
-    t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b));
-    gtk_widget_set_sensitive(height_when_hidden_box, t);
-    RET();
-}
 
 GtkWidget *
 mk_properties()
@@ -461,9 +485,10 @@ mk_properties()
 
     prop_autohide_checkb = gtk_check_button_new_with_label("Autohide");
     gtk_box_pack_start(GTK_BOX (vbox), prop_autohide_checkb, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(prop_autohide_checkb), "toggled", G_CALLBACK(autohide_toggle), NULL);
 
     height_when_hidden_box = gtk_hbox_new(FALSE, 0);
+    g_signal_connect(G_OBJECT(prop_autohide_checkb), "toggled", G_CALLBACK(sensitive_toggle),
+          height_when_hidden_box);
     gtk_box_pack_start(GTK_BOX (vbox), height_when_hidden_box, FALSE, FALSE, 0);
 
     add_hindent_box(height_when_hidden_box);
@@ -480,6 +505,28 @@ mk_properties()
     gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
     gtk_box_pack_start(GTK_BOX (height_when_hidden_box), label, FALSE, TRUE, 0);
 
+    /* layer */
+    prop_layer_checkb = gtk_check_button_new_with_label("Layer");
+    gtk_box_pack_start(GTK_BOX (vbox), prop_layer_checkb, FALSE, FALSE, 0);
+    
+    layer_box = gtk_hbox_new(FALSE, 0);
+    g_signal_connect(G_OBJECT(prop_layer_checkb), "toggled", G_CALLBACK(sensitive_toggle), layer_box);
+    gtk_box_pack_start(GTK_BOX (vbox), layer_box, FALSE, FALSE, 0);
+
+    add_hindent_box(layer_box);
+    
+    label = gtk_label_new("Panel is ");
+    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+    gtk_box_pack_start(GTK_BOX (layer_box), label, FALSE, TRUE, 0);
+
+    layer_opt = gtk_combo_box_new_text();
+    gtk_combo_box_append_text(GTK_COMBO_BOX(layer_opt), "above");
+    gtk_combo_box_append_text(GTK_COMBO_BOX(layer_opt), "below");
+    gtk_box_pack_start(GTK_BOX (layer_box), layer_opt, FALSE, TRUE, 0);
+
+    label = gtk_label_new(" all windows");
+    gtk_misc_set_alignment(GTK_MISC(label), 0.0, 0.5);
+    gtk_box_pack_start(GTK_BOX (layer_box), label, FALSE, TRUE, 0);
     
     RET(frame);
 }
@@ -672,6 +719,10 @@ configure(void)
     update_toggle_button(prop_st_checkb, p->setstrut);
     update_toggle_button(prop_autohide_checkb, p->autohide);
     gtk_adjustment_set_value(height_when_hidden_adj, p->height_when_hidden);
+    update_toggle_button(prop_round_corners_checkb, p->round_corners);
+    gtk_adjustment_set_value(round_corners_adj, p->round_corners_radius);
+    update_toggle_button(prop_layer_checkb, p->layer);
+    update_opt_menu(layer_opt, MAX(p->layer - 1, 0));
     RET();
 }
 
@@ -679,6 +730,7 @@ void
 global_config_save(FILE *fp)
 {
     GdkColor c;
+    int layer;
     
     fprintf(fp, "# fbpanel <profile> config file\n");
     fprintf(fp, "# see http://fbpanel.sf.net/docs.html for complete configuration guide\n");
@@ -705,6 +757,15 @@ global_config_save(FILE *fp)
     fprintf(fp, "    autohide = %s\n",
           num2str(bool_pair, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop_autohide_checkb)), "false"));
     fprintf(fp, "    heightWhenHidden = %d\n", (int) height_when_hidden_adj->value);
+    fprintf(fp, "    roundcorners = %s\n",
+          num2str(bool_pair, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop_round_corners_checkb)), "false"));
+    fprintf(fp, "    roundcornersradius = %d\n", (int) round_corners_adj->value);    
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(prop_layer_checkb))) 
+        layer = gtk_combo_box_get_active(GTK_COMBO_BOX(layer_opt)) + 1;
+    else
+        layer = 0;
+    fprintf(fp, "    layer = %s\n", num2str(layer_pair, layer, "None"));
+                
 
     fprintf(fp, "}\n\n");
 }

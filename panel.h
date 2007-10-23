@@ -48,6 +48,7 @@ typedef struct {
     int orientation;
     int widthtype, width;
     int heighttype, height;
+    int round_corners_radius;
 
     guint self_destroy : 1;
     guint setdocktype : 1;

@@ -224,7 +224,7 @@ panel_destroy_event(GtkWidget * widget, GdkEvent * event, gpointer data)
     RET(FALSE);
 }
 
-static gint
+static void
 panel_size_req(GtkWidget *widget, GtkRequisition *req, panel *p)
 {
     ENTER;
@@ -237,35 +237,48 @@ panel_size_req(GtkWidget *widget, GtkRequisition *req, panel *p)
     req->width  = p->aw;
     req->height = p->ah;
     DBG("OUT req=(%d, %d)\n", req->width, req->height);
-    RET( TRUE );
+    RET();
 }
 
-static gint
-panel_size_alloc(GtkWidget *widget, GtkAllocation *a, panel *p)
+static void
+make_round_corners(panel *p)
 {
-    static gint x, y;
+    GdkBitmap *b;
+	GdkGC* gc;
+	GdkColor black = { 0, 0, 0, 0};
+	GdkColor white = { 1, 0xffff, 0xffff, 0xffff};
+	int w, h, r, br;	
 
     ENTER;
-    DBG("gtk: size (%d, %d). pos (%d, %d)\n", a->width, a->height, a->x, a->y);
-    DBG("our: size (%d, %d). pos (%d, %d)\n", p->aw, p->ah, p->ax, p->ay);
-    if (p->widthtype == WIDTH_REQUEST)
-        p->width = (p->orientation == ORIENT_HORIZ) ? a->width : a->height;
-    if (p->heighttype == HEIGHT_REQUEST)
-        p->height = (p->orientation == ORIENT_HORIZ) ? a->height : a->width;
-    calculate_position(p);
-    DBG("our: size (%d, %d). pos (%d, %d)\n", p->aw, p->ah, p->ax, p->ay);
-    if (a->width == p->aw && a->height == p->ah && x == p->ax && y == p ->ay) {
-        DBG("actual coords eq to preffered. just returning\n");
-        RET(TRUE);
-    }
-    x = p->ax;
-    y = p->ay;
-    gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
-    DBG("moving to %d %d\n", p->ax, p->ay);
-    if (p->setstrut)
-        panel_set_wm_strut(p);
-    RET(TRUE);
+	w = p->cw;
+	h = p->ch;
+	r = p->round_corners_radius;
+	if (2*r > MIN(w, h)) {
+		r = MIN(w, h) / 2;
+		DBG2("chaning radius to %d\n", r);
+	}
+	b = gdk_pixmap_new(NULL, w, h, 1);
+    gc = gdk_gc_new(GDK_DRAWABLE(b));
+    gdk_gc_set_foreground(gc, &black);
+    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, 0, 0, w, h);
+    gdk_gc_set_foreground(gc, &white);
+    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, r, 0, w-2*r, h);
+    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, 0, r, r, h-2*r);
+    gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, w-r, r, r, h-2*r);
+
+    br = 2 * r ;
+	gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, 0, br, br, 0*64, 360*64);
+    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, h-br-1, br, br, 0*64, 360*64);
+    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, w-br, 0, br, br, 0*64, 360*64);
+    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, w-br, h-br-1, br, br, 0*64, 360*64);
+
+	gtk_widget_shape_combine_mask(p->topgwin, b, 0, 0);
+	g_object_unref(gc);
+	g_object_unref(b);
+
+    RET();
 }
+
 
 static  gboolean
 panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
@@ -273,6 +286,10 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
     ENTER;
     if (e->width == p->cw && e->height == p->ch && e->x == p->cx && e->y == p->cy)
         RET(TRUE);
+    if (p->ax != e->x || p->ay != e->y) {
+        gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
+        DBG("moving to %d %d\n", p->ax, p->ay);
+    }
     p->cw = e->width;
     p->ch = e->height;
     p->cx = e->x;
@@ -280,7 +297,10 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
     DBG("here\n");
     if (p->transparent)
         fb_bg_notify_changed_bg(p->bg);
-    DBG("here\n");
+    if (p->setstrut)
+        panel_set_wm_strut(p);
+    if (p->round_corners)
+        make_round_corners(p);
     DBG("geom: size (%d, %d). pos (%d, %d)\n", e->width, e->height, e->x, e->y);
     RET(FALSE);
 
@@ -290,50 +310,6 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
 /****************************************************
  *         panel creation                           *
  ****************************************************/
-static void
-make_round_corners(panel *p)
-{
-    GtkWidget *b1, *b2, *img;
-    GtkWidget *(*box_new) (gboolean, gint);
-    void (*box_pack)(GtkBox *, GtkWidget *, gboolean, gboolean, guint);
-    gchar *s1, *s2;
-
-    ENTER;
-    if (p->edge == EDGE_TOP) {
-        s1 = IMGPREFIX "top-left.xpm";
-        s2 = IMGPREFIX "top-right.xpm";
-    } else if (p->edge == EDGE_BOTTOM) {
-        s1 = IMGPREFIX "bottom-left.xpm";
-        s2 = IMGPREFIX "bottom-right.xpm";
-    } else if (p->edge == EDGE_LEFT) {
-        s1 = IMGPREFIX "top-left.xpm";
-        s2 = IMGPREFIX "bottom-left.xpm";
-    } else if (p->edge == EDGE_RIGHT) {
-        s1 = IMGPREFIX "top-right.xpm";
-        s2 = IMGPREFIX "bottom-right.xpm";
-    } else
-        RET();
-
-    box_new = (p->orientation == ORIENT_HORIZ) ? gtk_vbox_new : gtk_hbox_new;
-    b1 = box_new(0, FALSE);
-    gtk_widget_show(b1);
-    b2 = box_new(0, FALSE);
-    gtk_widget_show(b2);
-
-    box_pack = (p->edge == EDGE_TOP || p->edge == EDGE_LEFT) ?
-        gtk_box_pack_start : gtk_box_pack_end;
-
-    img = gtk_image_new_from_file(s1);
-    gtk_widget_show(img);
-    box_pack(GTK_BOX(b1), img, FALSE, FALSE, 0);
-    img = gtk_image_new_from_file(s2);
-    gtk_widget_show(img);
-    box_pack(GTK_BOX(b2), img, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(p->lbox), b1, FALSE, FALSE, 0);
-    gtk_box_pack_end(GTK_BOX(p->lbox), b2, FALSE, FALSE, 0);
-    RET();
-}
-
 
 static gboolean
 panel_leave_real(panel *p)
@@ -445,9 +421,7 @@ panel_start_gui(panel *p)
     g_signal_connect(G_OBJECT(p->topgwin), "destroy-event",
           G_CALLBACK(panel_destroy_event), p);
     g_signal_connect (G_OBJECT (p->topgwin), "size-request",
-          (GCallback) panel_size_req, p);
-    g_signal_connect (G_OBJECT (p->topgwin), "size-allocate",
-          (GCallback) panel_size_alloc, p);
+          (GCallback) panel_size_req, p); 
     g_signal_connect (G_OBJECT (p->topgwin), "configure-event",
           (GCallback) panel_configure_event, p);
    g_signal_connect (G_OBJECT (p->topgwin), "button-press-event",
@@ -472,12 +446,11 @@ panel_start_gui(panel *p)
     gtk_container_set_border_width(GTK_CONTAINER(p->lbox), 0);
     gtk_container_add(GTK_CONTAINER(p->bbox), p->lbox);
     gtk_widget_show(p->lbox);
-    if (p->round_corners)
-        make_round_corners(p);
 
     p->box = p->my_box_new(FALSE, p->spacing);
     gtk_container_set_border_width(GTK_CONTAINER(p->box), 0);
-    gtk_box_pack_start(GTK_BOX(p->lbox), p->box, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(p->lbox), p->box, TRUE, TRUE, 
+		(p->round_corners) ? p->round_corners_radius : 0);
     gtk_widget_show(p->box);
 
     p->topxwin = GDK_WINDOW_XWINDOW(GTK_WIDGET(p->topgwin)->window);
@@ -594,6 +567,8 @@ panel_parse_global(panel *p, FILE *fp)
                 p->setstrut = str2num(bool_pair, s.t[1], 0);
             } else if (!g_ascii_strcasecmp(s.t[0], "RoundCorners")) {
                 p->round_corners = str2num(bool_pair, s.t[1], 0);
+			} else if (!g_ascii_strcasecmp(s.t[0], "RoundCornersRadius")) {
+                p->round_corners_radius = atoi(s.t[1]);
             } else if (!g_ascii_strcasecmp(s.t[0], "autohide")) {
                 p->autohide = str2num(bool_pair, s.t[1], 0);
             } else if (!g_ascii_strcasecmp(s.t[0], "heightWhenHidden")) {
@@ -759,7 +734,8 @@ panel_start(panel *p, FILE *fp)
     p->height = PANEL_HEIGHT_DEFAULT;
     p->setdocktype = 1;
     p->setstrut = 1;
-    p->round_corners = 0;
+    p->round_corners = 1;
+	p->round_corners_radius = 7;
     p->autohide = 0;
     p->visible = VISIBLE;
     p->height_when_hidden = 2;
