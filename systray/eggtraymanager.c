@@ -100,62 +100,62 @@ egg_tray_manager_init (EggTrayManager *manager)
 static void
 egg_tray_manager_class_init (EggTrayManagerClass *klass)
 {
-  GObjectClass *gobject_class;
+    GObjectClass *gobject_class;
   
-  parent_class = g_type_class_peek_parent (klass);
-  gobject_class = (GObjectClass *)klass;
+    parent_class = g_type_class_peek_parent (klass);
+    gobject_class = (GObjectClass *)klass;
 
-  gobject_class->finalize = egg_tray_manager_finalize;
+    gobject_class->finalize = egg_tray_manager_finalize;
   
-  manager_signals[TRAY_ICON_ADDED] =
-    g_signal_new ("tray_icon_added",
-		  G_OBJECT_CLASS_TYPE (klass),
-		  G_SIGNAL_RUN_LAST,
-		  G_STRUCT_OFFSET (EggTrayManagerClass, tray_icon_added),
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__OBJECT,
-		  G_TYPE_NONE, 1,
-		  GTK_TYPE_SOCKET);
+    manager_signals[TRAY_ICON_ADDED] =
+        g_signal_new ("tray_icon_added",
+              G_OBJECT_CLASS_TYPE (klass),
+              G_SIGNAL_RUN_LAST,
+              G_STRUCT_OFFSET (EggTrayManagerClass, tray_icon_added),
+              NULL, NULL,
+              g_cclosure_marshal_VOID__OBJECT,
+              G_TYPE_NONE, 1,
+              GTK_TYPE_SOCKET);
 
-  manager_signals[TRAY_ICON_REMOVED] =
-    g_signal_new ("tray_icon_removed",
-		  G_OBJECT_CLASS_TYPE (klass),
-		  G_SIGNAL_RUN_LAST,
-		  G_STRUCT_OFFSET (EggTrayManagerClass, tray_icon_removed),
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__OBJECT,
-		  G_TYPE_NONE, 1,
-		  GTK_TYPE_SOCKET);
-  manager_signals[MESSAGE_SENT] =
-    g_signal_new ("message_sent",
-		  G_OBJECT_CLASS_TYPE (klass),
-		  G_SIGNAL_RUN_LAST,
-		  G_STRUCT_OFFSET (EggTrayManagerClass, message_sent),
-		  NULL, NULL,
-		  _egg_marshal_VOID__OBJECT_STRING_LONG_LONG,
-		  G_TYPE_NONE, 4,
-		  GTK_TYPE_SOCKET,
-		  G_TYPE_STRING,
-		  G_TYPE_LONG,
-		  G_TYPE_LONG);
-  manager_signals[MESSAGE_CANCELLED] =
-    g_signal_new ("message_cancelled",
-		  G_OBJECT_CLASS_TYPE (klass),
-		  G_SIGNAL_RUN_LAST,
-		  G_STRUCT_OFFSET (EggTrayManagerClass, message_cancelled),
-		  NULL, NULL,
-		  _egg_marshal_VOID__OBJECT_LONG,
-		  G_TYPE_NONE, 2,
-		  GTK_TYPE_SOCKET,
-		  G_TYPE_LONG);
-  manager_signals[LOST_SELECTION] =
-    g_signal_new ("lost_selection",
-		  G_OBJECT_CLASS_TYPE (klass),
-		  G_SIGNAL_RUN_LAST,
-		  G_STRUCT_OFFSET (EggTrayManagerClass, lost_selection),
-		  NULL, NULL,
-		  g_cclosure_marshal_VOID__VOID,
-		  G_TYPE_NONE, 0);
+    manager_signals[TRAY_ICON_REMOVED] =
+        g_signal_new ("tray_icon_removed",
+              G_OBJECT_CLASS_TYPE (klass),
+              G_SIGNAL_RUN_LAST,
+              G_STRUCT_OFFSET (EggTrayManagerClass, tray_icon_removed),
+              NULL, NULL,
+              g_cclosure_marshal_VOID__OBJECT,
+              G_TYPE_NONE, 1,
+              GTK_TYPE_SOCKET);
+    manager_signals[MESSAGE_SENT] =
+        g_signal_new ("message_sent",
+              G_OBJECT_CLASS_TYPE (klass),
+              G_SIGNAL_RUN_LAST,
+              G_STRUCT_OFFSET (EggTrayManagerClass, message_sent),
+              NULL, NULL,
+              _egg_marshal_VOID__OBJECT_STRING_LONG_LONG,
+              G_TYPE_NONE, 4,
+              GTK_TYPE_SOCKET,
+              G_TYPE_STRING,
+              G_TYPE_LONG,
+              G_TYPE_LONG);
+    manager_signals[MESSAGE_CANCELLED] =
+        g_signal_new ("message_cancelled",
+              G_OBJECT_CLASS_TYPE (klass),
+              G_SIGNAL_RUN_LAST,
+              G_STRUCT_OFFSET (EggTrayManagerClass, message_cancelled),
+              NULL, NULL,
+              _egg_marshal_VOID__OBJECT_LONG,
+              G_TYPE_NONE, 2,
+              GTK_TYPE_SOCKET,
+              G_TYPE_LONG);
+    manager_signals[LOST_SELECTION] =
+        g_signal_new ("lost_selection",
+              G_OBJECT_CLASS_TYPE (klass),
+              G_SIGNAL_RUN_LAST,
+              G_STRUCT_OFFSET (EggTrayManagerClass, lost_selection),
+              NULL, NULL,
+              g_cclosure_marshal_VOID__VOID,
+              G_TYPE_NONE, 0);
 
 }
 
@@ -199,40 +199,82 @@ egg_tray_manager_plug_removed (GtkSocket       *socket,
   return FALSE;
 }
 
+static gboolean
+na_tray_manager_socket_exposed (GtkWidget      *widget,
+      GdkEventExpose *event,
+      gpointer        user_data)
+{
+    gdk_window_clear_area (widget->window,
+          event->area.x, event->area.y,
+          event->area.width, event->area.height);
+    return FALSE;
+}
+
+
+
+static void
+na_tray_manager_make_socket_transparent (GtkWidget *widget,
+      gpointer   user_data)
+{
+    if (GTK_WIDGET_NO_WINDOW (widget))
+        return;
+    gdk_window_set_back_pixmap (widget->window, NULL, TRUE);
+}
+
+
+
+static void
+na_tray_manager_socket_style_set (GtkWidget *widget,
+      GtkStyle  *previous_style,
+      gpointer   user_data)
+{
+    if (widget->window == NULL)
+        return;
+    na_tray_manager_make_socket_transparent(widget, user_data);
+}
+
 static void
 egg_tray_manager_handle_dock_request (EggTrayManager       *manager,
-				      XClientMessageEvent  *xevent)
+      XClientMessageEvent  *xevent)
 {
-  GtkWidget *socket;
-  Window *window;
+    GtkWidget *socket;
+    Window *window;
   
-  socket = gtk_socket_new ();
-  
-  /* We need to set the child window here
-   * so that the client can call _get functions
-   * in the signal handler
-   */
-  window = g_new (Window, 1);
-  *window = xevent->data.l[2];
-      
-  g_object_set_data_full (G_OBJECT (socket),
-			  "egg-tray-child-window",
-			  window, g_free);
-  g_signal_emit (manager, manager_signals[TRAY_ICON_ADDED], 0,
-		 socket);
+    socket = gtk_socket_new ();
+    gtk_widget_set_app_paintable (socket, TRUE);
+    gtk_widget_set_double_buffered (socket, FALSE);
 
-  /* Add the socket only if it's been attached */
-  if (GTK_IS_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (socket))))
-    {
-      g_signal_connect (socket, "plug_removed",
-			G_CALLBACK (egg_tray_manager_plug_removed), manager);
-      
-      gtk_socket_add_id (GTK_SOCKET (socket), xevent->data.l[2]);
+    g_signal_connect (socket, "realize",
+          G_CALLBACK (na_tray_manager_make_socket_transparent), NULL);
+    g_signal_connect (socket, "expose_event",
+          G_CALLBACK (na_tray_manager_socket_exposed), NULL);
+    g_signal_connect_after (socket, "style_set",
+          G_CALLBACK (na_tray_manager_socket_style_set), NULL);
 
-      g_hash_table_insert (manager->socket_table, GINT_TO_POINTER (xevent->data.l[2]), socket);
-    }
-  else
-    gtk_widget_destroy (socket);
+
+    /* We need to set the child window here
+     * so that the client can call _get functions
+     * in the signal handler
+     */
+    window = g_new (Window, 1);
+    *window = xevent->data.l[2];
+      
+    g_object_set_data_full (G_OBJECT (socket),
+          "egg-tray-child-window",
+          window, g_free);
+    g_signal_emit (manager, manager_signals[TRAY_ICON_ADDED], 0,
+          socket);
+
+    /* Add the socket only if it's been attached */
+    if (GTK_IS_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (socket)))) {
+        g_signal_connect (socket, "plug_removed",
+              G_CALLBACK (egg_tray_manager_plug_removed), manager);
+      
+        gtk_socket_add_id (GTK_SOCKET (socket), xevent->data.l[2]);
+
+        g_hash_table_insert (manager->socket_table, GINT_TO_POINTER (xevent->data.l[2]), socket);
+    } else
+        gtk_widget_destroy (socket);
 }
 
 static void

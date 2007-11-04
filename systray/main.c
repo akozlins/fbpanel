@@ -31,13 +31,23 @@ typedef struct {
 
 //static void run_gtktray(tray *tr);
 
-
+#define USE_ALIGN 0
 
 static void
 tray_added (EggTrayManager *manager, GtkWidget *icon, tray *tr)
 {
-    gtk_box_pack_end (GTK_BOX (tr->box), icon, FALSE, FALSE, 0);
-    gtk_widget_show (icon);
+    GtkWidget* aln;
+
+    if (USE_ALIGN) {
+        aln = gtk_alignment_new(0.5, 0.5, 0, 0);
+        gtk_alignment_set_padding(GTK_ALIGNMENT(aln), 0, 0, 0, 0);
+        gtk_container_add(GTK_CONTAINER(aln), icon);
+        gtk_container_set_border_width(GTK_CONTAINER(aln), 0);
+    } else {
+        aln = icon;
+    }
+    gtk_box_pack_end (GTK_BOX (tr->box), aln, FALSE, FALSE, 0);
+    gtk_widget_show_all (aln);
     if (!tr->icon_num) {
         DBG("first icon\n");
         gtk_widget_show_all(tr->box);
@@ -49,6 +59,8 @@ tray_added (EggTrayManager *manager, GtkWidget *icon, tray *tr)
 static void
 tray_removed (EggTrayManager *manager, GtkWidget *icon, tray *tr)
 {
+    if (USE_ALIGN)
+        gtk_widget_destroy(gtk_widget_get_parent(icon));
     tr->icon_num--;
     DBG("del icon\n");
     if (!tr->icon_num) {
@@ -115,16 +127,12 @@ tray_constructor(plugin *p)
     p->priv = tr;
     tr->plug = p;
     tr->icon_num = 0;
-#if 0
-    frame = gtk_frame_new(NULL);
-    gtk_container_set_border_width(GTK_CONTAINER(frame), 0);
-    gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_NONE);
-#endif
     tr->box = p->panel->my_box_new(FALSE, 1);
-    //gtk_container_add(GTK_CONTAINER(frame), tr->box);
     gtk_container_add(GTK_CONTAINER(p->pwid), tr->box);        
     gtk_bgbox_set_background(p->pwid, BG_STYLE, 0, 0);
-    gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 1);
+    gdk_window_set_back_pixmap (p->pwid->window, NULL, TRUE);
+	
+    gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 0);
     screen = gtk_widget_get_screen (GTK_WIDGET (p->panel->topgwin));
     
     if (egg_tray_manager_check_running(screen)) {
