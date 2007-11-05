@@ -111,7 +111,7 @@ gtk_bgbox_class_init (GtkBgboxClass *class)
     widget_class->configure_event = gtk_bgbox_configure_event;
     widget_class->destroy_event   = gtk_bgbox_destroy_event;
     widget_class->delete_event    = gtk_bgbox_delete_event;
-
+ 
     object_class->finalize = gtk_bgbox_finalize;
     g_type_class_add_private (class, sizeof (GtkBgboxPrivate));
 }
@@ -317,7 +317,6 @@ gtk_bgbox_bg_changed(FbBg *bg, GtkWidget *widget)
     priv = GTK_BGBOX_GET_PRIVATE (widget);
     if (GTK_WIDGET_REALIZED (widget) && !GTK_WIDGET_NO_WINDOW (widget)
           && priv->bg_type == BG_ROOT) {
-        gtk_bgbox_free_bg(widget);
         gtk_bgbox_set_background(widget, BG_ROOT, priv->tintcolor, priv->alpha);
     }
     RET();
@@ -337,7 +336,7 @@ gtk_bgbox_set_background(GtkWidget *widget, int bg_type, guint32 tintcolor, gint
     gtk_bgbox_free_bg(widget);
     priv->bg_type = bg_type;
     if (priv->bg_type == BG_STYLE) {
-          gtk_style_set_background(widget->style, widget->window, widget->state);
+        gtk_style_set_background(widget->style, widget->window, widget->state);
     } else if (priv->bg_type == BG_ROOT) {
         if (priv->bg == NULL) 
             priv->bg = fb_bg_get_for_display();
@@ -346,6 +345,10 @@ gtk_bgbox_set_background(GtkWidget *widget, int bg_type, guint32 tintcolor, gint
         priv->alpha = alpha;
         gtk_bgbox_set_bg_root(widget, priv);
     }
+    //gtk_widget_queue_draw(widget);
+    g_object_notify(G_OBJECT (widget), "style");
+
+    DBG("queue draw all %p\n", widget);
     RET();
 }
 
@@ -366,7 +369,8 @@ gtk_bgbox_set_bg_root(GtkWidget *widget, GtkBgboxPrivate *priv)
         DBG("no root pixmap was found\n");
         RET();
     }
-    fb_bg_composite(priv->pixmap, widget->style->black_gc, priv->tintcolor, priv->alpha);
+    if (priv->alpha)
+		fb_bg_composite(priv->pixmap, widget->style->black_gc, priv->tintcolor, priv->alpha);
     gdk_window_set_back_pixmap(widget->window, priv->pixmap, FALSE);
     //gdk_window_clear(widget->window);
     rect.x = widget->allocation.x;
