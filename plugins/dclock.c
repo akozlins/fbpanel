@@ -209,7 +209,8 @@ dclock_constructor(plugin *p)
               G_CALLBACK (clicked), (gpointer) dc);
     gtk_widget_show_all(dc->main);
     dc->tip = gtk_tooltips_new();
-    dc->timer = g_timeout_add(1000, (GSourceFunc) clock_update, (gpointer)dc);
+    //dc->timer = g_timeout_add(1000, (GSourceFunc) clock_update, (gpointer)dc);
+    clock_update(dc);
     
     RET(1);
 
