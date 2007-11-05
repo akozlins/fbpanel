@@ -17,7 +17,6 @@
 
 static const char desktop_ent[] = "Desktop Entry";
 static const gchar app_dir_name[] = "applications";
-static GHashTable *ht;
 static GtkWidget *read_submenu(plugin *p, gboolean as_item);
 
 typedef struct {
@@ -45,6 +44,8 @@ typedef struct {
     gulong handler_id;
     int iconsize, paneliconsize;
     GSList *files;
+    GHashTable *ht;
+    guint tout;
 } menup;
 
 static void
@@ -53,6 +54,8 @@ menu_destructor(plugin *p)
     menup *m = (menup *)p->priv;
 
     ENTER;
+    if (m->tout)
+        g_source_remove(m->tout);
     g_signal_handler_disconnect(G_OBJECT(m->bg), m->handler_id);
     if (m->menu) {
         DBG("destroy(m->menu)\n");
@@ -152,7 +155,7 @@ do_app_dir(plugin *p, const gchar *path)
             GtkWidget **menu, *mi;
 
             DBG("cat: %s\n", *tmp);
-            if (!(menu = g_hash_table_lookup(ht, tmp[0])))
+            if (!(menu = g_hash_table_lookup( ((menup *)p->priv)->ht, tmp[0])))
                 continue;
 
             mi = gtk_image_menu_item_new_with_label(title);
@@ -189,11 +192,11 @@ make_fdo_menu(plugin *p, GtkWidget *menu)
     menup *m = (menup *)p->priv;
 
     ENTER;
-    ht = g_hash_table_new(g_str_hash, g_str_equal);
+    m->ht = g_hash_table_new(g_str_hash, g_str_equal);
     for (i = 0; i < G_N_ELEMENTS(main_cats); i++) {
-        g_hash_table_insert(ht, main_cats[i].name, &main_cats[i].menu);
+        g_hash_table_insert(m->ht, main_cats[i].name, &main_cats[i].menu);
         main_cats[i].menu = NULL;
-        if (g_hash_table_lookup(ht, &main_cats[i].name))
+        if (g_hash_table_lookup(m->ht, &main_cats[i].name))
             DBG("%s not found\n", main_cats[i].name);
     }
 
@@ -221,7 +224,7 @@ make_fdo_menu(plugin *p, GtkWidget *menu)
             gtk_widget_show_all(main_cats[i].menu);
         }
     }
-    g_hash_table_destroy(ht);
+    g_hash_table_destroy(m->ht);
     RET();
 }
 
@@ -245,6 +248,7 @@ delayed_menu_creation(plugin *p)
         fseek(p->fp, 0, SEEK_SET);
         read_submenu(p, TRUE);
     }
+    m->tout = 0;
     RET(FALSE); /* run once */
 }
 
@@ -538,7 +542,7 @@ menu_icon_theme_changed(GtkIconTheme *icon_theme, plugin *p)
         gtk_widget_destroy(m->menu);
         m->menu = NULL;
     }
-    g_timeout_add(3000, (GSourceFunc) delayed_menu_creation, p);
+    m->tout = g_timeout_add(3000, (GSourceFunc) delayed_menu_creation, p);
 }
 
 
@@ -560,7 +564,7 @@ menu_constructor(plugin *p)
         ERR("menu: plugin init failed\n");
         goto error;
     }
-    g_timeout_add(3000, (GSourceFunc) delayed_menu_creation, p);
+    m->tout = g_timeout_add(1000, (GSourceFunc) delayed_menu_creation, p);
     g_signal_connect (G_OBJECT(gtk_icon_theme_get_default()),
         "changed", (GCallback) menu_icon_theme_changed, p);
     RET(1);
