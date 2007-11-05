@@ -105,6 +105,16 @@ tray_destructor(plugin *p)
 
     
 
+static void
+tray_notify_style_event(GObject *gobject, GParamSpec *arg1, GtkWidget *widget)
+{
+    ENTER;
+    /* generates expose event on plugged (reparented) windows */
+    gtk_container_foreach (GTK_CONTAINER (widget), (GtkCallback) gtk_widget_hide, NULL);
+    gtk_container_foreach (GTK_CONTAINER (widget), (GtkCallback) gtk_widget_show, NULL);
+    RET();
+}
+
 
 static int
 tray_constructor(plugin *p)
@@ -128,10 +138,9 @@ tray_constructor(plugin *p)
     tr->plug = p;
     tr->icon_num = 0;
     tr->box = p->panel->my_box_new(FALSE, 1);
+    g_signal_connect_after (p->pwid, "notify::style", G_CALLBACK (tray_notify_style_event), tr->box);
     gtk_container_add(GTK_CONTAINER(p->pwid), tr->box);        
-    gtk_bgbox_set_background(p->pwid, BG_STYLE, 0, 0);
-    gdk_window_set_back_pixmap (p->pwid->window, NULL, TRUE);
-	
+  	
     gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 0);
     screen = gtk_widget_get_screen (GTK_WIDGET (p->panel->topgwin));
     

@@ -200,37 +200,42 @@ egg_tray_manager_plug_removed (GtkSocket       *socket,
 }
 
 static gboolean
-na_tray_manager_socket_exposed (GtkWidget      *widget,
+egg_tray_manager_socket_exposed (GtkWidget      *widget,
       GdkEventExpose *event,
       gpointer        user_data)
 {
+    ENTER;
     gdk_window_clear_area (widget->window,
           event->area.x, event->area.y,
           event->area.width, event->area.height);
-    return FALSE;
+    RET(FALSE);
 }
 
 
 
 static void
-na_tray_manager_make_socket_transparent (GtkWidget *widget,
+egg_tray_manager_make_socket_transparent (GtkWidget *widget,
       gpointer   user_data)
 {
+    ENTER;
     if (GTK_WIDGET_NO_WINDOW (widget))
-        return;
+        RET();
     gdk_window_set_back_pixmap (widget->window, NULL, TRUE);
+    RET();
 }
 
 
 
 static void
-na_tray_manager_socket_style_set (GtkWidget *widget,
+egg_tray_manager_socket_style_set (GtkWidget *widget,
       GtkStyle  *previous_style,
       gpointer   user_data)
 {
+    ENTER;
     if (widget->window == NULL)
-        return;
-    na_tray_manager_make_socket_transparent(widget, user_data);
+        RET();
+    egg_tray_manager_make_socket_transparent(widget, user_data);
+    RET();
 }
 
 static void
@@ -239,17 +244,19 @@ egg_tray_manager_handle_dock_request (EggTrayManager       *manager,
 {
     GtkWidget *socket;
     Window *window;
-  
+
+    ENTER;
     socket = gtk_socket_new ();
     gtk_widget_set_app_paintable (socket, TRUE);
     gtk_widget_set_double_buffered (socket, FALSE);
-
+    gtk_widget_add_events (socket, GDK_EXPOSURE_MASK);
+    
     g_signal_connect (socket, "realize",
-          G_CALLBACK (na_tray_manager_make_socket_transparent), NULL);
+          G_CALLBACK (egg_tray_manager_make_socket_transparent), NULL);
     g_signal_connect (socket, "expose_event",
-          G_CALLBACK (na_tray_manager_socket_exposed), NULL);
+          G_CALLBACK (egg_tray_manager_socket_exposed), NULL);
     g_signal_connect_after (socket, "style_set",
-          G_CALLBACK (na_tray_manager_socket_style_set), NULL);
+          G_CALLBACK (egg_tray_manager_socket_style_set), NULL);
 
 
     /* We need to set the child window here
@@ -267,14 +274,20 @@ egg_tray_manager_handle_dock_request (EggTrayManager       *manager,
 
     /* Add the socket only if it's been attached */
     if (GTK_IS_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (socket)))) {
+        GtkRequisition req;
+
         g_signal_connect (socket, "plug_removed",
               G_CALLBACK (egg_tray_manager_plug_removed), manager);
       
         gtk_socket_add_id (GTK_SOCKET (socket), xevent->data.l[2]);
 
         g_hash_table_insert (manager->socket_table, GINT_TO_POINTER (xevent->data.l[2]), socket);
+        req.width = req.height = 1;
+        gtk_widget_size_request (socket, &req);
+
     } else
         gtk_widget_destroy (socket);
+    RET();
 }
 
 static void
