@@ -12,6 +12,10 @@ New Features:
 * menu was changed to propagate Control-Button3 clicks to parent window
 * normal support for round corners. Config file gets new global integer option - RoundCornersRadius
 * system tray transparency fix
+* clock startup delay was removed
+* menu: fixed segfault caused by timeout func that used stale pointer
+
+
 
 4.12
 New Features:
