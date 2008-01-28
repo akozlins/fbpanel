@@ -22,7 +22,9 @@ while [ $# -gt 0 ]; do
             exit 0
             ;;
         --prefix=*)
-            PREFIX=`echo $1 | sed 's/--prefix=//'`
+            PREFIX=`echo $1 | sed -e 's/--prefix=//' -e 's/\/$//'`
+            PREFIX=$(eval echo $PREFIX)
+
             ;;
 	--devel)
 	    DEVEL=1
