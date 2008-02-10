@@ -62,12 +62,12 @@ panel *the_panel;
  *         panel's handlers for WM events           *
  ****************************************************/
 /*
-static void
-panel_del_wm_strut(panel *p)
-{
-    XDeleteProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT);
-    XDeleteProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT_PARTIAL);
-}
+  static void
+  panel_del_wm_strut(panel *p)
+  {
+  XDeleteProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT);
+  XDeleteProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT_PARTIAL);
+  }
 */
 
 /** realy brie 
@@ -80,7 +80,7 @@ panel_del_wm_strut(panel *p)
  * \retval !0 - ok
  */
 
-static void
+void
 panel_set_wm_strut(panel *p)
 {
     gulong data[12] = { 0 };
@@ -169,18 +169,18 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
     win = ev->xproperty.window;
     DBG("win=%x at=%d\n", win, at);
     if (win == GDK_ROOT_WINDOW()) {
-    if (at == a_NET_CLIENT_LIST) {
+        if (at == a_NET_CLIENT_LIST) {
             DBG("A_NET_CLIENT_LIST\n");
             fb_ev_trigger(fbev, EV_CLIENT_LIST);
-    } else if (at == a_NET_CURRENT_DESKTOP) {
+        } else if (at == a_NET_CURRENT_DESKTOP) {
             DBG("A_NET_CURRENT_DESKTOP\n");
             p->curdesk = get_net_current_desktop();
             fb_ev_trigger(fbev, EV_CURRENT_DESKTOP);
-    } else if (at == a_NET_NUMBER_OF_DESKTOPS) {
+        } else if (at == a_NET_NUMBER_OF_DESKTOPS) {
             DBG("A_NET_NUMBER_OF_DESKTOPS\n");
             p->desknum = get_net_number_of_desktops();
             fb_ev_trigger(fbev, EV_NUMBER_OF_DESKTOPS);
-    } else if (at == a_NET_DESKTOP_NAMES) {
+        } else if (at == a_NET_DESKTOP_NAMES) {
             DBG("A_NET_DESKTOP_NAMES\n");
             fb_ev_trigger(fbev, EV_DESKTOP_NAMES);
         } else if (at == a_NET_ACTIVE_WINDOW) {
@@ -189,7 +189,7 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
         }else if (at == a_NET_CLIENT_LIST_STACKING) {
             DBG("A_NET_CLIENT_LIST_STACKING\n");
             fb_ev_trigger(fbev, EV_CLIENT_LIST_STACKING);
-    } else if (at == a_NET_WORKAREA) {
+        } else if (at == a_NET_WORKAREA) {
             DBG("A_NET_WORKAREA\n");
             p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
             print_wmdata(p);
@@ -244,20 +244,20 @@ static void
 make_round_corners(panel *p)
 {
     GdkBitmap *b;
-	GdkGC* gc;
-	GdkColor black = { 0, 0, 0, 0};
-	GdkColor white = { 1, 0xffff, 0xffff, 0xffff};
-	int w, h, r, br;	
+    GdkGC* gc;
+    GdkColor black = { 0, 0, 0, 0};
+    GdkColor white = { 1, 0xffff, 0xffff, 0xffff};
+    int w, h, r, br;	
 
     ENTER;
-	w = p->cw;
-	h = p->ch;
-	r = p->round_corners_radius;
-	if (2*r > MIN(w, h)) {
-		r = MIN(w, h) / 2;
-		DBG2("chaning radius to %d\n", r);
-	}
-	b = gdk_pixmap_new(NULL, w, h, 1);
+    w = p->cw;
+    h = p->ch;
+    r = p->round_corners_radius;
+    if (2*r > MIN(w, h)) {
+        r = MIN(w, h) / 2;
+        DBG2("chaning radius to %d\n", r);
+    }
+    b = gdk_pixmap_new(NULL, w, h, 1);
     gc = gdk_gc_new(GDK_DRAWABLE(b));
     gdk_gc_set_foreground(gc, &black);
     gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, 0, 0, w, h);
@@ -267,14 +267,14 @@ make_round_corners(panel *p)
     gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, w-r, r, r, h-2*r);
 
     br = 2 * r ;
-	gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, 0, br, br, 0*64, 360*64);
+    gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, 0, br, br, 0*64, 360*64);
     gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, h-br-1, br, br, 0*64, 360*64);
     gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, w-br, 0, br, br, 0*64, 360*64);
     gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, w-br, h-br-1, br, br, 0*64, 360*64);
 
-	gtk_widget_shape_combine_mask(p->topgwin, b, 0, 0);
-	g_object_unref(gc);
-	g_object_unref(b);
+    gtk_widget_shape_combine_mask(p->topgwin, b, 0, 0);
+    g_object_unref(gc);
+    g_object_unref(b);
 
     RET();
 }
@@ -288,7 +288,7 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
         RET(TRUE);
     if (p->ax != e->x || p->ay != e->y) {
         gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
-        DBG("moving to %d %d\n", p->ax, p->ay);
+        DBG2("moving to %d %d\n", p->ax, p->ay);
     }
     p->cw = e->width;
     p->ch = e->height;
@@ -424,8 +424,8 @@ panel_start_gui(panel *p)
           (GCallback) panel_size_req, p); 
     g_signal_connect (G_OBJECT (p->topgwin), "configure-event",
           (GCallback) panel_configure_event, p);
-   g_signal_connect (G_OBJECT (p->topgwin), "button-press-event",
-         (GCallback) panel_button_press_event, p);
+    g_signal_connect (G_OBJECT (p->topgwin), "button-press-event",
+          (GCallback) panel_button_press_event, p);
    
     gtk_widget_realize(p->topgwin);
     //gdk_window_set_decorations(p->topgwin->window, 0);
@@ -450,7 +450,7 @@ panel_start_gui(panel *p)
     p->box = p->my_box_new(FALSE, p->spacing);
     gtk_container_set_border_width(GTK_CONTAINER(p->box), 0);
     gtk_box_pack_start(GTK_BOX(p->lbox), p->box, TRUE, TRUE, 
-		(p->round_corners) ? p->round_corners_radius : 0);
+          (p->round_corners) ? p->round_corners_radius : 0);
     gtk_widget_show(p->box);
 
     p->topxwin = GDK_WINDOW_XWINDOW(GTK_WIDGET(p->topgwin)->window);
@@ -508,7 +508,7 @@ panel_start_gui(panel *p)
         g_signal_connect(G_OBJECT (p->topgwin), "enter-notify-event",
               G_CALLBACK (panel_enter), p);    
         g_signal_connect (G_OBJECT (p->topgwin), "drag-motion",
-          (GCallback) panel_drag_motion, p);
+              (GCallback) panel_drag_motion, p);
         gtk_drag_dest_set (p->topgwin, GTK_DEST_DEFAULT_MOTION, 
               NULL, 0, 0);
         gtk_drag_dest_set_track_motion(p->topgwin, TRUE);
@@ -567,7 +567,7 @@ panel_parse_global(panel *p, FILE *fp)
                 p->setstrut = str2num(bool_pair, s.t[1], 0);
             } else if (!g_ascii_strcasecmp(s.t[0], "RoundCorners")) {
                 p->round_corners = str2num(bool_pair, s.t[1], 0);
-			} else if (!g_ascii_strcasecmp(s.t[0], "RoundCornersRadius")) {
+            } else if (!g_ascii_strcasecmp(s.t[0], "RoundCornersRadius")) {
                 p->round_corners_radius = atoi(s.t[1]);
             } else if (!g_ascii_strcasecmp(s.t[0], "autohide")) {
                 p->autohide = str2num(bool_pair, s.t[1], 0);
@@ -632,8 +632,8 @@ panel_parse_plugin(panel *p, FILE *fp)
     plugin *plug = NULL;
     gchar *type = NULL;
     FILE *tmpfp;
-    int expand , padding, border;
-
+    int expand , padding, border, pno = 0;
+    
     ENTER;
     s.len = 256;
     if (!(tmpfp = tmpfile())) {
@@ -662,19 +662,23 @@ panel_parse_plugin(panel *p, FILE *fp)
             }
         } else if (s.type == LINE_BLOCK_START) {
             if (!g_ascii_strcasecmp(s.t[0], "Config")) {
-                int pno = 1;
-                while (pno) {
+                pno = 2;
+                while (pno > 1) {
                     get_line_as_is(fp, &s);
                     if (s.type == LINE_NONE) {
                         ERR( "fbpanel: unexpected eof\n");
                         goto error;
-                    } else if (s.type == LINE_BLOCK_START) {
-                        pno++;
-                    } else if (s.type == LINE_BLOCK_END) {
+                    } else if (s.type != LINE_BLOCK_END) {
+                        fprintf(tmpfp, "%s%s\n", indent(pno), s.str);
+                        //fprintf(stdout, "%s%s\n", indent(pno), s.str);
+                        if (s.type == LINE_BLOCK_START)
+                            pno++;
+                    } else {
                         pno--;
+                        fprintf(tmpfp, "%s%s\n", indent(pno), s.str);
+                        //fprintf(stdout, "%s%s\n", indent(pno), s.str);
                     }
-                    fprintf(tmpfp, "%s\n", s.str);
-                }
+                }              
             } else {
                 ERR( "fbpanel: unknown block %s\n", s.t[0]);
                 goto error;
@@ -684,7 +688,11 @@ panel_parse_plugin(panel *p, FILE *fp)
             goto error;
         }
     }
-
+    if (!pno) {
+        //there is no config section, lets pretend one
+        fprintf(tmpfp, "%s}\n", indent(1));
+        //fprintf(stdout, "%s}\n", indent(1), s.str);
+    }
     if (!type || !(plug = plugin_load(type))) {
         ERR( "fbpanel: can't load %s plugin\n", type);
         goto error;
@@ -694,7 +702,7 @@ panel_parse_plugin(panel *p, FILE *fp)
     plug->expand = expand;
     plug->padding = padding;
     plug->border = border;
-    fprintf(tmpfp, "}\n");
+    //fprintf(tmpfp, "}\n");
     fseek(tmpfp, 0, SEEK_SET);
     DBG("starting\n");
     if (!plugin_start(plug)) {
@@ -706,11 +714,11 @@ panel_parse_plugin(panel *p, FILE *fp)
     g_free(type);
     RET(1);
 
- error:
+error:
     fclose(tmpfp);
     g_free(type);
     if (plug)
-          plugin_put(plug);
+        plugin_put(plug);
     RET(0);
 
 }
@@ -735,7 +743,7 @@ panel_start(panel *p, FILE *fp)
     p->setdocktype = 1;
     p->setstrut = 1;
     p->round_corners = 1;
-	p->round_corners_radius = 7;
+    p->round_corners_radius = 7;
     p->autohide = 0;
     p->visible = VISIBLE;
     p->height_when_hidden = 2;

@@ -164,5 +164,6 @@ extern gint force_quit;
 extern FbEv *fbev;
 
 #define FBPANEL_WIN(win)  gdk_window_lookup(win)
+void panel_set_wm_strut(panel *p);
 
 #endif

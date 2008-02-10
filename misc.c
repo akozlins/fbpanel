@@ -1081,3 +1081,19 @@ menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *widget)
     *push_in = TRUE;
     RET();
 }
+
+gchar *
+indent(int level)
+{
+    static gchar *space[] = {
+        "",
+        "    ",
+        "        ",
+        "            ",
+        "                ",
+    };
+
+    if (level > sizeof(space))
+        level = sizeof(space);
+    RET(space[level]);
+}

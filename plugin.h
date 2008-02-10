@@ -27,7 +27,8 @@ typedef struct {
     
     int (*constructor)(struct _plugin *this);
     void (*destructor)(struct _plugin *this);
-
+    void (*save_config)(struct _plugin *this, FILE *fp);
+    GtkWidget *(*edit_config)(struct _plugin *this);
 } plugin_class;
 
 typedef struct _plugin{
@@ -46,6 +47,7 @@ plugin * plugin_load(char *type);
 void plugin_put(plugin *this);
 int plugin_start(plugin *this);
 void plugin_stop(plugin *this);
+GtkWidget *default_plugin_edit_config(plugin *pl);
 
 #ifdef STATIC_PLUGINS
 #define STATIC_SEPARATOR

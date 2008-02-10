@@ -214,6 +214,13 @@ plugin_start(plugin *this)
               (GCallback) panel_button_press_event, this->panel);
         gtk_widget_show(this->pwid);
         DBG("here\n");
+    } else {
+        /* create a no-window widget and do not show it
+         * it's usefull to have unmaped widget for invisible plugins so their indexes
+         * in plugin list are the same as in panel->box. required for children reordering */
+        this->pwid = gtk_vbox_new(TRUE, 0);
+        gtk_box_pack_start(GTK_BOX(this->panel->box), this->pwid, FALSE, TRUE,0);
+        gtk_widget_hide(this->pwid);
     }
     DBG("here\n");
     if (!this->class->constructor(this)) {
@@ -230,10 +237,33 @@ void plugin_stop(plugin *this)
 {
     ENTER;
     DBG("%s\n", this->class->type);
+    fclose(this->fp);
     this->class->destructor(this);
     this->panel->plug_num--;
-    if (!this->class->invisible) 
-        gtk_widget_destroy(this->pwid);
+    gtk_widget_destroy(this->pwid);
     RET();
 }
 
+
+GtkWidget *
+default_plugin_edit_config(plugin *pl)
+{
+    GtkWidget *vbox, *label;
+    gchar *msg;
+
+    ENTER;
+    vbox = gtk_vbox_new(FALSE, 0);
+    msg = g_strdup_printf("Graphical '%s' plugin configuration\n is not implemented yet.\n"
+          "Please edit manually\n\t~/.fbpanel/%s\n\n"
+          "You can use as example files in \n\t%s/share/fbpanel/\n"
+          "or visit\n"
+          "\thttp://fbpanel.sourceforge.net/docs.html", pl->class->name, cprofile, PREFIX);
+    label = gtk_label_new(msg);
+    gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
+    gtk_box_pack_end(GTK_BOX(vbox), label, TRUE, TRUE, 5);
+    gtk_container_set_border_width(GTK_CONTAINER(vbox), 14);
+    g_free(msg);
+    
+    RET(vbox);
+}

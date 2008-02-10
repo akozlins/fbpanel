@@ -73,5 +73,6 @@ GtkWidget *fb_image_new(gchar *iname, gchar *fname, int width, int height,
 void menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *widget);
 
 void configure();
+gchar *indent(int level);
 
 #endif
