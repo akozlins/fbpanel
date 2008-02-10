@@ -247,7 +247,7 @@ plugin_class dclock_plugin_class = {
     type : "dclock",
     name : "Digital Clock",
     version: "1.0",
-    description : "Digital blue clock with tooltip",
+    description : "Digital clock with tooltip",
 
     constructor : dclock_constructor,
     destructor  : dclock_destructor,

@@ -244,7 +244,7 @@ plugin_class wincmd_plugin_class = {
     type : "wincmd",
     name : "Window Commander ;-)",
     version: "1.0",
-    description : "Sends commands to all desktop windows.\nSupported commnds are 1)toggle iconify and 2) toggle shade",
+    description : "Button to iconify or shade all windows at once",
     
 
     constructor : wincmd_constructor,

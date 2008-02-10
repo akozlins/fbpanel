@@ -582,7 +582,7 @@ plugin_class menu_plugin_class = {
     type : "menu",
     name : "menu",
     version: "1.0",
-    description : "Provide Menu",
+    description : "Menu",
 
     constructor : menu_constructor,
     destructor  : menu_destructor,

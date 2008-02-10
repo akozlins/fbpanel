@@ -92,7 +92,7 @@ plugin_class space_plugin_class = {
     type : "space",
     name : "space",
     version: "1.0",
-    description : "just allocate space",
+    description : "Ocupy space in a panel",
 
     constructor : space_constructor,
     destructor  : space_destructor,

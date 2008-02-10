@@ -1416,7 +1416,7 @@ plugin_class taskbar_plugin_class = {
     type : "taskbar",
     name : "taskbar",
     version: "1.0",
-    description : "Taskbar shows all opened windows and allow to iconify them, shade or get focus",
+    description : "Shows all opened windows (icon + name)",
     
     constructor : taskbar_constructor,
     destructor  : taskbar_destructor,
