@@ -263,7 +263,7 @@ read_button(plugin *p)
     //gtk_bgbox_set_background(button, BG_ROOT, 0xFFFFFF, 20);        
 
     if (p->panel->transparent) 
-        gtk_bgbox_set_background(button, BG_ROOT, p->panel->tintcolor, p->panel->alpha);
+        gtk_bgbox_set_background(button, BG_INHERIT, p->panel->tintcolor, p->panel->alpha);
 
     DBG("here\n");
     g_free(fname);

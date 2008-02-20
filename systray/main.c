@@ -140,7 +140,10 @@ tray_constructor(plugin *p)
     tr->box = p->panel->my_box_new(FALSE, 1);
     g_signal_connect_after (p->pwid, "notify::style", G_CALLBACK (tray_notify_style_event), tr->box);
     gtk_container_add(GTK_CONTAINER(p->pwid), tr->box);        
-  	
+    if (p->panel->transparent)
+        gtk_bgbox_set_background(p->pwid, BG_ROOT, p->panel->tintcolor, p->panel->alpha);
+
+
     gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 0);
     screen = gtk_widget_get_screen (GTK_WIDGET (p->panel->topgwin));
     

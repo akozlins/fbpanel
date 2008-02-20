@@ -218,7 +218,7 @@ wincmd_constructor(plugin *p)
     gtk_widget_show(button);
     gtk_container_add(GTK_CONTAINER(p->pwid), button);
     if (p->panel->transparent) 
-        gtk_bgbox_set_background(button, BG_ROOT, p->panel->tintcolor, p->panel->alpha);
+        gtk_bgbox_set_background(button, BG_INHERIT, p->panel->tintcolor, p->panel->alpha);
     
     g_free(fname);
     g_free(iname);

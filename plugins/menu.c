@@ -299,7 +299,7 @@ make_button(plugin *p, gchar *iname, gchar *fname, gchar *name, GtkWidget *menu)
     gtk_widget_show(m->bg);
     gtk_box_pack_start(GTK_BOX(m->box), m->bg, FALSE, FALSE, 0);
     if (p->panel->transparent)
-        gtk_bgbox_set_background(m->bg, BG_ROOT, p->panel->tintcolor, p->panel->alpha);
+        gtk_bgbox_set_background(m->bg, BG_INHERIT, p->panel->tintcolor, p->panel->alpha);
 
 
     m->handler_id = g_signal_connect (G_OBJECT (m->bg), "button-press-event",
