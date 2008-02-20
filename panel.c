@@ -1,6 +1,6 @@
-/*! \file panel.c 
+/*! \file panel.c
  *  \brief main code is here
- *         
+ *
  *             No details
  *
  */
@@ -14,7 +14,7 @@
  * \section install_sec Installation
  *
  * \subsection step1 Step 1: Opening the box
- *  
+ *
  * etc...
  */
 
@@ -70,7 +70,7 @@ panel *the_panel;
   }
 */
 
-/** realy brie 
+/** realy brie
  * cont. detailed follow
  * sdfsdfdsf
  * \param p panel yanni
@@ -122,7 +122,8 @@ panel_set_wm_strut(panel *p)
         ERR("wrong edge %d. strut won't be set\n", p->edge);
         RET();
     }
-    DBG("type %d. width %d. from %d to %d\n", i, data[i], data[4 + i*2], data[5 + i*2]);
+    DBG("type %d. width %d. from %d to %d\n", i, data[i], data[4 + i*2],
+          data[5 + i*2]);
 
     /* if wm supports STRUT_PARTIAL it will ignore STRUT */
     XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT_PARTIAL,
@@ -191,7 +192,8 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
             fb_ev_trigger(fbev, EV_CLIENT_LIST_STACKING);
         } else if (at == a_NET_WORKAREA) {
             DBG("A_NET_WORKAREA\n");
-            p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
+            p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA,
+                  XA_CARDINAL, &p->wa_len);
             print_wmdata(p);
         } else
             RET(GDK_FILTER_CONTINUE);
@@ -247,7 +249,7 @@ make_round_corners(panel *p)
     GdkGC* gc;
     GdkColor black = { 0, 0, 0, 0};
     GdkColor white = { 1, 0xffff, 0xffff, 0xffff};
-    int w, h, r, br;	
+    int w, h, r, br;
 
     ENTER;
     w = p->cw;
@@ -283,25 +285,46 @@ make_round_corners(panel *p)
 static  gboolean
 panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
 {
+    int dup,      /* duplicate event */
+    	fn_pos,   /* final position  */ 
+	fn_size;  /* final size      */
+
     ENTER;
-    if (e->width == p->cw && e->height == p->ch && e->x == p->cx && e->y == p->cy)
-        RET(TRUE);
-    if (p->ax != e->x || p->ay != e->y) {
-        gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
-        DBG2("moving to %d %d\n", p->ax, p->ay);
-    }
+    dup = (e->width == p->cw && e->height == p->ch && e->x == p->cx && e->y == p->cy);
+    fn_pos  = (e->x == p->ax && e->y == p->ay);
+    fn_size = (e->width == p->aw && e->height == p->ah);
+    DBG("cur geom: %dx%d+%d+%d\n", e->width, e->height, e->x, e->y);
+    DBG("req geom: %dx%d+%d+%d\n", p->aw, p->ah, p->ax, p->ay);
+    DBG("dup %d; final pos %d size %d\n", dup, fn_pos, fn_size);
+
+    if (dup) 
+    	RET(FALSE);
+
     p->cw = e->width;
     p->ch = e->height;
     p->cx = e->x;
     p->cy = e->y;
-    DBG("here\n");
-    if (p->transparent)
+
+    if (!fn_size)
+    	RET(FALSE);
+
+    if (!fn_pos) {
+        gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
+        DBG("moving to req pos %d %d\n", p->ax, p->ay);
+	RET(FALSE);
+    }
+    if (p->transparent) {
         fb_bg_notify_changed_bg(p->bg);
-    if (p->setstrut)
+	DBG("remake bg image\n");
+    }
+    if (p->setstrut) {
         panel_set_wm_strut(p);
-    if (p->round_corners)
+	DBG("set_wm_strut\n");
+    }
+    if (p->round_corners) {
         make_round_corners(p);
-    DBG("geom: size (%d, %d). pos (%d, %d)\n", e->width, e->height, e->x, e->y);
+	DBG("make_round_corners\n");
+    }
     RET(FALSE);
 
 }
@@ -317,11 +340,11 @@ panel_leave_real(panel *p)
     static GdkDisplay *display;
     static int count;
     gint x, y;
-    
+
     ENTER;
     if (!display)
         display = gdk_display_get_default();
-    
+
     if (gdk_display_pointer_is_grabbed(display)) {
         count = 0;
         RET(TRUE);
@@ -336,7 +359,7 @@ panel_leave_real(panel *p)
     if (count++ == 0)
         RET(TRUE);
     gtk_widget_hide(p->lbox);
-    p->visible = HIDDEN;    
+    p->visible = HIDDEN;
     p->hide_tout = 0;
     DBG("hide panel\n");
     count = 0;
@@ -361,8 +384,8 @@ panel_enter (GtkImage *widget, GdkEventCrossing *event, panel *p)
 }
 
 static gboolean
-panel_drag_motion (GtkWidget *widget, GdkDragContext *drag_context, gint x, gint y, guint time,
-      panel *p)
+panel_drag_motion (GtkWidget *widget, GdkDragContext *drag_context, gint x,
+      gint y, guint time, panel *p)
 {
     ENTER;
     panel_enter (NULL, NULL, p);
@@ -373,14 +396,15 @@ static gboolean
 panel_set_layer(panel *p)
 {
     ENTER;
-    if (p->layer) 
-        Xclimsg(p->topxwin, a_NET_WM_STATE, a_NET_WM_STATE_ADD, 
-              (p->layer == LAYER_ABOVE) ? a_NET_WM_STATE_ABOVE : a_NET_WM_STATE_BELOW, 0, 0, 0);
+    if (p->layer)
+        Xclimsg(p->topxwin, a_NET_WM_STATE, a_NET_WM_STATE_ADD,
+              (p->layer == LAYER_ABOVE) ? a_NET_WM_STATE_ABOVE :
+              a_NET_WM_STATE_BELOW, 0, 0, 0);
     RET(FALSE);
 }
 
 
-gboolean 
+gboolean
 panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p)
 {
     ENTER;
@@ -414,19 +438,19 @@ panel_start_gui(panel *p)
     gtk_window_set_position(GTK_WINDOW(p->topgwin), GTK_WIN_POS_NONE);
     gtk_window_set_decorated(GTK_WINDOW(p->topgwin), FALSE);
     //GTK_WIDGET_UNSET_FLAGS (p->topgwin, GTK_CAN_FOCUS);
-    gtk_window_set_accept_focus(GTK_WINDOW(p->topgwin), FALSE);    
-   
+    gtk_window_set_accept_focus(GTK_WINDOW(p->topgwin), FALSE);
+
     g_signal_connect(G_OBJECT(p->topgwin), "delete-event",
           G_CALLBACK(panel_delete_event), p);
     g_signal_connect(G_OBJECT(p->topgwin), "destroy-event",
           G_CALLBACK(panel_destroy_event), p);
     g_signal_connect (G_OBJECT (p->topgwin), "size-request",
-          (GCallback) panel_size_req, p); 
+          (GCallback) panel_size_req, p);
     g_signal_connect (G_OBJECT (p->topgwin), "configure-event",
           (GCallback) panel_configure_event, p);
     g_signal_connect (G_OBJECT (p->topgwin), "button-press-event",
           (GCallback) panel_button_press_event, p);
-   
+
     gtk_widget_realize(p->topgwin);
     //gdk_window_set_decorations(p->topgwin->window, 0);
     gtk_widget_set_app_paintable(p->topgwin, TRUE);
@@ -449,7 +473,7 @@ panel_start_gui(panel *p)
 
     p->box = p->my_box_new(FALSE, p->spacing);
     gtk_container_set_border_width(GTK_CONTAINER(p->box), 0);
-    gtk_box_pack_start(GTK_BOX(p->lbox), p->box, TRUE, TRUE, 
+    gtk_box_pack_start(GTK_BOX(p->lbox), p->box, TRUE, TRUE,
           (p->round_corners) ? p->round_corners_radius : 0);
     gtk_widget_show(p->box);
 
@@ -481,35 +505,37 @@ panel_start_gui(panel *p)
     Xclimsg(p->topxwin, a_NET_WM_DESKTOP, 0xFFFFFFFF, 0, 0, 0, 0);
     /* and assign it ourself just for case when wm is not running */
     val = 0xFFFFFFFF;
-    XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_DESKTOP, XA_CARDINAL, 32,
-          PropModeReplace, (unsigned char *) &val, 1);
+    XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_DESKTOP, XA_CARDINAL,
+          32, PropModeReplace, (unsigned char *) &val, 1);
 
     state[0] = a_NET_WM_STATE_SKIP_PAGER;
     state[1] = a_NET_WM_STATE_SKIP_TASKBAR;
     state[2] = a_NET_WM_STATE_STICKY;
     if (p->layer == LAYER_ABOVE)
-    	state[3] = a_NET_WM_STATE_ABOVE;
+        state[3] = a_NET_WM_STATE_ABOVE;
     else if (p->layer == LAYER_BELOW)
-    	state[3] = a_NET_WM_STATE_BELOW;
+        state[3] = a_NET_WM_STATE_BELOW;
     XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STATE, XA_ATOM,
-          32, PropModeReplace, (unsigned char *) state, 
-	  (p->layer != LAYER_NONE) ? 4 : 3);
+          32, PropModeReplace, (unsigned char *) state,
+          (p->layer != LAYER_NONE) ? 4 : 3);
     DBG("layer is %d\n", p->layer);
 
     g_timeout_add(1000,  (GSourceFunc) panel_set_layer, p);
-    
+
     XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), PropertyChangeMask);
-    gdk_window_add_filter(gdk_get_default_root_window (), (GdkFilterFunc)panel_event_filter, p);
+    gdk_window_add_filter(gdk_get_default_root_window (),
+          (GdkFilterFunc)panel_event_filter, p);
 
 
 
     if (p->autohide) {
-        gtk_widget_add_events(p->topgwin, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+        gtk_widget_add_events(p->topgwin, GDK_ENTER_NOTIFY_MASK
+              | GDK_LEAVE_NOTIFY_MASK);
         g_signal_connect(G_OBJECT (p->topgwin), "enter-notify-event",
-              G_CALLBACK (panel_enter), p);    
+              G_CALLBACK (panel_enter), p);
         g_signal_connect (G_OBJECT (p->topgwin), "drag-motion",
               (GCallback) panel_drag_motion, p);
-        gtk_drag_dest_set (p->topgwin, GTK_DEST_DEFAULT_MOTION, 
+        gtk_drag_dest_set (p->topgwin, GTK_DEST_DEFAULT_MOTION,
               NULL, 0, 0);
         gtk_drag_dest_set_track_motion(p->topgwin, TRUE);
 
@@ -526,7 +552,7 @@ panel_start_gui(panel *p)
             p->ah_dx = - (p->aw - p->height_when_hidden);
             p->ah_dy = 0;
         }
-        
+
         panel_enter(NULL, NULL, p);
     }
     calculate_position(p);
@@ -572,7 +598,7 @@ panel_parse_global(panel *p, FILE *fp)
             } else if (!g_ascii_strcasecmp(s.t[0], "autohide")) {
                 p->autohide = str2num(bool_pair, s.t[1], 0);
             } else if (!g_ascii_strcasecmp(s.t[0], "heightWhenHidden")) {
-                p->height_when_hidden = atoi(s.t[1]);                
+                p->height_when_hidden = atoi(s.t[1]);
             } else if (!g_ascii_strcasecmp(s.t[0], "Transparent")) {
                 p->transparent = str2num(bool_pair, s.t[1], 0);
             } else if (!g_ascii_strcasecmp(s.t[0], "Alpha")) {
@@ -585,7 +611,7 @@ panel_parse_global(panel *p, FILE *fp)
                 p->tintcolor = gcolor2rgb24(&p->gtintcolor);
                 DBG("tintcolor=%x\n", p->tintcolor);
             } else if (!g_ascii_strcasecmp(s.t[0], "Layer")) {
-	    	p->layer = str2num(layer_pair, s.t[1], 0);
+                p->layer = str2num(layer_pair, s.t[1], 0);
             } else {
                 ERR( "fbpanel: %s - unknown var in Global section\n", s.t[0]);
                 RET(0);
@@ -619,7 +645,8 @@ panel_parse_global(panel *p, FILE *fp)
     }
     p->curdesk = get_net_current_desktop();
     p->desknum = get_net_number_of_desktops();
-    p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA, XA_CARDINAL, &p->wa_len);
+    p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA,
+          XA_CARDINAL, &p->wa_len);
     print_wmdata(p);
     panel_start_gui(p);
     RET(1);
@@ -633,7 +660,7 @@ panel_parse_plugin(panel *p, FILE *fp)
     gchar *type = NULL;
     FILE *tmpfp;
     int expand , padding, border, pno = 0;
-    
+
     ENTER;
     s.len = 256;
     if (!(tmpfp = tmpfile())) {
@@ -678,7 +705,7 @@ panel_parse_plugin(panel *p, FILE *fp)
                         fprintf(tmpfp, "%s%s\n", indent(pno), s.str);
                         //fprintf(stdout, "%s%s\n", indent(pno), s.str);
                     }
-                }              
+                }
             } else {
                 ERR( "fbpanel: unknown block %s\n", s.t[0]);
                 goto error;
@@ -753,7 +780,8 @@ panel_start(panel *p, FILE *fp)
     p->spacing = 0;
     p->layer = LAYER_NONE;
     fbev = fb_ev_new();
-    if ((get_line(fp, &s) != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0], "Global")) {
+    if ((get_line(fp, &s) != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0],
+                "Global")) {
         ERR( "fbpanel: config file must start from Global section\n");
         RET(0);
     }
@@ -770,7 +798,8 @@ panel_start(panel *p, FILE *fp)
     fseek(fp, pos, SEEK_SET);
 
     while (get_line(fp, &s) != LINE_NONE) {
-        if ((s.type  != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0], "Plugin")) {
+        if ((s.type  != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0],
+                    "Plugin")) {
             ERR( "fbpanel: expecting Plugin section\n");
             RET(0);
         }
@@ -801,7 +830,8 @@ void panel_stop(panel *p)
     p->plugins = NULL;
 
     XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), NoEventMask);
-    gdk_window_remove_filter(gdk_get_default_root_window (), (GdkFilterFunc)panel_event_filter, p);
+    gdk_window_remove_filter(gdk_get_default_root_window (),
+          (GdkFilterFunc)panel_event_filter, p);
     gtk_widget_destroy(p->topgwin);
     g_object_unref(fbev);
     g_free(p->workarea);
@@ -894,7 +924,7 @@ main(int argc, char *argv[], char *env[])
 {
     int i;
     FILE *pfp; /* current profile FP */
-    
+
     ENTER;
 #if 0
     printf("sizeof(gulong)=%d\n", sizeof(gulong));

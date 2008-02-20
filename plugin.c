@@ -207,7 +207,7 @@ plugin_start(plugin *this)
         DBG("here this->panel->transparent = %p\n", this->panel->transparent);
         if (this->panel->transparent) {
             DBG("here g\n");
-            gtk_bgbox_set_background(this->pwid, BG_ROOT, this->panel->tintcolor, this->panel->alpha);
+            gtk_bgbox_set_background(this->pwid, BG_INHERIT, this->panel->tintcolor, this->panel->alpha);
         }
         DBG("here\n");
         g_signal_connect (G_OBJECT (this->pwid), "button-press-event",

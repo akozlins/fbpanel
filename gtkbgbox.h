@@ -57,7 +57,7 @@ struct _GtkBgboxClass
     GtkBinClass parent_class;
 };
 
-enum { BG_NONE, BG_STYLE, BG_ROOT, BG_LAST };
+enum { BG_NONE, BG_STYLE, BG_ROOT, BG_INHERIT, BG_LAST };
 
 GType	   gtk_bgbox_get_type (void) G_GNUC_CONST;
 GtkWidget* gtk_bgbox_new (void);

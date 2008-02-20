@@ -65,6 +65,7 @@ static void gtk_bgbox_finalize (GObject *object);
 
 static void gtk_bgbox_free_bg(GtkWidget *bgbox);
 static void gtk_bgbox_set_bg_root(GtkWidget *widget, GtkBgboxPrivate *priv);
+static void gtk_bgbox_set_bg_inherit(GtkWidget *widget, GtkBgboxPrivate *priv);
 static void gtk_bgbox_bg_changed(FbBg *bg, GtkWidget *widget);
 
 static GtkBinClass *parent_class = NULL;
@@ -344,6 +345,8 @@ gtk_bgbox_set_background(GtkWidget *widget, int bg_type, guint32 tintcolor, gint
         priv->tintcolor = tintcolor;
         priv->alpha = alpha;
         gtk_bgbox_set_bg_root(widget, priv);
+    } else if (priv->bg_type == BG_INHERIT) {
+        gtk_bgbox_set_bg_inherit(widget, priv);
     }
     //gtk_widget_queue_draw(widget);
     g_object_notify(G_OBJECT (widget), "style");
@@ -370,7 +373,8 @@ gtk_bgbox_set_bg_root(GtkWidget *widget, GtkBgboxPrivate *priv)
         RET();
     }
     if (priv->alpha)
-		fb_bg_composite(priv->pixmap, widget->style->black_gc, priv->tintcolor, priv->alpha);
+        fb_bg_composite(priv->pixmap, widget->style->black_gc,
+              priv->tintcolor, priv->alpha);
     gdk_window_set_back_pixmap(widget->window, priv->pixmap, FALSE);
     //gdk_window_clear(widget->window);
     rect.x = widget->allocation.x;
@@ -378,6 +382,26 @@ gtk_bgbox_set_bg_root(GtkWidget *widget, GtkBgboxPrivate *priv)
     rect.width = widget->allocation.width;
     rect.height = widget->allocation.height;
     //gdk_window_invalidate_rect(widget->window, &rect, TRUE);
-    gtk_widget_queue_draw_area(widget, 0, 0, widget->allocation.width, widget->allocation.height);
+    gtk_widget_queue_draw_area(widget, 0, 0, widget->allocation.width,
+          widget->allocation.height);
+    RET();
+}
+
+static void
+gtk_bgbox_set_bg_inherit(GtkWidget *widget, GtkBgboxPrivate *priv)
+{
+    priv = GTK_BGBOX_GET_PRIVATE (widget);
+    GdkRectangle rect;
+    
+    ENTER;
+    gdk_window_set_back_pixmap(widget->window, NULL, TRUE);
+    //gdk_window_clear(widget->window);
+    rect.x = widget->allocation.x;
+    rect.y = widget->allocation.y;
+    rect.width = widget->allocation.width;
+    rect.height = widget->allocation.height;
+    //gdk_window_invalidate_rect(widget->window, &rect, TRUE);
+    gtk_widget_queue_draw_area(widget, 0, 0, widget->allocation.width,
+          widget->allocation.height);
     RET();
 }
