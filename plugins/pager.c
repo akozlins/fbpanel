@@ -892,9 +892,9 @@ plugin_class pager_plugin_class = {
     count: 0,
 
     type : "pager",
-    name : "pager",
+    name : "Pager",
     version: "1.0",
-    description : "Simple pager plugin",
+    description : "Pager shows thumbnails of your desktops",
 
     constructor : pager_constructor,
     destructor  : pager_destructor,

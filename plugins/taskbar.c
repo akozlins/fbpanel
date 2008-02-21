@@ -1414,9 +1414,9 @@ plugin_class taskbar_plugin_class = {
     count: 0,
 
     type : "taskbar",
-    name : "taskbar",
+    name : "Taskbar",
     version: "1.0",
-    description : "Shows all opened windows (icon + name)",
+    description : "Shows opened windows",
     
     constructor : taskbar_constructor,
     destructor  : taskbar_destructor,

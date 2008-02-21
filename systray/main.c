@@ -172,9 +172,9 @@ plugin_class tray_plugin_class = {
     count: 0,
 
     type : "tray",
-    name : "tray",
+    name : "System tray",
     version: "1.0",
-    description : "Old KDE/GNOME Tray",
+    description : "System tray aka Notification Area",
 
     constructor : tray_constructor,
     destructor  : tray_destructor,

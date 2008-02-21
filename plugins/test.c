@@ -102,9 +102,9 @@ plugin_class test_plugin_class = {
     count: 0,
 
     type : "test",
-    name : "Digital Clock",
+    name : "Test plugin",
     version: "1.0",
-    description : "Dispaly Digital clock and Tooltip",
+    description : "Creates and destroys widgets",
 
     constructor : test_constructor,
     destructor  : test_destructor,

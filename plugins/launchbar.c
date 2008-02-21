@@ -380,9 +380,9 @@ plugin_class launchbar_plugin_class = {
     count: 0,
 
     type : "launchbar",
-    name : "launchbar",
+    name : "Launchbar",
     version: "1.0",
-    description : "Bar with buttons to launch application",
+    description : "Bar with application launchers",
 
     constructor : launchbar_constructor,
     destructor  : launchbar_destructor,

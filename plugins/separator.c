@@ -51,9 +51,9 @@ plugin_class separator_plugin_class = {
     count: 0,
 
     type : "separator",
-    name : "separator",
+    name : "Separator",
     version: "1.0",
-    description : "Simple separator plugin",
+    description : "Separator line",
 
     constructor : separator_constructor,
     destructor  : separator_destructor,

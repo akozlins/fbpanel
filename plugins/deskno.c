@@ -1,5 +1,5 @@
 // reused dclock.c and variables from pager.c
-// 11/23/04 by cmeury
+// 11/23/04 by cmeury@users.sf.net",
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -96,9 +96,9 @@ plugin_class deskno_plugin_class = {
     count: 0,
 
     type : "deskno",
-    name : "Desktop No / Workspace Name",
+    name : "Desktop No v1",
     version: "0.6",
-    description : "Display workspace number, by cmeury@users.sf.net",
+    description : "Display workspace number",
 
     constructor : deskno_constructor,
     destructor  : deskno_destructor,

@@ -512,7 +512,7 @@ plugin_class icons_plugin_class = {
     count: 0,
 
     type : "icons",
-    name : "icons",
+    name : "Icons",
     version: "1.0",
     description : "Invisible plugin to change window icons",
     invisible : 1,

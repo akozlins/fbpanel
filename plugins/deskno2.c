@@ -1,3 +1,4 @@
+/* Display workspace number, by cmeury@users.sf.net */
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -126,9 +127,9 @@ plugin_class deskno2_plugin_class = {
     count: 0,
 
     type : "deskno2",
-    name : "Desktop No / Workspace Name",
+    name : "Desktop No v2",
     version: "0.6",
-    description : "Display workspace number, by cmeury@users.sf.net",
+    description : "Display workspace number",
 
     constructor : deskno_constructor,
     destructor  : deskno_destructor,

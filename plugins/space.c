@@ -90,7 +90,7 @@ plugin_class space_plugin_class = {
     count: 0,
 
     type : "space",
-    name : "space",
+    name : "Space",
     version: "1.0",
     description : "Ocupy space in a panel",
 

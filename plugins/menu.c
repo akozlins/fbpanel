@@ -580,7 +580,7 @@ plugin_class menu_plugin_class = {
     count: 0,
 
     type : "menu",
-    name : "menu",
+    name : "Menu",
     version: "1.0",
     description : "Menu",
 

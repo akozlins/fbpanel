@@ -242,9 +242,9 @@ plugin_class wincmd_plugin_class = {
     count: 0,
 
     type : "wincmd",
-    name : "Window Commander ;-)",
+    name : "Show desktop",
     version: "1.0",
-    description : "Button to iconify or shade all windows at once",
+    description : "Show Desktop button",
     
 
     constructor : wincmd_constructor,

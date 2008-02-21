@@ -123,7 +123,7 @@ plugin_class image_plugin_class = {
     count: 0,
 
     type : "image",
-    name : "image",
+    name : "Show Image",
     version: "1.0",
     description : "Dispaly Image and Tooltip",
 
