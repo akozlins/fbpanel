@@ -751,6 +751,35 @@ error:
 }
 
 
+static gboolean
+panel_parse_plugin_late(panel *p)
+{
+    line s;
+    
+    ENTER;
+    s.len = 256;
+    fseek(pconf, 0, SEEK_SET);
+#if 0
+    while (get_line_as_is(pconf, &s) != LINE_NONE) {
+        fprintf(stdout, "%s\n", s.str);
+    }
+    fseek(pconf, 0, SEEK_SET);
+#endif
+    while (get_line(pconf, &s) != LINE_NONE) {
+        if ((s.type  != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0], "Plugin")) {
+            ERR( "fbpanel: expecting Plugin section\n");            
+            goto error;
+        }
+        if (!panel_parse_plugin(p, pconf)) {
+            ERR( "fbpanel: can;t parse plugin\n");
+            goto error;
+        }
+    }
+    RET(FALSE);
+error:
+    exit(1);
+}
+
 int
 panel_start(panel *p, FILE *fp)
 {
@@ -793,10 +822,15 @@ panel_start(panel *p, FILE *fp)
         RET(0);
     }
     pos = ftell(fp);
-    while (get_line_as_is(fp, &s) != LINE_NONE)
+    while (get_line_as_is(fp, &s) != LINE_NONE) {
         fprintf(pconf, "%s\n", s.str);
+        //fprintf(stdout, "%s\n", s.str);
+    }
     fseek(fp, pos, SEEK_SET);
-
+    fflush(pconf);
+#if 1
+    g_timeout_add(2 * 1000, (GSourceFunc) panel_parse_plugin_late, p);
+#else
     while (get_line(fp, &s) != LINE_NONE) {
         if ((s.type  != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0],
                     "Plugin")) {
@@ -806,8 +840,8 @@ panel_start(panel *p, FILE *fp)
         if (!panel_parse_plugin(p, fp))
             RET(0);
     }
+#endif
     gtk_widget_show_all(p->topgwin);
-    print_wmdata(p);
     RET(1);
 }
 
