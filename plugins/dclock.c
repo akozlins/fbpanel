@@ -146,7 +146,7 @@ dclock_constructor(plugin *p)
     dclock *dc;
     
     ENTER;
-    ERR("dclock: use 'tclock' plugin for text version of a time and date\n");
+    DBG("dclock: use 'tclock' plugin for text version of a time and date\n");
     dc = g_new0(dclock, 1);
     g_return_val_if_fail(dc != NULL, 0);
     p->priv = dc;
@@ -171,11 +171,12 @@ dclock_constructor(plugin *p)
             if (!g_ascii_strcasecmp(s.t[0], "TooltipFmt"))
                 dc->tfmt = g_strdup(s.t[1]);
             else if (!g_ascii_strcasecmp(s.t[0], "ClockFmt")) {
-                if (strcmp(s.t[0], CLOCK_12H_FMT) &&
-                      strcmp(s.t[0], CLOCK_24H_FMT)) {
-                    ERR("dclock: in this version ClockFmt is limited to one of these\n");
-                    ERR("dclock: %s\n", CLOCK_12H_FMT);
-                    ERR("dclock: %s\n", CLOCK_24H_FMT);
+                if (strcmp(s.t[1], CLOCK_12H_FMT) &&
+                      strcmp(s.t[1], CLOCK_24H_FMT)) {
+                    ERR("dclock: your ClockFmt \"%s\" is not supported.\n",
+		    	s.t[1]);
+		    ERR("dclock: Please use \"%s\" or \"%s\"\n", 
+		    	CLOCK_12H_FMT, CLOCK_24H_FMT);
                 } else 
                     dc->cfmt = g_strdup(s.t[1]);
             } else if (!g_ascii_strcasecmp(s.t[0], "Color")) {
