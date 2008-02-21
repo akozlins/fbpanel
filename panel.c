@@ -829,7 +829,7 @@ panel_start(panel *p, FILE *fp)
     fseek(fp, pos, SEEK_SET);
     fflush(pconf);
 #if 1
-    g_timeout_add(2 * 1000, (GSourceFunc) panel_parse_plugin_late, p);
+    g_idle_add((GSourceFunc) panel_parse_plugin_late, p);
 #else
     while (get_line(fp, &s) != LINE_NONE) {
         if ((s.type  != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0],
@@ -842,6 +842,7 @@ panel_start(panel *p, FILE *fp)
     }
 #endif
     gtk_widget_show_all(p->topgwin);
+    gdk_flush();
     RET(1);
 }
 

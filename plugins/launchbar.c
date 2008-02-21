@@ -260,18 +260,17 @@ read_button(plugin *p)
 
     gtk_box_pack_start(GTK_BOX(lb->box), button, FALSE, FALSE, 0);
     gtk_widget_show(button);
-    //gtk_bgbox_set_background(button, BG_ROOT, 0xFFFFFF, 20);        
 
     if (p->panel->transparent) 
         gtk_bgbox_set_background(button, BG_INHERIT, p->panel->tintcolor, p->panel->alpha);
 
-    DBG("here\n");
     g_free(fname);
     g_free(iname);
     DBG("here\n");
     // tooltip
     if (tooltip) {
-        gtk_tooltips_set_tip(GTK_TOOLTIPS (lb->tips), button, tooltip, NULL);
+        //gtk_tooltips_set_tip(GTK_TOOLTIPS (lb->tips), button, tooltip, NULL);
+	gtk_widget_set_tooltip_markup(button, tooltip);
         g_free(tooltip);
     }
  
