@@ -24,7 +24,7 @@ enum { LAYER_NONE, LAYER_ABOVE, LAYER_BELOW };
 #define PANEL_HEIGHT_MAX      200
 #define PANEL_HEIGHT_MIN      16
 
-#define IMGPREFIX  PREFIX "/share/fbpanel/images/"
+#define IMGPREFIX  DATADIR "/images"
 
 typedef struct {
 

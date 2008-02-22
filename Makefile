@@ -1,7 +1,6 @@
 # Part 0
 # load common stuff
 TOPDIR = .
-PLUGIN_CPU=ON
 include $(TOPDIR)/Makefile.common
 
 # Part 1
@@ -39,7 +38,7 @@ all: $(TARGET)
 $(TARGET): $(OBJ)
 	$(call summary,LD  ,$@)
 	$(Q)$(CC) $(LDFLAGS) $(OBJ) $(EXTRAOBJ) $(LIBS) -o $@
-ifeq (0,$(DEVEL))
+ifeq (,$(ENABLE_DEVEL))
 	$(Q)strip $@
 endif
 
@@ -51,11 +50,11 @@ distclean:
 	$(RM) Makefile.config config.h
 
 install: 
-	install -d $(PREFIX)/bin
-	install -m 755 $(TARGET) $(PREFIX)/bin
+	install -d $(BINDIR)
+	install -m 755 $(TARGET) $(BINDIR)
 
 uninstall:
-	$(RM) $(PREFIX)/bin/$(TARGET)
+	$(RM) $(BINDIR)/$(TARGET)
 
 .PHONY: tar
 

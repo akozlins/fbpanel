@@ -16,7 +16,7 @@ TARGET = tray.so
 $(TARGET): $(OBJ) 
 	$(call summary,LD  ,$@)
 	$(Q)$(CC) $(CFLAGS) $(INCS) $(OBJ) -o $@
-ifeq (0,$(DEVEL))
+ifeq (,$(ENABLE_DEVEL))
 	$(Q)strip $@
 endif
 
@@ -41,10 +41,10 @@ endif
 
 ifeq (0,$(STATIC_PLUGINS))
 install: 
-	install -d  $(PREFIX)/share/fbpanel/plugins
-	install -m 644 $(TARGET) $(PREFIX)/share/fbpanel/plugins
+	install -d  $(LIBEXECDIR)
+	install -m 644 $(TARGET)  $(LIBEXECDIR)
 
 uninstall:
-	$(RM) $(PREFIX)/share/fbpanel/plugins/$(TARGET)
+	cd $(LIBEXECDIR); $(RM) $(TARGET)
 
 endif

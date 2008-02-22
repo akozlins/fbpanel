@@ -9,7 +9,7 @@ SRC = image.c menu.c separator.c taskbar.c wincmd.c \
 	dclock.c launchbar.c pager.c space.c test.c \
 	icons.c deskno.c deskno2.c tclock.c
 
-ifeq ($(PLUGIN_CPU),on)
+ifneq (,$(ENABLE_CPU))
 SRC += cpu.c
 endif
 
@@ -21,7 +21,7 @@ all:$(SOBJ)
 %.so: %.o
 	$(call summary,LD  ,$@)
 	$(Q)$(CC) $(CFLAGS) $(INCS) $< -o $@
-ifeq (0,$(DEVEL))
+ifeq (,$(ENABLE_DEVEL))
 	$(Q)strip $@
 endif
 
@@ -47,9 +47,9 @@ endif
 
 ifeq (0,$(STATIC_PLUGINS))
 install: 
-	install -d  $(PREFIX)/share/fbpanel/plugins
-	install -m 644 $(SOBJ) $(PREFIX)/share/fbpanel/plugins
+	install -d  $(LIBEXECDIR)
+	install -m 644 $(SOBJ) $(LIBEXECDIR)
 
 uninstall:
-	$(RM) -r $(PREFIX)/share/fbpanel/plugins/
+	cd $(LIBEXECDIR); $(RM) $(SOBJ)
 endif

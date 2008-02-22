@@ -137,7 +137,7 @@ plugin_load(char *type)
         LOG(LOG_INFO, "   %s ... %s\n", str->str, m ? "ok" : "no");
         if (!m) {
             DBG("error is %s\n", g_module_error());
-            g_string_printf(str, "%s/share/fbpanel/plugins/%s.so", PREFIX, type);
+            g_string_printf(str, "%s/%s.so", LIBEXECDIR, type);
             m = g_module_open(str->str, G_MODULE_BIND_LAZY);
             LOG(LOG_INFO, "   %s ... %s\n", str->str, m ? "ok" : "no");
             if (!m) {

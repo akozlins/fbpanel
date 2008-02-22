@@ -151,8 +151,7 @@ dclock_constructor(plugin *p)
     g_return_val_if_fail(dc != NULL, 0);
     p->priv = dc;
     dc->pwid = p->pwid;
-    dc->glyphs = gdk_pixbuf_new_from_file(
-        PREFIX "/share/fbpanel/images/dclock_glyphs.png", NULL);
+    dc->glyphs = gdk_pixbuf_new_from_file(IMGPREFIX "/dclock_glyphs.png", NULL);
     if (!dc->glyphs)
         RET(0);
 

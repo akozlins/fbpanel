@@ -47,33 +47,33 @@ endif
 # 1. We do not change make output for all non-build targets,
 #    like tar, clean etc
 # 2. For build targets, we may replace make output by some fancy summary
-#    a. If DEVEL=1 then output is not changed.
-#       To set DEVEL run "./configure --devel" or "make DEVEL=1"
+#    a. If ENABLE_DEVEL has a value then output is not changed.
+#       To set it run "./configure --enale-devel" or "make ENABLE_/DEVEL=1"
 #    b. if '-s' option was specified then summary is not printed
 
-DEVEL  = 0
-CHATTY = $(DEVEL)
+ENABLE_DEVEL  =
+CHATTY = $(ENABLE_DEVEL)
 STATIC_PLUGINS = 0
-#$(warning CHATTY=$(CHATTY) DEVEL=$(DEVEL))
-ifeq (1,$(CHATTY))
-Q :=
-summary =
-else
-ifeq (1,$(BUILD))
-MAKEFLAGS += --no-print-directory
-endif
-# this one to prevent printing make[1]: Nothing to be done for `all'
-all: FORCE
-FORCE: 
-	@#
 
-
-
+ifeq (,$(CHATTY))
 Q := @
 ifeq ($(findstring s,$(MAKEFLAGS)),)
 summary = @echo "$(1)" $(subst $(TOPDIR2),,$(CURDIR)/)$(2)
 endif
+MAKEFLAGS += --no-print-directory
+
+# this one to prevent printing make[1]: Nothing to be done for `all'
+all: FORCE
+FORCE: 
+	@#
+	
+else
+Q :=
+summary =
 endif
+
+
+
 
 # relative dir of src files
 ifeq (,$(TOPDIR2))
@@ -86,14 +86,14 @@ endif
 # compile flags
 
 RM      = rm -f
-CC      ?= gcc
+CC      = gcc
 AR      = ar
 LIBS    = $(shell pkg-config --libs glib-2.0 gmodule-2.0 gthread-2.0 gtk+-2.0 gdk-pixbuf-2.0 gdk-pixbuf-xlib-2.0) -L/usr/X11R6/lib  -lXmu
 INCS2   = $(shell pkg-config --cflags glib-2.0 gmodule-2.0 gthread-2.0 gtk+-2.0 gdk-pixbuf-2.0 gdk-pixbuf-xlib-2.0)
 INCS   := $(INCS2:-I%=-isystem %)
 
 CFLAGS ?= -Os -Wall
-ifeq (1,$(DEVEL))
+ifneq (,$(ENABLE_DEVEL))
 override CFLAGS += -g
 endif
 
