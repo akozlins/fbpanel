@@ -4,21 +4,21 @@ TOPDIR = ..
 include $(TOPDIR)/Makefile.common
 
 # backslashify slashes to avoid problems with sed
-BPREFIX := $(subst /,\/,$(PREFIX))
-
+BPREFIX := $(subst /,\/,$(DATADIR))
 SRC = fbpanel.1
 TARGET := fbpanel.1.gz
 
 all: $(TARGET)
 $(TARGET): $(SRC)
 	@$(call summary,TEXT,$@)
-	$(Q)sed 's/PREFIX/$(BPREFIX)/g' < $(SRC) | gzip - > $@
-
-
+	${Q}VER=`awk 'BEGIN { FS="\"" } \
+		/#define VERSION / { print $$2 }' $(TOPDIR)/version.h`; \
+		sed  -e "s/@VERSION@/$${VER}/g" -e 's/@DATADIR@/$(BPREFIX)/g' < $(SRC) | gzip - > $@
+		 
 
 install: all
-	install -d  $(PREFIX)/share/man/man1
-	install -m 644 $(TARGET) $(PREFIX)/share/man/man1
+	install -d  $(MANDIR)/man1
+	install -m 644 $(TARGET) $(MANDIR)/man1
 
 uninstall:
-	$(RM) $(PREFIX)/share/man/man1/$(TARGET)
+	$(RM) $(MANDIR)/man1/$(TARGET)

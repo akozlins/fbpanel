@@ -1,5 +1,5 @@
 .\" man page originally for the Debian/GNU Linux system
-.TH FBPANEL "1" "May 2005" "fbpanel 4.2" "User Commands"
+.TH FBPANEL "1" "May 2005" "fbpanel @VERSION@" "User Commands"
 .SH NAME
 fbpanel \- a NETWM compliant lightweight GTK2-based panel for UNIX desktop.
 .SH SYNOPSIS
@@ -49,7 +49,7 @@ http://fbpanel.sf.net/
 .TP
 \fB\--profile <name>\fR 
 \-- use specified profile. The profile is loaded from the file ~/.fbpanel/<name>. 
-If that fails, fbpanel will load PREFIX/share/fbpanel/<name>. 
+If that fails, fbpanel will load @DATADIR@/<name>. 
 No -p option is equivalent to -p default
 .TP
 \fB\-h\fR 
@@ -68,14 +68,14 @@ No -p option is equivalent to -p default
 To change default settings, copy profile file to your home directory
 .br
       mkdir -p ~/.fbpanel
-      cp PREFIX/share/fbpanel/default ~/.fbpanel
+      cp @DATADIR@/default ~/.fbpanel
 .br
 and edit it. Default profile file contains comments and explanation inside,
 so it should be easy. For full list of options please visit fbpanel's home page.
 
 .SH FILES
 .TP
-PREFIX/share/fbpanel
+@DATADIR@/
 Directory with system-wide resources and default settings
 .TP
 ~/.fbpanel/
