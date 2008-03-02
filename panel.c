@@ -257,7 +257,7 @@ make_round_corners(panel *p)
     r = p->round_corners_radius;
     if (2*r > MIN(w, h)) {
         r = MIN(w, h) / 2;
-        DBG2("chaning radius to %d\n", r);
+        DBG("chaning radius to %d\n", r);
     }
     b = gdk_pixmap_new(NULL, w, h, 1);
     gc = gdk_gc_new(GDK_DRAWABLE(b));
@@ -417,6 +417,19 @@ panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p)
     RET(FALSE);
 }
 
+static gboolean
+panel_map(GtkWidget *widget, GdkEvent  *event, panel *p)
+{
+    ENTER;
+    RET(FALSE);
+}
+    
+static void
+panel_realized (GtkWidget *widget, panel *p)  
+{
+    ENTER;
+    RET();
+}
 
 
 void
@@ -450,11 +463,18 @@ panel_start_gui(panel *p)
           (GCallback) panel_configure_event, p);
     g_signal_connect (G_OBJECT (p->topgwin), "button-press-event",
           (GCallback) panel_button_press_event, p);
-
+    g_signal_connect (G_OBJECT (p->topgwin), "realize",
+          (GCallback) panel_realized, p);
+    g_signal_connect (G_OBJECT (p->topgwin), "map-event",
+          (GCallback) panel_map, p);
     gtk_widget_realize(p->topgwin);
     //gdk_window_set_decorations(p->topgwin->window, 0);
     gtk_widget_set_app_paintable(p->topgwin, TRUE);
-
+    calculate_position(p);
+    gdk_window_move_resize(p->topgwin->window, p->ax, p->ay, p->aw, p->ah);
+    DBG("move-resize x %d y %d w %d h %d\n", p->ax, p->ay, p->aw, p->ah);
+    DBG("here\n");
+    
     // background box all over toplevel
     p->bbox = gtk_bgbox_new();
     gtk_container_add(GTK_CONTAINER(p->topgwin), p->bbox);
@@ -555,8 +575,9 @@ panel_start_gui(panel *p)
 
         panel_enter(NULL, NULL, p);
     }
-    calculate_position(p);
-    gdk_window_move_resize(p->topgwin->window, p->ax, p->ay, p->aw, p->ah);
+    //calculate_position(p);
+    //gdk_window_move_resize(p->topgwin->window, p->ax, p->ay, p->aw, p->ah);
+    //DBG("move-resize x %d y %d w %d h %d\n", p->ax, p->ay, p->aw, p->ah);
     if (p->setstrut)
         panel_set_wm_strut(p);
     RET();

@@ -51,7 +51,8 @@ endif
 #       To set it run "./configure --enale-devel" or "make ENABLE_/DEVEL=1"
 #    b. if '-s' option was specified then summary is not printed
 
-ENABLE_DEVEL  =
+#$(warning ENABLE_DEVEL $(ENABLE_DEVEL))
+
 CHATTY = $(ENABLE_DEVEL)
 STATIC_PLUGINS = 0
 
