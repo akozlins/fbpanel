@@ -118,7 +118,7 @@ install:
 distclean : 
 	$(MAKE) clean
 	find . -name "*.in" | sed -e 's/\.in$$//g' | xargs rm -f
-	rm -f config.h config.mk
+	rm -f config.h config.mk subst.sed
 
 ifeq ($(MAKECMDGOALS), all)
 -include $(CDEPS)
