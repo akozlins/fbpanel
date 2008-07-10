@@ -139,7 +139,7 @@ Plugin {
 Plugin {
     type = menu
     config {
-        image = @DATADIR@/images/star.png
+        image = %%datadir%%/fbpanel/images/star.png
         systemmenu {
         }
         separator {
@@ -194,7 +194,7 @@ Plugin {
     config {
         button {
             icon = gnome-fs-home
-            #image = @DATADIR@/images/file-manager.svg
+            #image = %%datadir%%/fbpanel/images/file-manager.svg
             tooltip = ROX file manager
             action = rox
         }
@@ -227,7 +227,7 @@ Plugin {
     type = wincmd
     config {
         icon = gnome-fs-desktop
-        #image = @DATADIR@/images/gnome-fs-desktop.svg
+        #image = %%datadir%%/fbpanel/images/gnome-fs-desktop.svg
         tooltip = Left click to iconify all windows. Middle click to shade them.
     }
 }
@@ -298,25 +298,25 @@ Plugin {
 Plugin {
     type = icons
     config {
-        DefaultIcon = @DATADIR@/images/default.xpm
+        DefaultIcon = %%datadir%%/fbpanel/images/default.xpm
         application {
             icon = gnome-terminal
-            #Image =  @DATADIR@/images/gnome_terminal.svg
+            #Image =  %%datadir%%/fbpanel/images/gnome_terminal.svg
             ClassName = XTerm
         }
         application {
             icon = gnome-terminal
-            #Image =  @DATADIR@/images/gnome_terminal.svg
+            #Image =  %%datadir%%/fbpanel/images/gnome_terminal.svg
             ClassName = mlterm
         }
         application {
             icon = gnome-terminal
-            #Image =  @DATADIR@/images/gnome_terminal.svg
+            #Image =  %%datadir%%/fbpanel/images/gnome_terminal.svg
             ClassName = URxvt
         }
         application {
             icon = gnome-emacs
-            #Image = @DATADIR@/images/emacs.svg
+            #Image = %%datadir%%/fbpanel/images/emacs.svg
             ClassName = Emacs
         }
         application {
