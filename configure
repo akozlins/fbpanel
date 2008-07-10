@@ -128,7 +128,7 @@ function dump_vars_mk ()
     if true; then
         for i in $vars; do
             eval val=\$$i
-            echo "$(tr "\-[:lower:]" "_[:upper:]"  <<< $i):=$val"
+            echo "$(tr "\-[:lower:]" "_[:upper:]"  <<< $i)+=$val"
         done
     fi
 
