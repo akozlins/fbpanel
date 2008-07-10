@@ -1,5 +1,5 @@
 .\" man page originally for the Debian/GNU Linux system
-.TH FBPANEL "1" "May 2005" "fbpanel @VERSION@" "User Commands"
+.TH FBPANEL "1" "May 2005" "fbpanel %%version%%" "User Commands"
 .SH NAME
 fbpanel \- a NETWM compliant lightweight GTK2-based panel for UNIX desktop.
 .SH SYNOPSIS
