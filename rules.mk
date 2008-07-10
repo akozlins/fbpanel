@@ -49,7 +49,8 @@ $(BINTARGET) : $(OBJS)
 
 install : install_bin
 
-clean : clean_tmp
+clean : clean_obj
+	rm -f $(BINTARGET)
 
 endif
 
@@ -63,7 +64,8 @@ $(LIBTARGET) : $(OBJS)
 
 install : install_lib
 
-clean : clean_tmp
+clean : clean_obj
+	rm -f $(LIBTARGET)
 
 endif
 
@@ -75,7 +77,8 @@ $(ARTARGET) : $(OBJS)
 	$(call summary,CC  ,$@)
 	@$(AR) r $@ $(OBJS)
 
-clean : clean_tmp
+clean : clean_obj
+	rm -f $(ARTARGET)
 
 endif
 
@@ -106,8 +109,7 @@ install_script :
 	install -m 755 $(SCRIPT) $(DESTDIR)$(LIBEXECDIR)
 
 
-clean_tmp :
-	rm -f $(EMODTARGET) $(LIBTARGET) $(ARTARGET) $(BINTARGET)
+clean_obj :
 	rm -f $(OBJS)
 
 # define these targets for makefiles without them will work
