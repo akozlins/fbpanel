@@ -1,0 +1,10 @@
+include %%topdir%%/config.mk
+
+install : local_install
+
+local_install :
+	install -m 755 -d $(DESTDIR)$(DATADIR)/fbpanel/images
+	install -m 644 default pager  $(DESTDIR)$(DATADIR)/fbpanel
+	install -m 644 images/*  $(DESTDIR)$(DATADIR)/fbpanel/images
+
+include %%topdir%%/rules.mk

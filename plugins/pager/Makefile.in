@@ -1,0 +1,6 @@
+include %%topdir%%/config.mk
+
+SRCS = pager.c 
+LIBTARGET = pager.so
+
+include %%topdir%%/rules.mk

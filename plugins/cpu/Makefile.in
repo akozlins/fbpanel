@@ -1,0 +1,6 @@
+include %%topdir%%/config.mk
+
+SRCS = cpu.c 
+LIBTARGET = cpu.so
+
+include %%topdir%%/rules.mk

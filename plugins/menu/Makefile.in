@@ -1,0 +1,6 @@
+include %%topdir%%/config.mk
+
+SRCS = menu.c 
+LIBTARGET = menu.so
+
+include %%topdir%%/rules.mk

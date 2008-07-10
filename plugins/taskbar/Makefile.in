@@ -1,0 +1,6 @@
+include %%topdir%%/config.mk
+
+SRCS = taskbar.c 
+LIBTARGET = taskbar.so
+
+include %%topdir%%/rules.mk

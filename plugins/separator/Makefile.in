@@ -1,0 +1,6 @@
+include %%topdir%%/config.mk
+
+SRCS = separator.c 
+LIBTARGET = separator.so
+
+include %%topdir%%/rules.mk

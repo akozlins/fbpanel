@@ -1,0 +1,6 @@
+include %%topdir%%/config.mk
+
+SRCS = image.c 
+LIBTARGET = image.so
+
+include %%topdir%%/rules.mk

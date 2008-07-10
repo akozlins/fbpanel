@@ -1,0 +1,6 @@
+include %%topdir%%/config.mk
+
+SRCS = wincmd.c 
+LIBTARGET = wincmd.so
+
+include %%topdir%%/rules.mk

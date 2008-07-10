@@ -1,0 +1,6 @@
+include %%topdir%%/config.mk
+
+SRCS = deskno2.c 
+LIBTARGET = deskno2.so
+
+include %%topdir%%/rules.mk

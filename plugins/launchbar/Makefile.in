@@ -1,0 +1,6 @@
+include %%topdir%%/config.mk
+
+SRCS = launchbar.c 
+LIBTARGET = launchbar.so
+
+include %%topdir%%/rules.mk

@@ -1,0 +1,6 @@
+include %%topdir%%/config.mk
+
+SRCS = dclock.c 
+LIBTARGET = dclock.so
+
+include %%topdir%%/rules.mk
