@@ -1,7 +1,9 @@
 
 ## recursion make
 .DEFAULT_GOAL := all
-.PHONY : subdirs all clean clean_tmp install install_lib install_emod install_script $(SUBDIRS)
+.PHONY : all clean clean_tmp distclean
+.PHONY : install install_lib install_emod install_script 
+.PHONY : subdirs $(SUBDIRS)
 all clean install : subdirs
 subdirs : $(SUBDIRS)
 $(SUBDIRS):
@@ -87,13 +89,9 @@ install_bin :
 	install -d $(DESTDIR)$(BINDIR)
 	install -m 755 $(BINTARGET) $(DESTDIR)$(BINDIR)
 
-install_emod :
-	install -d $(DESTDIR)$(LIBDIR)
-	install -m 755 $(EMODTARGET) $(DESTDIR)$(LIBDIR)
-
 install_lib :
-	install -d $(DESTDIR)$(LIBDIR)
-	install -m 755 $(LIBTARGET) $(DESTDIR)$(LIBDIR)
+	install -d $(DESTDIR)$(LIBDIR)/fbpanel
+	install -m 755 $(LIBTARGET) $(DESTDIR)$(LIBDIR)/fbpanel
 
 install_conf :
 	install -d $(DESTDIR)$(SYSCONFDIR) 
@@ -106,13 +104,17 @@ install_script :
 
 clean_tmp :
 	rm -f $(EMODTARGET) $(LIBTARGET) $(ARTARGET) $(BINTARGET)
-	find -name "*.o" -o -name "*.d" -o -name "*~" | xargs rm -f 
+	rm -f $(OBJS)
 
 # define these targets for makefiles without them will work
 clean: 
 all:
 install:
 
+distclean : 
+	$(MAKE) clean
+	find . -name "*.in" | sed -e 's/\.in$$//g' | xargs rm -f
+	rm -f config.h config.mk
 
 ifeq ($(MAKECMDGOALS), all)
 -include $(CDEPS)

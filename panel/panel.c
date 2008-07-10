@@ -34,7 +34,6 @@
 #include "panel.h"
 #include "misc.h"
 #include "bg.h"
-#include "version.h"
 #include "gtkbgbox.h"
 
 /// config file

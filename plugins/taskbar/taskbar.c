@@ -16,7 +16,7 @@
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
-#include "icon.xpm"
+#include "data/images/icon.xpm"
 #include "gtkbar.h"
 
 /*
