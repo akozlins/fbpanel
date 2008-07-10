@@ -4,16 +4,20 @@
 .PHONY : all clean clean_tmp distclean
 .PHONY : install install_lib install_emod install_script 
 .PHONY : subdirs $(SUBDIRS)
-all clean install : subdirs
+all clean install : subdirs FORCE
+# this one to prevent printing make[1]: Nothing to be done for `all'
+FORCE:
+	@#
 subdirs : $(SUBDIRS)
 $(SUBDIRS):
-	$(MAKE) -C $@ $(MAKECMDGOALS)
+	@$(MAKE) -C $@ $(MAKECMDGOALS)
 unexport SUBDIRS
 
 
 ## nice summary output for compilation tasks
 Q := @
-summary = @echo "$(1)" $(subst $(TOPDIR),,$(CURDIR)/)$(2)
+summary = @echo "$(1)" $(subst $(TOPDIR)/,,$(CURDIR)/)$(2)
+MAKEFLAGS += --no-print-directory
 
 ## variable twiking
 CFLAGS += -I$(TOPDIR) -I$(TOPDIR)/panel $(GTK_CFLAGS) -fPIC
