@@ -2,4 +2,8 @@ include %%topdir%%/config.mk
 
 SUBDIRS = plugins panel data
 
+tar :
+	$(MAKE) distclean
+	scripts/mk_tar
+
 include %%topdir%%/rules.mk

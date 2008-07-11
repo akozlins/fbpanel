@@ -1,7 +1,7 @@
 
 ## recursion make
 .DEFAULT_GOAL := all
-.PHONY : all clean clean_tmp distclean
+.PHONY : all clean clean_tmp distclean restart
 .PHONY : install install_lib install_emod install_script 
 .PHONY : subdirs $(SUBDIRS)
 all clean install : subdirs FORCE
@@ -110,7 +110,7 @@ install_script :
 
 
 clean_obj :
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(DEPS)
 
 # define these targets for makefiles without them will work
 clean: 
@@ -122,7 +122,7 @@ distclean :
 	find . -name "*.in" | sed -e 's/\.in$$//g' | xargs rm -f
 	rm -f config.h config.mk subst.sed
 
-ifeq ($(MAKECMDGOALS), all)
--include $(CDEPS)
+ifneq ($(findstring all, $(MAKECMDGOALS) $(.DEFAULT_GOAL)),)
+-include $(DEPS)
 endif
 
