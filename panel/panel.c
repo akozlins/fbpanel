@@ -285,8 +285,8 @@ static  gboolean
 panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
 {
     int dup,      /* duplicate event */
-    	fn_pos,   /* final position  */ 
-	fn_size;  /* final size      */
+        fn_pos,   /* final position  */ 
+        fn_size;  /* final size      */
 
     ENTER;
     dup = (e->width == p->cw && e->height == p->ch && e->x == p->cx && e->y == p->cy);
@@ -297,7 +297,7 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
     DBG("dup %d; final pos %d size %d\n", dup, fn_pos, fn_size);
 
     if (dup) 
-    	RET(FALSE);
+        RET(FALSE);
 
     p->cw = e->width;
     p->ch = e->height;
@@ -305,24 +305,24 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
     p->cy = e->y;
 
     if (!fn_size)
-    	RET(FALSE);
+        RET(FALSE);
 
     if (!fn_pos) {
         gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
         DBG("moving to req pos %d %d\n", p->ax, p->ay);
-	RET(FALSE);
+        RET(FALSE);
     }
     if (p->transparent) {
         fb_bg_notify_changed_bg(p->bg);
-	DBG("remake bg image\n");
+        DBG("remake bg image\n");
     }
     if (p->setstrut) {
         panel_set_wm_strut(p);
-	DBG("set_wm_strut\n");
+        DBG("set_wm_strut\n");
     }
     if (p->round_corners) {
         make_round_corners(p);
-	DBG("make_round_corners\n");
+        DBG("make_round_corners\n");
     }
     RET(FALSE);
 
