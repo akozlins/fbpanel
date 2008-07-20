@@ -22,7 +22,8 @@
 #add_feature flag "some flag" '`echo enabled`'
 add_var gtk_cflags "gtk cflags" '`scripts/pc.sh --cflags gtk+-2.0`'
 add_var gtk_libs "gtk libs" '`scripts/pc.sh --libs gtk+-2.0`'
-add_var endianess "detect endianess (big or little)" '`scripts/endianess.sh`'
+add_var gmodule_libs "gtk libs" '`scripts/pc.sh --libs gmodule-2.0`'
+#add_var endianess "detect endianess (big or little)" '`scripts/endianess.sh`'
 add_var os "detect OS flavour" '`uname -s | tr [:lower:] [:upper:]`'
 add_var version "package version" '`cat version`'
 
