@@ -20,8 +20,14 @@ summary = @echo "$(1)" $(subst $(TOPDIR)/,,$(CURDIR)/)$(2)
 MAKEFLAGS += --no-print-directory
 
 ## variable twiking
-CFLAGS += -I$(TOPDIR) -I$(TOPDIR)/panel $(GTK_CFLAGS) -fPIC
-LDFLAGS += $(GTK_LIBS) -lXmu
+CFLAGS += -Wall -I$(TOPDIR) -I$(TOPDIR)/panel $(GTK_CFLAGS) -fPIC
+ifeq ($(DEBUG),enabled)
+CFLAGS += -g
+else
+CFLAGS += -O2
+endif
+
+LDFLAGS += $(GTK_LIBS) 
 OBJS = $(SRCS:.c=.o)
 DEPS = $(SRCS:.c=.d)
 
@@ -121,8 +127,12 @@ distclean :
 	$(MAKE) clean
 	find . -name "*.in" | sed -e 's/\.in$$//g' | xargs rm -f
 	rm -f config.h config.mk subst.sed
-
-ifneq ($(findstring all, $(MAKECMDGOALS) $(.DEFAULT_GOAL)),)
+ifeq ($(DEPENDENCY),enabled)
+ifeq (,$(MAKECMDGOALS))
+MAKECMDGOALS=all
+endif
+ifneq ($(findstring all, $(MAKECMDGOALS)),)
 -include $(DEPS)
+endif
 endif
 

@@ -19,7 +19,7 @@
 #add_var glib_libs "glib libs" '`RFS=$rfs scripts/pc.sh --libs glib-2.0`'
 
 # autodetection: default value as output of command
-#add_feature flag "some flag" '`echo enabled`'
+add_feature dependency "disable dependency tracking" disabled
 add_var gtk_cflags "gtk cflags" '`scripts/pc.sh --cflags gtk+-2.0`'
 add_var gtk_libs "gtk libs" '`scripts/pc.sh --libs gtk+-2.0`'
 add_var gmodule_libs "gtk libs" '`scripts/pc.sh --libs gmodule-2.0`'

@@ -1,6 +1,6 @@
 include %%topdir%%/config.mk
 
 SRCS = main.c fixedtip.c eggtraymanager.c egg-marshal.c 
-LIBTARGET = systray.so
+LIBTARGET = tray.so
 
 include %%topdir%%/rules.mk
