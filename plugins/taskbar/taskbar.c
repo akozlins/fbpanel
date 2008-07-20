@@ -135,7 +135,7 @@ static int
 task_visible(taskbar *tb, task *tk)
 {
     ENTER;
-    DBG("%lx: %d desktop=%d iconified=%d \n", tk->win, ret, tk->desktop, tk->iconified);
+    DBG("%lx: desktop=%d iconified=%d \n", tk->win, tk->desktop, tk->iconified);
     RET( (tb->show_all_desks || tk->desktop == -1 || (tk->desktop == tb->cur_desk))
           && ((tk->iconified && tb->show_iconified) || (!tk->iconified && tb->show_mapped)) );
 }

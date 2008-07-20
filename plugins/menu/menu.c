@@ -503,7 +503,7 @@ read_submenu(plugin *p, gboolean as_item)
     }
     DBG("here\n");
     if (as_item) {
-        mi = gtk_image_menu_item_new_with_label(name ? name : "");
+        mi = gtk_image_menu_item_new_with_label(name);
         if (fname || iname) {
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
                 fb_image_new(iname, fname, m->iconsize, m->iconsize, TRUE));

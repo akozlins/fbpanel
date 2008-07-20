@@ -122,9 +122,9 @@ dclock_set_color(GdkPixbuf *glyphs, guint32 color)
     r = (color & 0x00ff0000) >> 16;
     g = (color & 0x0000ff00) >> 8;
     b = (color & 0x000000ff);
-    DBG("%dx%d: %02x %02x %02x %02x\n",
+    DBG("%dx%d: %02x %02x %02x\n",
           gdk_pixbuf_get_width(glyphs), gdk_pixbuf_get_height(glyphs),
-          r, g, b, a);
+          r, g, b);
     while (h--) {
         for (p2 = p1, w = gdk_pixbuf_get_width(glyphs); w; w--, p2 += 4) {
             DBG("here %02x %02x %02x %02x\n", p2[0], p2[1], p2[2], p2[3]);
