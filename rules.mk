@@ -23,8 +23,10 @@ MAKEFLAGS += --no-print-directory
 CFLAGS += -Wall -I$(TOPDIR) -I$(TOPDIR)/panel $(GTK_CFLAGS) -fPIC
 ifeq ($(DEBUG),enabled)
 CFLAGS += -g
+STRIP = @true
 else
 CFLAGS += -O2
+STRIP = strip
 endif
 
 LDFLAGS += $(GTK_LIBS) 
@@ -52,6 +54,7 @@ all : $(BINTARGET)
 $(BINTARGET) : $(OBJS)
 	$(call summary,LD  ,$@)
 	$Q$(CC) $(OBJS) -o $@ $(LDFLAGS) 
+	$Q$(STRIP) $@
 
 install : install_bin
 
@@ -67,6 +70,7 @@ all : $(LIBTARGET)
 $(LIBTARGET) : $(OBJS)
 	$(call summary,LD  ,$@)
 	$Q$(CC) $(OBJS) -o $@ $(LDFLAGS) -shared
+	$Q$(STRIP) $@
 
 install : install_lib
 
