@@ -1,6 +1,6 @@
 include %%topdir%%/config.mk
 
-SRCS = cpu.c 
-LIBTARGET = cpu.so
+SRCS = chart.c 
+LIBTARGET = chart.so
 
 include %%topdir%%/rules.mk
