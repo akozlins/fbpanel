@@ -2,6 +2,7 @@ include %%topdir%%/config.mk
 
 SUBDIRS = cpu dclock deskno deskno2 icons image launchbar menu 
 SUBDIRS += pager separator space systray taskbar tclock test wincmd
+SUBDIRS += chart
 
 
 include %%topdir%%/rules.mk
