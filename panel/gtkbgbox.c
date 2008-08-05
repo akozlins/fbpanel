@@ -58,8 +58,10 @@ static void gtk_bgbox_size_request  (GtkWidget *widget, GtkRequisition   *requis
 static void gtk_bgbox_size_allocate (GtkWidget *widget, GtkAllocation    *allocation);
 static void gtk_bgbox_style_set (GtkWidget *widget, GtkStyle  *previous_style);
 static gboolean gtk_bgbox_configure_event(GtkWidget *widget, GdkEventConfigure *e);
+#if 0
 static gboolean gtk_bgbox_destroy_event (GtkWidget *widget, GdkEventAny *event);
 static gboolean gtk_bgbox_delete_event (GtkWidget *widget, GdkEventAny *event);
+#endif 
 
 static void gtk_bgbox_finalize (GObject *object);
 
@@ -110,9 +112,9 @@ gtk_bgbox_class_init (GtkBgboxClass *class)
     widget_class->size_allocate   = gtk_bgbox_size_allocate;
     widget_class->style_set       = gtk_bgbox_style_set;
     widget_class->configure_event = gtk_bgbox_configure_event;
-    widget_class->destroy_event   = gtk_bgbox_destroy_event;
-    widget_class->delete_event    = gtk_bgbox_delete_event;
- 
+    //widget_class->destroy_event   = gtk_bgbox_destroy_event;
+    //widget_class->delete_event    = gtk_bgbox_delete_event;
+
     object_class->finalize = gtk_bgbox_finalize;
     g_type_class_add_private (class, sizeof (GtkBgboxPrivate));
 }
@@ -122,10 +124,12 @@ gtk_bgbox_init (GtkBgbox *bgbox)
 {
     GtkBgboxPrivate *priv;
 
+    ENTER;
     GTK_WIDGET_UNSET_FLAGS (bgbox, GTK_NO_WINDOW);
  
     priv = GTK_BGBOX_GET_PRIVATE (bgbox);
     priv->bg_type = BG_NONE;
+    RET();
 }
 
 GtkWidget*
@@ -143,6 +147,7 @@ gtk_bgbox_finalize (GObject *object)
     RET();
 }
 
+#if 0
 static gboolean
 gtk_bgbox_destroy_event (GtkWidget *widget, GdkEventAny *event)
 {
@@ -159,7 +164,26 @@ gtk_bgbox_delete_event (GtkWidget *widget, GdkEventAny *event)
 
     RET(FALSE);
 }
+#endif
 
+static GdkFilterReturn 
+gtk_bgbox_event_filter(GdkXEvent *xevent, GdkEvent *event, GtkWidget *widget)
+{
+    XEvent *ev = (XEvent *) xevent;
+
+    ENTER;
+    if (ev->type == ConfigureNotify) {
+        gtk_widget_queue_draw(widget);        
+        //gtk_bgbox_style_set(widget, NULL);
+        DBG("ConfigureNotify %d %d %d %d\n",                     
+              ev->xconfigure.x, 
+              ev->xconfigure.y, 
+              ev->xconfigure.width, 
+              ev->xconfigure.height
+            );
+    }
+    RET(GDK_FILTER_CONTINUE);
+}
 
 static void
 gtk_bgbox_realize (GtkWidget *widget)
@@ -183,9 +207,10 @@ gtk_bgbox_realize (GtkWidget *widget)
         | GDK_BUTTON_MOTION_MASK
         | GDK_BUTTON_PRESS_MASK
         | GDK_BUTTON_RELEASE_MASK
-        | GDK_EXPOSURE_MASK
         | GDK_ENTER_NOTIFY_MASK
-        | GDK_LEAVE_NOTIFY_MASK;
+        | GDK_LEAVE_NOTIFY_MASK
+        | GDK_EXPOSURE_MASK
+        | GDK_STRUCTURE_MASK;
 
     priv = GTK_BGBOX_GET_PRIVATE (widget);
   
@@ -200,6 +225,7 @@ gtk_bgbox_realize (GtkWidget *widget)
     gdk_window_set_user_data (widget->window, widget);
     widget->style = gtk_style_attach (widget->style, widget->window);
     gtk_bgbox_set_background(widget, BG_STYLE, 0, 0);
+    gdk_window_add_filter(widget->window,  (GdkFilterFunc) gtk_bgbox_event_filter, widget);
     RET();
 }
 
