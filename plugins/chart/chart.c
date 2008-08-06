@@ -30,6 +30,7 @@
 #include "plugin.h"
 #include "panel.h"
 #include "gtkbgbox.h"
+#include "chart.h"
 
 
 #define KILOBYTE 1024
@@ -37,177 +38,114 @@
 
 //#define DEBUG
 #include "dbg.h"
-typedef unsigned long tick;
-
-struct cpu_stat {
-    tick u, n, s, i;
-};
 
 
-typedef struct {
-    GdkGC *gc_cpu;
-    GdkColor *ccpu;
-    GtkWidget *da;
-    GtkWidget *evbox;
-    GdkPixmap *pixmap;
-    GtkTooltips *tip;
 
-    int timer;
-    tick *stats_cpu;
-    unsigned int ini_stats;
-    int Wwg;
-    int Hwg;
-    struct cpu_stat cpu_anterior;
-} cpu_t;
+/* chart.c */
+static void
+chart_add_tick(chart_t *c, float val)
+{
+    ENTER;
+    g_assert(val <= 1.0 && val >= 0.0);
+    c->ticks[c->pos] = val * c->h;
+    DBG("new wval = %uld\n", c->ticks[c->pos]);
+    c->pos = (c->pos + 1) %  c->w;
+    gtk_widget_queue_draw(c->da);
 
+    RET();
+}
 
 static int
-cpu_update(cpu_t *c)
+chart_draw(chart_t *c)
 {
-    int cpu_u=0, cpu_s=0, cpu_n=0, cpu_i=100;
-    unsigned int i;
-    struct cpu_stat cpu, cpu_r;
-    FILE *stat;
-    float total;
-    
+    int i;
+
     ENTER;
-    if(!c->pixmap)
-        RET(TRUE); 
-     
-    stat = fopen("/proc/stat", "r");
-    if(!stat)
-        RET(TRUE);
-    fscanf(stat, "cpu %lu %lu %lu %lu", &cpu.u, &cpu.n, &cpu.s, &cpu.i);
-    fclose(stat);
-
-    cpu_r.u = cpu.u - c->cpu_anterior.u;
-    cpu_r.n = cpu.n - c->cpu_anterior.n;
-    cpu_r.s = cpu.s - c->cpu_anterior.s;
-    cpu_r.i = cpu.i - c->cpu_anterior.i;
-
-    total = cpu_r.u + cpu_r.n + cpu_r.s + cpu_r.i;
-    cpu_u = cpu_r.u * c->Hwg / total;
-    cpu_s = cpu_r.n * c->Hwg / total;
-    cpu_n = cpu_r.s * c->Hwg / total;
-    cpu_i = cpu_r.i * c->Hwg / total;
-
-    c->cpu_anterior = cpu;
-    
-    c->stats_cpu[c->ini_stats++] = cpu_u + cpu_s + cpu_n;
-    c->ini_stats %= c->Wwg;
-
-    gdk_draw_rectangle(c->pixmap, c->da->style->black_gc, TRUE, 0, 0, c->Wwg, c->Hwg);
-    for (i = 0; i < c->Wwg; i++) {
-	int val;
+    DBG("c->w=%d\n", c->w);
+    DBG("c->h=%d\n", c->h);
+    for (i = 1; i < c->w-1; i++) {
+    	int val;
 	
-	val = c->stats_cpu[(i + c->ini_stats) % c->Wwg];
+	    val = c->ticks[(i + c->pos) % c->w];
         if (val)
-            gdk_draw_line(c->pixmap, c->gc_cpu, i, c->Hwg, i, c->Hwg - val);
+            gdk_draw_line(c->da->window, c->gc_cpu, i, c->h-2, i, c->h - val + 1);
     }
-    gtk_widget_queue_draw(c->da);
     RET(TRUE);
 }
 
-static gint
-configure_event(GtkWidget *widget, GdkEventConfigure *event, cpu_t *c)
+static void
+chart_size_allocate(GtkWidget *widget, GtkAllocation *a, chart_t *c)
 {
     ENTER;
-    if (c->pixmap)
-        g_object_unref(c->pixmap);
-    c->Wwg = widget->allocation.width;
-    c->Hwg = widget->allocation.height;
-    if (c->stats_cpu)
-        g_free(c->stats_cpu);
-    c->stats_cpu = g_new0( typeof(*c->stats_cpu), c->Wwg);
-    c->pixmap = gdk_pixmap_new (widget->window,
-          widget->allocation.width,
-          widget->allocation.height,
-          -1);
-    gdk_draw_rectangle (c->pixmap,
-          widget->style->black_gc,
-          TRUE,
-          0, 0,
-          widget->allocation.width,
-          widget->allocation.height);
+    c->w = widget->allocation.width;
+    c->h = widget->allocation.height;
+    DBG("c->w=%d\n", c->w);
+    DBG("c->h=%d\n", c->h);
+    if (c->ticks)
+        g_free(c->ticks);
+    c->ticks = g_new0( typeof(*c->ticks), c->w);
+    c->pos = 0;
     
-   RET(TRUE);
+   RET();
 }
 
 
 static gint
-expose_event(GtkWidget *widget, GdkEventExpose *event, cpu_t *c)
+chart_expose_event(GtkWidget *widget, GdkEventExpose *event, chart_t *c)
 {
     ENTER;
-    gdk_draw_drawable (widget->window,
-          c->da->style->black_gc,
-          c->pixmap,
-          event->area.x, event->area.y,
-          event->area.x, event->area.y,
-          event->area.width, event->area.height);
-    
+    gdk_window_clear(widget->window);
+    chart_draw(c);
+    gdk_draw_rectangle(widget->window, widget->style->black_gc, FALSE, 0, 0, c->w-1, c->h-1);
     RET(FALSE);
 }
 
+
+
 static int
-cpu_constructor(plugin *p)
+chart_constructor(plugin *p)
 {
-    cpu_t *c;
+    chart_t *c;
 
     ENTER;
-    c = g_new0(cpu_t, 1);
-    p->priv = c;
-
+    /* must be allocated by caller */
+    c = (chart_t *)  p->priv;
  
     c->da = gtk_drawing_area_new();
+    c->da = p->pwid;
     gtk_widget_set_size_request(c->da, 40, 20);
 
-    gtk_widget_show(c->da);
 
-    c->tip = gtk_tooltips_new();
- 
     c->gc_cpu = gdk_gc_new(p->panel->topgwin->window);
-    DBG("here1\n");
     c->ccpu = (GdkColor *)malloc(sizeof(GdkColor));
     gdk_color_parse("green",  c->ccpu);
     gdk_colormap_alloc_color(gdk_drawable_get_colormap(p->panel->topgwin->window),  c->ccpu, FALSE, TRUE);
     gdk_gc_set_foreground(c->gc_cpu,  c->ccpu);
-    gtk_bgbox_set_background(p->pwid, BG_STYLE, 0, 0);
-    gtk_container_add(GTK_CONTAINER(p->pwid), c->da);
     gtk_container_set_border_width (GTK_CONTAINER (p->pwid), 1);
-    g_signal_connect (G_OBJECT (c->da),"configure_event",
-          G_CALLBACK (configure_event), (gpointer) c);
-    g_signal_connect (G_OBJECT (c->da), "expose_event",
-          G_CALLBACK (expose_event), (gpointer) c);
+    g_signal_connect (G_OBJECT (p->pwid), "size-allocate",
+            G_CALLBACK (chart_size_allocate), (gpointer) c);
+
+    g_signal_connect_after (G_OBJECT (p->pwid), "expose-event",
+          G_CALLBACK (chart_expose_event), (gpointer) c);
     
-    c->timer = g_timeout_add(1000, (GSourceFunc) cpu_update, (gpointer) c);
     RET(1);
 }
 
 static void
-cpu_destructor(plugin *p)
+chart_destructor(plugin *p)
 {
-    cpu_t *c = (cpu_t *) p->priv;
+    chart_t *c = (chart_t *) p->priv;
 
     ENTER;
-    g_object_unref(c->pixmap);
     g_object_unref(c->gc_cpu);
-    g_free(c->stats_cpu);
+    g_free(c->ticks);
     g_free(c->ccpu);
-    g_source_remove(c->timer);
-    g_free(p->priv);
     RET();
 }
 
 
-plugin_class cpu_plugin_class = {
-    fname: NULL,
-    count: 0,
-
-    type : "cpu",
-    name : "Cpu usage",
-    version: "1.0",
-    description : "Display cpu usage",
-
-    constructor : cpu_constructor,
-    destructor  : cpu_destructor,
+chart_class_t class = {
+    constructor : chart_constructor,
+    destructor  : chart_destructor,
+    add_tick    : chart_add_tick,
 };
