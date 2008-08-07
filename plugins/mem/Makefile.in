@@ -1,6 +1,6 @@
 include %%topdir%%/config.mk
 
-SRCS = tclock.c 
-LIBTARGET = tclock.so
+SRCS = mem.c 
+LIBTARGET = mem.so
 
 include %%topdir%%/rules.mk
