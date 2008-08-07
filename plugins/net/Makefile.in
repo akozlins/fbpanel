@@ -1,0 +1,6 @@
+include %%topdir%%/config.mk
+
+SRCS = net.c 
+LIBTARGET = net.so
+
+include %%topdir%%/rules.mk
