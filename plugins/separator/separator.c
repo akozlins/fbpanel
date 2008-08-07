@@ -46,7 +46,7 @@ separator_destructor(plugin *p)
 }
 
 
-plugin_class separator_plugin_class = {
+plugin_class class = {
     fname: NULL,
     count: 0,
 

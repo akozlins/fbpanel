@@ -110,7 +110,7 @@ cpu_destructor(plugin *p)
 }
 
 
-plugin_class cpu_plugin_class = {
+plugin_class class = {
     .count       = 0,
     .type        = "cpu",
     .name        = "Cpu usage",

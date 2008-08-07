@@ -240,7 +240,7 @@ dclock_destructor(plugin *p)
   RET();
 }
 
-plugin_class dclock_plugin_class = {
+plugin_class class = {
     fname: NULL,
     count: 0,
 

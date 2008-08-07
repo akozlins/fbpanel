@@ -91,7 +91,7 @@ deskno_destructor(plugin *p)
   RET();
 }
 
-plugin_class deskno_plugin_class = {
+plugin_class class = {
     fname: NULL,
     count: 0,
 

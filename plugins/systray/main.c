@@ -125,6 +125,7 @@ tray_constructor(plugin *p)
     //GtkWidget *frame;
     
     ENTER;
+    class_get("tray"); //create extra ref so the plugin could not be unloaded
     s.len = 256;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         ERR("tray: illegal in this context %s\n", s.str);
@@ -167,7 +168,7 @@ tray_constructor(plugin *p)
 }
 
 
-plugin_class tray_plugin_class = {
+plugin_class class = {
     fname: NULL,
     count: 0,
 

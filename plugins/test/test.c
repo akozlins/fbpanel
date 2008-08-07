@@ -97,7 +97,7 @@ test_destructor(plugin *p)
   RET();
 }
 
-plugin_class test_plugin_class = {
+plugin_class class = {
     fname: NULL,
     count: 0,
 

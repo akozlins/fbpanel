@@ -887,7 +887,7 @@ pager_destructor(plugin *p)
 }
 
 
-plugin_class pager_plugin_class = {
+plugin_class class = {
     fname: NULL,
     count: 0,
 

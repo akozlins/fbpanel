@@ -507,7 +507,7 @@ icons_destructor(plugin *p)
     RET();
 }
 
-plugin_class icons_plugin_class = {
+plugin_class class = {
     fname: NULL,
     count: 0,
 

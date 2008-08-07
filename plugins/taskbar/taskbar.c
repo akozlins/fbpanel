@@ -1408,7 +1408,7 @@ taskbar_destructor(plugin *p)
     RET();
 }
 
-plugin_class taskbar_plugin_class = {
+plugin_class class = {
     fname: NULL,
     count: 0,
 

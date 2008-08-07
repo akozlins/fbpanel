@@ -127,7 +127,7 @@ net_destructor(plugin *p)
 }
 
 
-plugin_class net_plugin_class = {
+plugin_class class = {
     .count       = 0,
     .type        = "net",
     .name        = "net usage",

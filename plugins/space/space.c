@@ -85,7 +85,7 @@ space_constructor(plugin *p)
 }
 
 
-plugin_class space_plugin_class = {
+plugin_class class = {
     fname: NULL,
     count: 0,
 

@@ -237,7 +237,7 @@ wincmd_constructor(plugin *p)
 }
 
 
-plugin_class wincmd_plugin_class = {
+plugin_class class = {
     fname: NULL,
     count: 0,
 
