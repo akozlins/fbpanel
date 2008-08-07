@@ -426,7 +426,6 @@ get_netwm_icon(Window tkwin, int iw, int ih)
 
     ENTER;
     data = get_xaproperty(tkwin, a_NET_WM_ICON, XA_CARDINAL, &n);
-    DBG("icon size = %d data = %p w=%ld h=%ld\n", n, data, data[0], data[1]);
 
     if (0) {
         gulong *tmp;

@@ -50,7 +50,7 @@ static chart_class_t *k;
 static int
 cpu_get_load(cpu_t *c)
 {
-    gulong a;
+    gfloat a, b;
     struct cpu_stat cpu, cpu_diff;
     FILE *stat;
     float total;
@@ -69,8 +69,9 @@ cpu_get_load(cpu_t *c)
     c->cpu_prev = cpu;
 
     a = cpu_diff.u + cpu_diff.n + cpu_diff.s;
-    total = a / (a + cpu_diff.i);
-
+    b = a + cpu_diff.i;
+    total = b ?  a / b : 1.0;
+    DBG("total=%f a=%f b=%f\n", total, a, b);
     k->add_tick(&c->chart, total);
     RET(TRUE);
 

@@ -47,6 +47,8 @@ chart_add_tick(chart_t *c, float val)
 {
     ENTER;
     g_assert(val <= 1.0 && val >= 0.0);
+    if (!c->ticks)
+        RET();
     c->ticks[c->pos] = val * c->h;
     DBG("new wval = %uld\n", c->ticks[c->pos]);
     c->pos = (c->pos + 1) %  c->w;
@@ -55,7 +57,7 @@ chart_add_tick(chart_t *c, float val)
     RET();
 }
 
-static int
+static void
 chart_draw(chart_t *c)
 {
     int i;
@@ -63,6 +65,8 @@ chart_draw(chart_t *c)
     ENTER;
     DBG("c->w=%d\n", c->w);
     DBG("c->h=%d\n", c->h);
+    if (!c->ticks)
+        RET();
     for (i = 1; i < c->w-1; i++) {
     	int val;
 	
@@ -70,19 +74,22 @@ chart_draw(chart_t *c)
         if (val)
             gdk_draw_line(c->da->window, c->gc_cpu, i, c->h-2, i, c->h - val + 1);
     }
-    RET(TRUE);
+    RET();
 }
 
 static void
 chart_size_allocate(GtkWidget *widget, GtkAllocation *a, chart_t *c)
 {
     ENTER;
-    c->w = widget->allocation.width;
-    c->h = widget->allocation.height;
-    DBG("c->w=%d\n", c->w);
-    DBG("c->h=%d\n", c->h);
     if (c->ticks)
         g_free(c->ticks);
+    c->ticks = NULL;
+    c->w = widget->allocation.width;
+    c->h = widget->allocation.height;
+    if (c->w < 2 || c->h < 2) 
+        RET();
+    DBG("c->w=%d\n", c->w);
+    DBG("c->h=%d\n", c->h);
     c->ticks = g_new0( typeof(*c->ticks), c->w);
     c->pos = 0;
     
