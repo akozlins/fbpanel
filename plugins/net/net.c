@@ -1,5 +1,5 @@
 /*
- * CPU usage plugin to fbpanel
+ * net usage plugin to fbpanel
  *
  * Copyright (C) 2004 by Alexandre Pereira da Silva <alexandre.pereira@poli.usp.br>
  *
@@ -35,69 +35,85 @@
 
 
 
-/* cpu.c */
-struct cpu_stat {
-    gulong u, n, s, i;
+/* net.c */
+struct net_stat {
+    gulong tx, rx;
 };
 
 typedef struct {
     chart_t chart;
-    struct cpu_stat cpu_prev;
+    struct net_stat net_prev;
     int timer;
-} cpu_t;
+    char *iface;
+    gulong max_tx;
+    gulong max_rx;
+} net_t;
 
 static chart_class_t *k;
 
 static int
-cpu_get_load(cpu_t *c)
+net_get_load(net_t *c)
 {
-    gfloat a, b;
-    struct cpu_stat cpu, cpu_diff;
+    struct net_stat net, net_diff;
     FILE *stat;
     float total;
+    char buf[256], *s = NULL;
 
     ENTER;
-    stat = fopen("/proc/stat", "r");
+    stat = fopen("/proc/net/dev", "r");
     if(!stat)
         RET(TRUE);
-    fscanf(stat, "cpu %lu %lu %lu %lu", &cpu.u, &cpu.n, &cpu.s, &cpu.i);
+    fgets(buf, 256, stat);
+    fgets(buf, 256, stat);
+
+    while (!s && !feof(stat) && fgets(buf, 256, stat))  
+        s = g_strrstr(buf, c->iface);
     fclose(stat);
-
-    cpu_diff.u = cpu.u - c->cpu_prev.u;
-    cpu_diff.n = cpu.n - c->cpu_prev.n;
-    cpu_diff.s = cpu.s - c->cpu_prev.s;
-    cpu_diff.i = cpu.i - c->cpu_prev.i;
-    c->cpu_prev = cpu;
-
-    a = cpu_diff.u + cpu_diff.n + cpu_diff.s;
-    b = a + cpu_diff.i;
-    total = b ?  a / b : 1.0;
-    DBG("total=%f a=%f b=%f\n", total, a, b);
+    if (!s)
+        RET(0);
+    s = g_strrstr(s, ":");     
+    if (!s)
+        RET(0);
+    s++;
+    if (sscanf(s, "%lu  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %lu", &net.tx, &net.rx)
+          != 2) {
+        DBG("can't read %s statistics\n", c->iface);
+        RET(0);
+    }
+    net_diff.tx = (net.tx - c->net_prev.tx) >> 10;
+    net_diff.rx = (net.rx - c->net_prev.rx) >> 10;
+    c->net_prev = net;
+    total = (float)(net_diff.tx + net_diff.rx) / (float)(c->max_tx + c->max_rx);
+    DBG("%f %ul %ul\n", total, net_diff.tx, net_diff.rx);
     k->add_tick(&c->chart, total);
+    
     RET(TRUE);
 
 }
 
 
 static int
-cpu_constructor(plugin *p)
+net_constructor(plugin *p)
 {
-    cpu_t *c;
+    net_t *c;
 
     if (!(k = class_get("chart")))
         RET(0);
-    c = p->priv = g_new0(cpu_t, 1);
+    c = p->priv = g_new0(net_t, 1);
     if (!k->constructor(p))
         RET(0);
-    c->timer = g_timeout_add(1000, (GSourceFunc) cpu_get_load, (gpointer) c);
+    c->timer = g_timeout_add(1000, (GSourceFunc) net_get_load, (gpointer) c);
+    c->iface = "eth0";
+    c->max_rx = 120;
+    c->max_tx = 12;
     RET(1);
 }
 
 
 static void
-cpu_destructor(plugin *p)
+net_destructor(plugin *p)
 {
-    cpu_t *c = (cpu_t *) p->priv;
+    net_t *c = (net_t *) p->priv;
 
     ENTER;
     g_source_remove(c->timer);
@@ -108,15 +124,15 @@ cpu_destructor(plugin *p)
 }
 
 
-plugin_class cpu_plugin_class = {
+plugin_class net_plugin_class = {
     fname: NULL,
     count: 0,
 
-    type : "cpu",
-    name : "Cpu usage",
+    type : "net",
+    name : "net usage",
     version: "1.0",
-    description : "Display cpu usage",
+    description : "Display net usage",
 
-    constructor : cpu_constructor,
-    destructor  : cpu_destructor,
+    constructor : net_constructor,
+    destructor  : net_destructor,
 };

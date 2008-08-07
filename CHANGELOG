@@ -1,3 +1,12 @@
+5.1
+* Tooltips can have mark-uped text, like '<b>T</b>erminal'
+* Cpu plugin is fixed and working
+* Added general chart plugin (used by cpu and net monitors)
+* Code layout was changed, new configure system and new makefiles set was 
+  adopted
+* fixed segfault in taskbar plugin
+* background pixmap drawing speed ups and bugfixes
+
 4.13
 New Features:
 * support for "above all" and "below all" layering states. Global section

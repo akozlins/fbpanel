@@ -46,9 +46,13 @@ static void
 chart_add_tick(chart_t *c, float val)
 {
     ENTER;
-    g_assert(val <= 1.0 && val >= 0.0);
     if (!c->ticks)
         RET();
+
+    if (val < 0)
+        val = 0;
+    if (val > 1)
+        val = 1;
     c->ticks[c->pos] = val * c->h;
     DBG("new wval = %uld\n", c->ticks[c->pos]);
     c->pos = (c->pos + 1) %  c->w;
