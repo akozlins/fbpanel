@@ -27,6 +27,7 @@
 #include <sys/sysinfo.h>
 #include <stdlib.h>
 
+#include "misc.h"
 #include "../chart/chart.h"
 
 //#define DEBUG
@@ -77,54 +78,13 @@ cpu_get_load(cpu_t *c)
 
 }
 
-void class_put(char *name)
-{
-    GModule *m;    
-    gchar *s;
-
-    ENTER;
-    s = g_strdup_printf(LIBDIR "/fbpanel/%s.so", name);
-    m = g_module_open(s, G_MODULE_BIND_LAZY);                
-    g_free(s);
-
-    if (!m) {
-        ERR("error is %s\n", g_module_error());                    
-        RET();
-    }
-    g_module_close(m);
-    g_module_close(m);
-    RET();
-}
-gpointer class_get(char *name)
-{
-    GModule *m;    
-    gpointer tmp;
-    gchar *s;
-
-    ENTER;
-    s = g_strdup_printf(LIBDIR "/fbpanel/%s.so", name);
-    m = g_module_open(s, G_MODULE_BIND_LAZY);                
-    g_free(s);
-
-    if (!m) {
-        ERR("error is %s\n", g_module_error());                    
-        RET(NULL);
-    }
-    if (g_module_symbol(m, "class", &tmp)) 
-        RET(tmp);
-    g_module_close(m);
-    RET(NULL);
-}
-
 
 static int
 cpu_constructor(plugin *p)
 {
     cpu_t *c;
 
-    if (!k) 
-        k = class_get("chart");
-    if (!k)
+    if (!(k = class_get("chart")))
         RET(0);
     c = p->priv = g_new0(cpu_t, 1);
     if (!k->constructor(p))

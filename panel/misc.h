@@ -75,4 +75,7 @@ void menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *wid
 void configure();
 gchar *indent(int level);
 
+void class_put(char *name);
+gpointer class_get(char *name);
+
 #endif

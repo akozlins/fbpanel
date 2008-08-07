@@ -103,7 +103,10 @@ chart_expose_event(GtkWidget *widget, GdkEventExpose *event, chart_t *c)
     ENTER;
     gdk_window_clear(widget->window);
     chart_draw(c);
-    gdk_draw_rectangle(widget->window, widget->style->black_gc, FALSE, 0, 0, c->w-1, c->h-1);
+    gdk_draw_rectangle(widget->window, 
+            //widget->style->black_gc,                       
+            widget->style->bg_gc[GTK_STATE_NORMAL],
+            FALSE, 0, 0, c->w-1, c->h-1);
     RET(FALSE);
 }
 
