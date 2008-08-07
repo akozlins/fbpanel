@@ -73,7 +73,7 @@ cpu_get_load(cpu_t *c)
     b = a + cpu_diff.i;
     total = b ?  a / b : 1.0;
     DBG("total=%f a=%f b=%f\n", total, a, b);
-    k->add_tick(&c->chart, total);
+    k->add_tick(&c->chart, &total);
     RET(TRUE);
 
 }
@@ -83,12 +83,14 @@ static int
 cpu_constructor(plugin *p)
 {
     cpu_t *c;
+    char *colors[] = { "green" };
 
     if (!(k = class_get("chart")))
         RET(0);
     c = p->priv = g_new0(cpu_t, 1);
     if (!k->constructor(p))
         RET(0);
+    k->set_rows(&c->chart, 1, colors);
     c->timer = g_timeout_add(1000, (GSourceFunc) cpu_get_load, (gpointer) c);
     RET(1);
 }
@@ -109,14 +111,12 @@ cpu_destructor(plugin *p)
 
 
 plugin_class cpu_plugin_class = {
-    fname: NULL,
-    count: 0,
-
-    type : "cpu",
-    name : "Cpu usage",
-    version: "1.0",
-    description : "Display cpu usage",
-
-    constructor : cpu_constructor,
-    destructor  : cpu_destructor,
+    .count       = 0,
+    .type        = "cpu",
+    .name        = "Cpu usage",
+    .version     = "1.0",
+    .description = "Display cpu usage",
+    
+    .constructor = cpu_constructor,
+    .destructor  = cpu_destructor,
 };

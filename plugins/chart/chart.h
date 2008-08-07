@@ -8,20 +8,19 @@
 
 /* chart.h */
 typedef struct {
-    GdkGC *gc_cpu;
-    GdkColor *ccpu;
+    GdkGC **gc_cpu;
     GtkWidget *da;
-    GtkTooltips *tip;
 
-    gint *ticks;
+    gint **ticks;
     gint pos;
-    gint w, h;
+    gint w, h, rows;
 } chart_t;
 
 typedef struct {
     int (*constructor)(plugin *p);
     void (*destructor)(plugin *p);
-    void (*add_tick)(chart_t *c, float val);
+    void (*add_tick)(chart_t *c, float *val);
+    void (*set_rows)(chart_t *c, int num, gchar *colors[]);
 } chart_class_t;
 
 

@@ -56,7 +56,7 @@ net_get_load(net_t *c)
 {
     struct net_stat net, net_diff;
     FILE *stat;
-    float total;
+    float total[2];
     char buf[256], *s = NULL;
 
     ENTER;
@@ -83,7 +83,8 @@ net_get_load(net_t *c)
     net_diff.tx = (net.tx - c->net_prev.tx) >> 10;
     net_diff.rx = (net.rx - c->net_prev.rx) >> 10;
     c->net_prev = net;
-    total = (float)(net_diff.tx + net_diff.rx) / (float)(c->max_tx + c->max_rx);
+    total[0] = (float)(net_diff.tx) / (float)(c->max_tx + c->max_rx);
+    total[1] = (float)(net_diff.rx) / (float)(c->max_tx + c->max_rx);
     DBG("%f %ul %ul\n", total, net_diff.tx, net_diff.rx);
     k->add_tick(&c->chart, total);
     
@@ -96,12 +97,14 @@ static int
 net_constructor(plugin *p)
 {
     net_t *c;
+    gchar *colors[] = { "blue", "violet" };
 
     if (!(k = class_get("chart")))
         RET(0);
     c = p->priv = g_new0(net_t, 1);
     if (!k->constructor(p))
         RET(0);
+    k->set_rows(&c->chart, 2, colors);
     c->timer = g_timeout_add(1000, (GSourceFunc) net_get_load, (gpointer) c);
     c->iface = "eth0";
     c->max_rx = 120;
@@ -125,14 +128,12 @@ net_destructor(plugin *p)
 
 
 plugin_class net_plugin_class = {
-    fname: NULL,
-    count: 0,
+    .count       = 0,
+    .type        = "net",
+    .name        = "net usage",
+    .version     = "1.0",
+    .description = "Display net usage",
 
-    type : "net",
-    name : "net usage",
-    version: "1.0",
-    description : "Display net usage",
-
-    constructor : net_constructor,
-    destructor  : net_destructor,
+    .constructor = net_constructor,
+    .destructor  = net_destructor,
 };
