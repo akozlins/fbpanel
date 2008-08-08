@@ -13,166 +13,88 @@
 //#define DEBUG
 #include "dbg.h"
 
+extern panel *the_panel;
 
-#define DEFAULT_TIP_FORMAT    "%A %x"
-#define DEFAULT_CLOCK_FORMAT  "%R"
 
 typedef struct {
-    GtkWidget *eb;
-    GtkWidget *main;
-    GtkWidget *clockw;
-    GtkTooltips *tip;
-    char *tfmt;
-    char *cfmt;
-    char *action;
-    short lastDay;
+    GtkWidget *pb;
     int timer;
-} tclock;
+} mem;
 
-//static tclock me;
-
-
-
-static  gboolean
-clicked( GtkWidget *widget, gpointer dummy, tclock *dc)
-{
-    ENTER2;
-    DBG("%s\n", dc->action);
-    system (dc->action);
-    RET2(TRUE);
-}
-
+//static mem me;
 
 
 static gint
-clock_update(gpointer data )
+clock_update(mem *dc)
 {
-    char output[64], str[64];
-    time_t now;
-    struct tm * detail;
-    tclock *dc;
-    gchar *utf8;
-    
+    static gdouble p;
+          
     ENTER;
-    g_assert(data != NULL);
-    dc = (tclock *)data;
-    
-    time(&now);
-    detail = localtime(&now);
-    strftime(output, sizeof(output), dc->cfmt, detail) ;
-    g_snprintf(str, 64, "<b>%s</b>", output);
-    gtk_label_set_markup (GTK_LABEL(dc->clockw), str) ;
-
-    if (detail->tm_mday != dc->lastDay) {
-	dc->lastDay = detail->tm_mday ;
-
-	strftime (output, sizeof(output), dc->tfmt, detail) ;
-        if ((utf8 = g_locale_to_utf8(output, -1, NULL, NULL, NULL))) {
-            gtk_tooltips_set_tip(dc->tip, dc->main, utf8, NULL) ;
-            g_free(utf8);
-        }
-    }
+    p += 0.1;
+    if (p > 1)
+        p = 0.0;
+    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(dc->pb), p);
     RET(TRUE);
 }
 
 
 static int
-tclock_constructor(plugin *p)
+mem_constructor(plugin *p)
 {
-    line s;
-    tclock *dc;
-    char output [40] ;
-    time_t now ;
-    struct tm * detail ;
+    mem *dc;
+    GdkColor color;
+    GtkRcStyle *rc;
     
     ENTER;
-    dc = g_new0(tclock, 1);
+    dc = g_new0(mem, 1);
     g_return_val_if_fail(dc != NULL, 0);
     p->priv = dc;
     
-    s.len = 256;
-    dc->cfmt = dc->tfmt = dc->action = 0;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR( "tclock: illegal token %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "ClockFmt")) 
-                dc->cfmt = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "TooltipFmt"))
-                dc->tfmt = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "Action"))
-                dc->action = g_strdup(s.t[1]);
-            else {
-                ERR( "tclock: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        } else {
-            ERR( "tclock: illegal in this context %s\n", s.str);
-            goto error;
-        }
+    dc->pb = gtk_progress_bar_new();
+    rc = gtk_widget_get_modifier_style(dc->pb);
+    if (!rc) {
+        rc = gtk_rc_style_new();
     }
-    if (!dc->cfmt)
-        dc->cfmt = g_strdup(DEFAULT_CLOCK_FORMAT);
-    if (!dc->tfmt)
-        dc->tfmt = g_strdup(DEFAULT_TIP_FORMAT);
-    dc->main = gtk_event_box_new();
-    //gtk_widget_add_events (dc->main, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
-    //button = gtk_button_new();
-    //gtk_container_add(GTK_CONTAINER(dc->main), button);
-    if (dc->action)
-        g_signal_connect (G_OBJECT (dc->main), "button_press_event",
-              G_CALLBACK (clicked), (gpointer) dc);
-    time(&now);
-    detail = localtime(&now);
-    strftime(output, sizeof(output), dc->cfmt, detail) ;
-    dc->clockw = gtk_label_new(output);
-    gtk_misc_set_alignment(GTK_MISC(dc->clockw), 0.5, 0.5);
-    gtk_misc_set_padding(GTK_MISC(dc->clockw), 4, 0);
-    //gtk_widget_show(dc->clockw);
-    gtk_container_add(GTK_CONTAINER(dc->main), dc->clockw);
-    gtk_widget_show_all(dc->main);
-    dc->tip = gtk_tooltips_new();
+    if (rc) {
+        rc->color_flags[GTK_STATE_PRELIGHT] |= GTK_RC_BG;
+        gdk_color_parse("green", &color);
+        rc->bg[GTK_STATE_PRELIGHT] = color;
+    }
+    gtk_widget_modify_style(dc->pb, rc);
+    if (the_panel->orientation == ORIENT_HORIZ) {
+        gtk_progress_bar_set_orientation(GTK_PROGRESS_BAR(dc->pb), GTK_PROGRESS_BOTTOM_TO_TOP);
+        gtk_widget_set_size_request(dc->pb, 9, 0);
+    } else {
+        gtk_progress_bar_set_orientation(GTK_PROGRESS_BAR(dc->pb), GTK_PROGRESS_LEFT_TO_RIGHT);
+        gtk_widget_set_size_request(dc->pb, 0, 9);
+    }
+    gtk_widget_show_all(dc->pb);
     dc->timer = g_timeout_add(1000, (GSourceFunc) clock_update, (gpointer)dc);
-    gtk_container_add(GTK_CONTAINER(p->pwid), dc->main);
+    gtk_container_add(GTK_CONTAINER(p->pwid), dc->pb);
     RET(1);
-
- error:
-    g_free(dc->cfmt);
-    g_free(dc->tfmt);
-    g_free(dc->action);
-    g_free(dc);
-    RET(0);
 }
 
 
 static void
-tclock_destructor(plugin *p)
+mem_destructor(plugin *p)
 {
-  tclock *dc = (tclock *)p->priv;
+    mem *dc = (mem *)p->priv;
 
-  ENTER;
-  dc = (tclock *) p->priv;
-  if (dc->timer)
-      g_source_remove(dc->timer);
-  gtk_widget_destroy(dc->main);
-  g_free(dc->cfmt);
-  g_free(dc->tfmt);
-  g_free(dc->action);
-  g_free(dc);
-  RET();
+    ENTER;
+    dc = (mem *) p->priv;
+    if (dc->timer)
+        g_source_remove(dc->timer);
+    gtk_widget_destroy(dc->pb);
+    g_free(dc);
+    RET();
 }
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
+    .type        = "mem",
+    .name        = "Memory Monitor",
+    .version     = "1.0",
+    .description = "Show memory usage",
 
-    type : "tclock",
-    name : "Text Clock",
-    version: "1.0",
-    description : "Text clock/date with tooltip",
-
-    constructor : tclock_constructor,
-    destructor  : tclock_destructor,
+    .constructor = mem_constructor,
+    .destructor  = mem_destructor,
 };
