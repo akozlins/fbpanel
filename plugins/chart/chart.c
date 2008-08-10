@@ -37,7 +37,6 @@
 #include "dbg.h"
 
 
-static void chart_free_rows(chart_t *c);
 static void chart_add_tick(chart_t *c, float *val);
 static void chart_draw(chart_t *c);
 static void chart_size_allocate(GtkWidget *widget, GtkAllocation *a, chart_t *c);
@@ -131,9 +130,14 @@ chart_alloc_ticks(chart_t *c)
     int i;
 
     ENTER;
-    c->ticks = g_new0( typeof(*c->ticks), c->rows);
-    for (i = 0; i < c->rows; i++) 
-        c->ticks[i] = g_new0(typeof(**c->ticks), c->w);
+    if (!c->w || !c->rows)
+        RET();
+    c->ticks = g_new0(gint *, c->rows);
+    for (i = 0; i < c->rows; i++) {
+        c->ticks[i] = g_new0(gint, c->w);
+        if (!c->ticks[i]) 
+            DBG2("can't alloc mem: %p %d\n", c->ticks[i], c->w);
+    }
     c->pos = 0;
     RET();
 }
