@@ -43,6 +43,12 @@ static void chart_draw(chart_t *c);
 static void chart_size_allocate(GtkWidget *widget, GtkAllocation *a, chart_t *c);
 static gint chart_expose_event(GtkWidget *widget, GdkEventExpose *event, chart_t *c);
 
+static void chart_alloc_ticks(chart_t *c);
+static void chart_free_ticks(chart_t *c);
+static void chart_alloc_gcs(chart_t *c, gchar *colors[]);
+static void chart_free_gcs(chart_t *c);
+
+
 extern panel *the_panel;
 
 
@@ -75,8 +81,6 @@ chart_draw(chart_t *c)
     int j, i, y;
 
     ENTER;
-    DBG("c->w=%d\n", c->w);
-    DBG("c->h=%d\n", c->h);
     if (!c->ticks)
         RET();
     for (i = 1; i < c->w-1; i++) {
@@ -96,17 +100,14 @@ chart_draw(chart_t *c)
 static void
 chart_size_allocate(GtkWidget *widget, GtkAllocation *a, chart_t *c)
 {
-    int i;
-
     ENTER;
-    c->w = widget->allocation.width;
-    c->h = widget->allocation.height;
-    if (c->w < 2 || c->h < 2) 
-        RET();
-    for (i = 0; i < c->rows; i++) {
-        g_free(c->ticks[i]);
-        c->ticks[i] = g_new0(typeof(**c->ticks), c->w);
+    if (c->w != a->width || c->h != a->height) {
+        chart_free_ticks(c);
+        c->w = a->width;
+        c->h = a->height;
+        chart_alloc_ticks(c);
     }
+    gtk_widget_queue_draw(c->da);
     RET();
 }
 
@@ -124,54 +125,83 @@ chart_expose_event(GtkWidget *widget, GdkEventExpose *event, chart_t *c)
     RET(FALSE);
 }
 
-
-
 static void
-chart_free_rows(chart_t *c)
+chart_alloc_ticks(chart_t *c)
 {
     int i;
 
     ENTER;
-    for (i = 0; i < c->rows; i++) {
-        g_free(c->ticks[i]);
-        g_object_unref(c->gc_cpu[i]);
-    }
-    g_free(c->ticks);
-    g_free(c->gc_cpu);
-    c->rows = 0;
-    c->ticks = NULL;
-    c->gc_cpu = NULL;
-
+    c->ticks = g_new0( typeof(*c->ticks), c->rows);
+    for (i = 0; i < c->rows; i++) 
+        c->ticks[i] = g_new0(typeof(**c->ticks), c->w);
+    c->pos = 0;
     RET();
 }
 
+
+static void
+chart_free_ticks(chart_t *c)
+{
+    int i;
+
+    ENTER;
+    if (!c->ticks)
+        RET();
+    for (i = 0; i < c->rows; i++) 
+        g_free(c->ticks[i]);
+    g_free(c->ticks);
+    c->ticks = NULL;
+    RET();
+}
+
+
+static void
+chart_alloc_gcs(chart_t *c, gchar *colors[])
+{
+    int i;  
+    GdkColor color;
+
+    ENTER;
+    c->gc_cpu = g_new0( typeof(*c->gc_cpu), c->rows);
+    if (c->gc_cpu) {
+        for (i = 0; i < c->rows; i++) {
+            c->gc_cpu[i] = gdk_gc_new(the_panel->topgwin->window);
+            gdk_color_parse(colors[i], &color);
+            gdk_colormap_alloc_color(gdk_drawable_get_colormap(the_panel->topgwin->window),  &color, FALSE, TRUE);
+            gdk_gc_set_foreground(c->gc_cpu[i],  &color);
+        }
+    }
+    RET();
+}
+
+
+
+static void
+chart_free_gcs(chart_t *c)
+{
+    int i;  
+
+    ENTER;
+    if (c->gc_cpu) {
+        for (i = 0; i < c->rows; i++) 
+            g_object_unref(c->gc_cpu[i]);            
+        g_free(c->gc_cpu);
+        c->gc_cpu = NULL;
+    }
+    RET();
+}
+
+
 static void
 chart_set_rows(chart_t *c, int num, gchar *colors[])
-{
+{    
     ENTER;
     g_assert(num > 0 && num < 10);
-    chart_free_rows(c);
+    chart_free_ticks(c);
+    chart_free_gcs(c);
     c->rows = num;
-    c->pos = 0;
-    c->ticks = g_new0( typeof(*c->ticks), c->rows);
-    c->gc_cpu = g_new0( typeof(*c->gc_cpu), c->rows);
-    if (!c->ticks || !c->gc_cpu) {
-        ERR("chart: can't allocate mem\n");
-        RET();
-    }
-    while (num-- > 0) {
-        GdkColor color;
-
-        DBG("num=%d \n", num);
-        DBG("color=%s\n", colors[num]);
-        c->gc_cpu[num] = gdk_gc_new(the_panel->topgwin->window);
-                
-        gdk_color_parse(colors[num], &color);
-        gdk_colormap_alloc_color(gdk_drawable_get_colormap(the_panel->topgwin->window),  &color, FALSE, TRUE);
-        gdk_gc_set_foreground(c->gc_cpu[num],  &color);
-        c->ticks[num] = g_new0(typeof(**c->ticks), c->w);
-
-    }
+    chart_alloc_ticks(c);
+    chart_alloc_gcs(c, colors);
     RET();
 }
 
@@ -188,7 +218,7 @@ chart_constructor(plugin *p)
     c->gc_cpu = NULL;
     c->da = p->pwid;
     gtk_widget_set_size_request(c->da, 40, 20);
-    gtk_container_set_border_width (GTK_CONTAINER (p->pwid), 1);
+    //gtk_container_set_border_width (GTK_CONTAINER (p->pwid), 1);
     g_signal_connect (G_OBJECT (p->pwid), "size-allocate",
           G_CALLBACK (chart_size_allocate), (gpointer) c);
 
@@ -204,7 +234,8 @@ chart_destructor(plugin *p)
     chart_t *c = (chart_t *) p->priv;
 
     ENTER;
-    chart_free_rows(c);
+    chart_free_ticks(c);
+    chart_free_gcs(c);
     RET();
 }
 
