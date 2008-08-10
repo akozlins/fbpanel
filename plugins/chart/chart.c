@@ -183,7 +183,9 @@ chart_constructor(plugin *p)
     ENTER;
     /* must be allocated by caller */
     c = (chart_t *)  p->priv;
- 
+    c->rows = 0;
+    c->ticks = NULL;
+    c->gc_cpu = NULL;
     c->da = p->pwid;
     gtk_widget_set_size_request(c->da, 40, 20);
     gtk_container_set_border_width (GTK_CONTAINER (p->pwid), 1);
