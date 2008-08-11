@@ -37,15 +37,15 @@
 #include "dbg.h"
 
 
-static void chart_add_tick(chart_t *c, float *val);
-static void chart_draw(chart_t *c);
-static void chart_size_allocate(GtkWidget *widget, GtkAllocation *a, chart_t *c);
-static gint chart_expose_event(GtkWidget *widget, GdkEventExpose *event, chart_t *c);
+static void chart_add_tick(chart_priv *c, float *val);
+static void chart_draw(chart_priv *c);
+static void chart_size_allocate(GtkWidget *widget, GtkAllocation *a, chart_priv *c);
+static gint chart_expose_event(GtkWidget *widget, GdkEventExpose *event, chart_priv *c);
 
-static void chart_alloc_ticks(chart_t *c);
-static void chart_free_ticks(chart_t *c);
-static void chart_alloc_gcs(chart_t *c, gchar *colors[]);
-static void chart_free_gcs(chart_t *c);
+static void chart_alloc_ticks(chart_priv *c);
+static void chart_free_ticks(chart_priv *c);
+static void chart_alloc_gcs(chart_priv *c, gchar *colors[]);
+static void chart_free_gcs(chart_priv *c);
 
 
 extern panel *the_panel;
@@ -53,7 +53,7 @@ extern panel *the_panel;
 
 
 static void
-chart_add_tick(chart_t *c, float *val)
+chart_add_tick(chart_priv *c, float *val)
 {
     int i;
 
@@ -75,7 +75,7 @@ chart_add_tick(chart_t *c, float *val)
 }
 
 static void
-chart_draw(chart_t *c)
+chart_draw(chart_priv *c)
 {
     int j, i, y;
 
@@ -97,7 +97,7 @@ chart_draw(chart_t *c)
 }
 
 static void
-chart_size_allocate(GtkWidget *widget, GtkAllocation *a, chart_t *c)
+chart_size_allocate(GtkWidget *widget, GtkAllocation *a, chart_priv *c)
 {
     ENTER;
     if (c->w != a->width || c->h != a->height) {
@@ -112,7 +112,7 @@ chart_size_allocate(GtkWidget *widget, GtkAllocation *a, chart_t *c)
 
 
 static gint
-chart_expose_event(GtkWidget *widget, GdkEventExpose *event, chart_t *c)
+chart_expose_event(GtkWidget *widget, GdkEventExpose *event, chart_priv *c)
 {
     ENTER;
     gdk_window_clear(widget->window);
@@ -125,7 +125,7 @@ chart_expose_event(GtkWidget *widget, GdkEventExpose *event, chart_t *c)
 }
 
 static void
-chart_alloc_ticks(chart_t *c)
+chart_alloc_ticks(chart_priv *c)
 {
     int i;
 
@@ -144,7 +144,7 @@ chart_alloc_ticks(chart_t *c)
 
 
 static void
-chart_free_ticks(chart_t *c)
+chart_free_ticks(chart_priv *c)
 {
     int i;
 
@@ -160,7 +160,7 @@ chart_free_ticks(chart_t *c)
 
 
 static void
-chart_alloc_gcs(chart_t *c, gchar *colors[])
+chart_alloc_gcs(chart_priv *c, gchar *colors[])
 {
     int i;  
     GdkColor color;
@@ -181,7 +181,7 @@ chart_alloc_gcs(chart_t *c, gchar *colors[])
 
 
 static void
-chart_free_gcs(chart_t *c)
+chart_free_gcs(chart_priv *c)
 {
     int i;  
 
@@ -197,7 +197,7 @@ chart_free_gcs(chart_t *c)
 
 
 static void
-chart_set_rows(chart_t *c, int num, gchar *colors[])
+chart_set_rows(chart_priv *c, int num, gchar *colors[])
 {    
     ENTER;
     g_assert(num > 0 && num < 10);
@@ -212,11 +212,11 @@ chart_set_rows(chart_t *c, int num, gchar *colors[])
 static int
 chart_constructor(plugin_priv *p)
 {
-    chart_t *c;
+    chart_priv *c;
 
     ENTER;
     /* must be allocated by caller */
-    c = (chart_t *)  p->priv;
+    c = (chart_priv *)  p->priv;
     c->rows = 0;
     c->ticks = NULL;
     c->gc_cpu = NULL;
@@ -235,7 +235,7 @@ chart_constructor(plugin_priv *p)
 static void
 chart_destructor(plugin_priv *p)
 {
-    chart_t *c = (chart_t *) p->priv;
+    chart_priv *c = (chart_priv *) p->priv;
 
     ENTER;
     chart_free_ticks(c);

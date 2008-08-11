@@ -42,7 +42,7 @@
 
 
 /* managed window: all related info that wm holds about its managed windows */
-typedef struct task {
+typedef struct _task {
     Window win;
     int x, y;
     guint w, h;
@@ -55,7 +55,7 @@ typedef struct task {
 } task;
 
 typedef struct _desk   desk;
-typedef struct _pager  pager;
+typedef struct _pager_priv  pager_priv;
 
 #define MAX_DESK_NUM   20
 /* map of a desktop */
@@ -66,10 +66,11 @@ struct _desk {
     GdkPixmap *pix;
     guint no, dirty, first;
     gfloat scalew, scaleh;
-    pager *pg;
+    pager_priv *pg;
 };
 
-struct _pager {
+struct _pager_priv {
+    plugin_priv plugin;
     GtkWidget *box;
     desk *desks[MAX_DESK_NUM];
     guint desknum;
@@ -91,24 +92,24 @@ struct _pager {
  (!( (tk)->nws.hidden || (tk)->nws.skip_pager ))
 
 
-static void pager_rebuild_all(FbEv *ev, pager *pg);
-static void desk_draw_bg(pager *pg, desk *d1);
-//static void pager_paint_frame(pager *pg, gint no, GtkStateType state);
+static void pager_rebuild_all(FbEv *ev, pager_priv *pg);
+static void desk_draw_bg(pager_priv *pg, desk *d1);
+//static void pager_paint_frame(pager_priv *pg, gint no, GtkStateType state);
 
 static void pager_destructor(plugin_priv *p);
 
-static inline void desk_set_dirty_by_win(pager *p, task *t);
+static inline void desk_set_dirty_by_win(pager_priv *p, task *t);
 static inline void desk_set_dirty(desk *d);
-static inline void desk_set_dirty_all(pager *pg);
+static inline void desk_set_dirty_all(pager_priv *pg);
 
 /*
 static void desk_clear_pixmap(desk *d);
-static gboolean task_remove_stale(Window *win, task *t, pager *p);
-static gboolean task_remove_all(Window *win, task *t, pager *p);
+static gboolean task_remove_stale(Window *win, task *t, pager_priv *p);
+static gboolean task_remove_all(Window *win, task *t, pager_priv *p);
 */
 
 #ifdef EXTRA_DEBUG
-static pager *cp;
+static pager_priv *cp;
 
 /* debug func to print ids of all managed windows on USR2 signal */
 static void
@@ -137,7 +138,7 @@ sig_usr(int signum)
 
 /* tell to remove element with zero refcount */
 static gboolean
-task_remove_stale(Window *win, task *t, pager *p)
+task_remove_stale(Window *win, task *t, pager_priv *p)
 {
     if (t->refcount-- == 0) {
         desk_set_dirty_by_win(p, t);
@@ -152,7 +153,7 @@ task_remove_stale(Window *win, task *t, pager *p)
 
 /* tell to remove element with zero refcount */
 static gboolean
-task_remove_all(Window *win, task *t, pager *p)
+task_remove_all(Window *win, task *t, pager_priv *p)
 {
     g_free(t);
     return TRUE;
@@ -270,7 +271,7 @@ desk_clear_pixmap(desk *d)
 
 
 static void
-desk_draw_bg(pager *pg, desk *d1)
+desk_draw_bg(pager_priv *pg, desk *d1)
 {
     Pixmap xpix;
     GdkPixmap *gpix;
@@ -353,7 +354,7 @@ desk_set_dirty(desk *d)
 }
 
 static inline void
-desk_set_dirty_all(pager *pg)
+desk_set_dirty_all(pager_priv *pg)
 {
     int i;
     ENTER;
@@ -363,7 +364,7 @@ desk_set_dirty_all(pager *pg)
 }
 
 static inline void
-desk_set_dirty_by_win(pager *p, task *t)
+desk_set_dirty_by_win(pager_priv *p, task *t)
 {
     ENTER;
     if (t->nws.skip_pager || t->nwwt.desktop /*|| t->nwwt.dock || t->nwwt.splash*/ )
@@ -383,7 +384,7 @@ desk_expose_event (GtkWidget *widget, GdkEventExpose *event, desk *d)
     DBG("d->no=%d\n", d->no);
 
     if (d->dirty) {
-        pager *pg = d->pg;
+        pager_priv *pg = d->pg;
         task *t;
         int j;
 
@@ -477,7 +478,7 @@ desk_scroll_event (GtkWidget *widget, GdkEventScroll *event, desk *d)
 }
 
 static void
-desk_new(pager *pg, int i)
+desk_new(pager_priv *pg, int i)
 {
     desk *d;
 
@@ -511,7 +512,7 @@ desk_new(pager *pg, int i)
 }
 
 static void
-desk_free(pager *pg, int i)
+desk_free(pager_priv *pg, int i)
 {
     desk *d;
 
@@ -534,7 +535,7 @@ desk_free(pager *pg, int i)
  *****************************************************************/
 
 static void
-do_net_active_window(FbEv *ev, pager *p)
+do_net_active_window(FbEv *ev, pager_priv *p)
 {
     Window *fwin;
     task *t;
@@ -562,7 +563,7 @@ do_net_active_window(FbEv *ev, pager *p)
 }
 
 static void
-do_net_current_desktop(FbEv *ev, pager *pg)
+do_net_current_desktop(FbEv *ev, pager_priv *pg)
 {
     ENTER;
     desk_set_dirty(pg->desks[pg->curdesk]);
@@ -579,7 +580,7 @@ do_net_current_desktop(FbEv *ev, pager *pg)
 
 
 static void
-do_net_client_list_stacking(FbEv *ev, pager *p)
+do_net_client_list_stacking(FbEv *ev, pager_priv *p)
 {
     int i;
     task *t;
@@ -626,7 +627,7 @@ do_net_client_list_stacking(FbEv *ev, pager *p)
  *****************************************************************/
 /*
 static void
-pager_unmapnotify(pager *p, XEvent *ev)
+pager_unmapnotify(pager_priv *p, XEvent *ev)
 {
     Window win = ev->xunmap.window;
     task *t;
@@ -640,7 +641,7 @@ pager_unmapnotify(pager *p, XEvent *ev)
 }
 */
 static void
-pager_configurenotify(pager *p, XEvent *ev)
+pager_configurenotify(pager_priv *p, XEvent *ev)
 {
     Window win = ev->xconfigure.window;
     task *t;
@@ -656,7 +657,7 @@ pager_configurenotify(pager *p, XEvent *ev)
 }
 
 static void
-pager_propertynotify(pager *p, XEvent *ev)
+pager_propertynotify(pager_priv *p, XEvent *ev)
 {
     Atom at = ev->xproperty.atom;
     Window win = ev->xproperty.window;
@@ -683,7 +684,7 @@ pager_propertynotify(pager *p, XEvent *ev)
 }
 
 static GdkFilterReturn
-pager_event_filter( XEvent *xev, GdkEvent *event, pager *pg)
+pager_event_filter( XEvent *xev, GdkEvent *event, pager_priv *pg)
 {
     ENTER;
     if (xev->type == PropertyNotify )
@@ -694,7 +695,7 @@ pager_event_filter( XEvent *xev, GdkEvent *event, pager *pg)
 }
 #if 0
 static void
-pager_paint_frame(pager *pg, gint no, GtkStateType state)
+pager_paint_frame(pager_priv *pg, gint no, GtkStateType state)
 {
     gint x, y, w, h, border;
 
@@ -718,7 +719,7 @@ pager_paint_frame(pager *pg, gint no, GtkStateType state)
 }
 
 static gint
-pager_expose_event (GtkWidget *widget, GdkEventExpose *event, pager *pg)
+pager_expose_event (GtkWidget *widget, GdkEventExpose *event, pager_priv *pg)
 {
     ENTER;
     DBG("curdesk=%d\n",  pg->curdesk);
@@ -728,7 +729,7 @@ pager_expose_event (GtkWidget *widget, GdkEventExpose *event, pager *pg)
 #endif
 
 static void
-pager_bg_changed(FbBg *bg, pager *pg)
+pager_bg_changed(FbBg *bg, pager_priv *pg)
 {
     int i;
 
@@ -743,7 +744,7 @@ pager_bg_changed(FbBg *bg, pager *pg)
 
 
 static void
-pager_rebuild_all(FbEv *ev, pager *pg)
+pager_rebuild_all(FbEv *ev, pager_priv *pg)
 {
     int desknum, curdesk, dif, i;
 
@@ -787,11 +788,11 @@ pager_rebuild_all(FbEv *ev, pager *pg)
 static int
 pager_constructor(plugin_priv *plug)
 {
-    pager *pg;
+    pager_priv *pg;
     line s;
 
     ENTER;
-    pg = g_new0(pager, 1);
+    pg = g_new0(pager_priv, 1);
 
 #ifdef EXTRA_DEBUG
     cp = pg;
@@ -861,7 +862,7 @@ pager_constructor(plugin_priv *plug)
 static void
 pager_destructor(plugin_priv *p)
 {
-    pager *pg = (pager *)p->priv;
+    pager_priv *pg = (pager_priv *)p->priv;
 
     ENTER;
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), do_net_current_desktop, pg);
@@ -889,6 +890,7 @@ pager_destructor(plugin_priv *p)
 plugin_class class = {
     fname: NULL,
     count: 0,
+    .priv_size = sizeof(pager_priv),
 
     type : "pager",
     name : "Pager",

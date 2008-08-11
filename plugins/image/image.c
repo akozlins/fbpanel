@@ -11,18 +11,19 @@
 
 
 typedef struct {
+    plugin_priv plugin;
     GdkPixmap *pix;
     GdkBitmap *mask;
     GtkTooltips *tips;
     GtkWidget *mainw;
-} image;
+} image_priv;
 
 
 
 static void
 image_destructor(plugin_priv *p)
 {
-    image *img = (image *)p->priv;
+    image_priv *img = (image_priv *)p->priv;
 
     ENTER;
     gtk_widget_destroy(img->mainw);
@@ -42,7 +43,7 @@ static int
 image_constructor(plugin_priv *p)
 {
     gchar *tooltip, *fname;
-    image *img;
+    image_priv *img;
     GdkPixbuf *gp, *gps;
     GtkWidget *wid;
     GError *err = NULL;
@@ -50,7 +51,7 @@ image_constructor(plugin_priv *p)
     line s;
 
     ENTER;
-    img = g_new0(image, 1);
+    img = g_new0(image_priv, 1);
     g_return_val_if_fail(img != NULL, 0);
     img->tips = gtk_tooltips_new();
     p->priv = img;
@@ -120,6 +121,7 @@ image_constructor(plugin_priv *p)
 plugin_class class = {
     fname: NULL,
     count: 0,
+    .priv_size = sizeof(image_priv),
 
     type : "image",
     name : "Show Image",

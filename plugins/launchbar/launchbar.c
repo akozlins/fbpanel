@@ -47,19 +47,20 @@ struct launchbarb;
 
 typedef struct btn {
     //GtkWidget *button, *pixmap;
-    struct launchbar *lb;
+    struct launchbar_priv *lb;
     gchar *action;
 } btn;
 
 #define MAXBUTTONS 20
-typedef struct launchbar {
+typedef struct launchbar_priv {
+    plugin_priv plugin;
     GtkWidget *box;
     GtkTooltips *tips;
     btn btns[MAXBUTTONS];
     int btn_num;
     int iconsize;
     unsigned int discard_release_event : 1;
-} launchbar;
+} launchbar_priv;
 
 
 
@@ -100,7 +101,7 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, btn *b )
 static void
 launchbar_destructor(plugin_priv *p)
 {
-    launchbar *lb = (launchbar *)p->priv;
+    launchbar_priv *lb = (launchbar_priv *)p->priv;
     int i;
 
     ENTER;
@@ -184,7 +185,7 @@ drag_data_received_cb (GtkWidget        *widget,
 static int
 read_button(plugin_priv *p)
 {
-    launchbar *lb = (launchbar *)p->priv;
+    launchbar_priv *lb = (launchbar_priv *)p->priv;
     gchar *iname, *fname, *tooltip, *action;
     //GdkPixbuf *gp, *gps;
     GtkWidget *button;
@@ -290,7 +291,7 @@ read_button(plugin_priv *p)
 static int
 launchbar_constructor(plugin_priv *p)
 {
-    launchbar *lb; 
+    launchbar_priv *lb; 
     line s;
     //GtkRequisition req;
     static gchar *launchbar_rc = "style 'launchbar-style'\n"
@@ -307,7 +308,7 @@ launchbar_constructor(plugin_priv *p)
     gtk_rc_parse_string(launchbar_rc);
     //get_button_spacing(&req, GTK_CONTAINER(p->pwid), "");
     
-    lb = g_new0(launchbar, 1);
+    lb = g_new0(launchbar_priv, 1);
     g_return_val_if_fail(lb != NULL, 0);
     p->priv = lb;
     lb->box = p->panel->my_box_new(FALSE, 1);
@@ -375,6 +376,7 @@ launchbar_constructor(plugin_priv *p)
 plugin_class class = {
     fname: NULL,
     count: 0,
+    .priv_size = sizeof(launchbar_priv),
 
     type : "launchbar",
     name : "Launchbar",

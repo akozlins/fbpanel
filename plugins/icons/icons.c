@@ -47,6 +47,7 @@ typedef struct _task{
 
 
 typedef struct _icons{
+    plugin_priv plugin;
     plugin_priv *plug;
     Window *wins;
     int win_num;
@@ -55,12 +56,12 @@ typedef struct _icons{
     wmpix_t *wmpix; 
     int wmpixno;
     wmpix_t *dicon;
-} icons;
+} icons_priv;
 
 
 
-static void ics_propertynotify(icons *ics, XEvent *ev);
-static GdkFilterReturn ics_event_filter( XEvent *, GdkEvent *, icons *);
+static void ics_propertynotify(icons_priv *ics, XEvent *ev);
+static GdkFilterReturn ics_event_filter( XEvent *, GdkEvent *, icons_priv *);
 static void icons_destructor(plugin_priv *p);
 
 
@@ -81,7 +82,7 @@ get_wmclass(task *tk)
 
 
 static inline task *
-find_task (icons * ics, Window win)
+find_task (icons_priv * ics, Window win)
 {
     ENTER;
     RET(g_hash_table_lookup(ics->task_list, &win));
@@ -89,7 +90,7 @@ find_task (icons * ics, Window win)
 
 
 static void
-del_task (icons * ics, task *tk, int hdel)
+del_task (icons_priv * ics, task *tk, int hdel)
 {
     ENTER;
     ics->num_tasks--; 
@@ -100,7 +101,7 @@ del_task (icons * ics, task *tk, int hdel)
 }
 
 static wmpix_t *
-get_dicon_maybe(icons *ics, task *tk)
+get_dicon_maybe(icons_priv *ics, task *tk)
 {
     XWMHints *hints;
     gulong *data;
@@ -126,7 +127,7 @@ get_dicon_maybe(icons *ics, task *tk)
 
 
 static wmpix_t *
-get_user_icon(icons *ics, task *tk)
+get_user_icon(icons_priv *ics, task *tk)
 {
     wmpix_t *tmp;
 
@@ -192,7 +193,7 @@ pixbuf2argb (GdkPixbuf *pixbuf, int *size)
 
 
 static void
-set_icon_maybe (icons *ics, task *tk)
+set_icon_maybe (icons_priv *ics, task *tk)
 {
     wmpix_t *pix;
 
@@ -243,7 +244,7 @@ remove_stale_tasks(Window *win, task *tk, gpointer data)
  *****************************************************/
 
 static GdkFilterReturn
-ics_event_filter( XEvent *xev, GdkEvent *event, icons *ics)
+ics_event_filter( XEvent *xev, GdkEvent *event, icons_priv *ics)
 {
     
     ENTER;
@@ -255,7 +256,7 @@ ics_event_filter( XEvent *xev, GdkEvent *event, icons *ics)
 
 
 static void
-do_net_client_list(GtkWidget *widget, icons *ics)
+do_net_client_list(GtkWidget *widget, icons_priv *ics)
 {
     int i;
     task *tk;
@@ -291,7 +292,7 @@ do_net_client_list(GtkWidget *widget, icons *ics)
 }
 
 static void
-ics_propertynotify(icons *ics, XEvent *ev)
+ics_propertynotify(icons_priv *ics, XEvent *ev)
 {
     Atom at;
     Window win;
@@ -319,7 +320,7 @@ ics_propertynotify(icons *ics, XEvent *ev)
 static int
 read_application(plugin_priv *p)
 {
-    icons *ics = (icons *)p->priv;
+    icons_priv *ics = (icons_priv *)p->priv;
     GdkPixbuf *gp = NULL;
     line s;
     gchar *fname, *iname, *appname, *classname;
@@ -380,7 +381,7 @@ read_application(plugin_priv *p)
 }
 
 static int
-read_dicon(icons *ics, gchar *name)
+read_dicon(icons_priv *ics, gchar *name)
 {
     gchar *fname;
     GdkPixbuf *gp;
@@ -408,7 +409,7 @@ read_dicon(icons *ics, gchar *name)
 static int
 ics_parse_config(GtkIconTheme *icon_theme, plugin_priv *p)
 {
-    icons *ics = (icons *)p->priv;
+    icons_priv *ics = (icons_priv *)p->priv;
     wmpix_t *wp;
     line s;
     
@@ -462,10 +463,10 @@ error:
 static int
 icons_constructor(plugin_priv *p)
 {
-    icons *ics;
+    icons_priv *ics;
 
     ENTER;
-    ics = g_new0(icons, 1);
+    ics = g_new0(icons_priv, 1);
     ics->plug = p;
     p->priv = ics;
     ics->wmpixno = 0;
@@ -484,7 +485,7 @@ icons_constructor(plugin_priv *p)
 static void
 icons_destructor(plugin_priv *p)
 {
-    icons *ics = (icons *)p->priv;
+    icons_priv *ics = (icons_priv *)p->priv;
     wmpix_t *wp;
     
     ENTER;
@@ -508,6 +509,7 @@ icons_destructor(plugin_priv *p)
 plugin_class class = {
     fname: NULL,
     count: 0,
+    .priv_size = sizeof(icons_priv),
 
     type : "icons",
     name : "Icons",

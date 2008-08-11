@@ -11,12 +11,13 @@
 
 
 typedef struct {
+    plugin_priv plugin;
     GdkPixmap *pix;
     GdkBitmap *mask;
     GtkTooltips *tips;
     int button1, button2;
     int action1, action2;
-} wincmd;
+} wincmd_priv;
 
 enum { WC_NONE, WC_ICONIFY, WC_SHADE };
 static pair wincmd_pair [] = {
@@ -29,7 +30,7 @@ static pair wincmd_pair [] = {
 
 
 static void
-toggle_shaded(wincmd *wc, guint32 action)
+toggle_shaded(wincmd_priv *wc, guint32 action)
 {
     Window *win = NULL;
     int num, i;
@@ -76,7 +77,7 @@ toggle_shaded(wincmd *wc, guint32 action)
 
 
 static void
-toggle_iconify(wincmd *wc, guint32 action)
+toggle_iconify(wincmd_priv *wc, guint32 action)
 {
     Window *win = NULL;
     int num, i;
@@ -123,7 +124,7 @@ toggle_iconify(wincmd *wc, guint32 action)
 static gint
 clicked (GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    wincmd *wc = (wincmd *) data;
+    wincmd_priv *wc = (wincmd_priv *) data;
 
     ENTER;
     if (event->type != GDK_BUTTON_PRESS)
@@ -147,7 +148,7 @@ clicked (GtkWidget *widget, GdkEventButton *event, gpointer data)
 static void
 wincmd_destructor(plugin_priv *p)
 {
-    wincmd *wc = (wincmd *)p->priv;
+    wincmd_priv *wc = (wincmd_priv *)p->priv;
 
     ENTER;
     if (wc->mask)
@@ -166,13 +167,13 @@ wincmd_constructor(plugin_priv *p)
 {
     line s;
     gchar *tooltip, *fname, *iname;
-    wincmd *wc;
+    wincmd_priv *wc;
     //GdkPixbuf *gp, *gps;
     GtkWidget *button;
     int w, h;
 
     ENTER;
-    wc = g_new0(wincmd, 1);
+    wc = g_new0(wincmd_priv, 1);
     g_return_val_if_fail(wc != NULL, 0);
     wc->tips = gtk_tooltips_new();
     p->priv = wc;
@@ -239,6 +240,7 @@ wincmd_constructor(plugin_priv *p)
 plugin_class class = {
     fname: NULL,
     count: 0,
+    .priv_size = sizeof(wincmd_priv),
 
     type : "wincmd",
     name : "Show desktop",

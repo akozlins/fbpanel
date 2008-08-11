@@ -41,18 +41,18 @@ struct net_stat {
 };
 
 typedef struct {
-    chart_t chart;
+    chart_priv chart;
     struct net_stat net_prev;
     int timer;
     char *iface;
     gulong max_tx;
     gulong max_rx;
-} net_t;
+} net_priv;
 
 static chart_class_t *k;
 
 static int
-net_get_load(net_t *c)
+net_get_load(net_priv *c)
 {
     struct net_stat net, net_diff;
     FILE *stat;
@@ -96,12 +96,12 @@ net_get_load(net_t *c)
 static int
 net_constructor(plugin_priv *p)
 {
-    net_t *c;
+    net_priv *c;
     gchar *colors[] = { "blue", "violet" };
 
     if (!(k = class_get("chart")))
         RET(0);
-    c = p->priv = g_new0(net_t, 1);
+    c = p->priv = g_new0(net_priv, 1);
     if (!k->constructor(p))
         RET(0);
     k->set_rows(&c->chart, 2, colors);
@@ -116,7 +116,7 @@ net_constructor(plugin_priv *p)
 static void
 net_destructor(plugin_priv *p)
 {
-    net_t *c = (net_t *) p->priv;
+    net_priv *c = (net_priv *) p->priv;
 
     ENTER;
     g_source_remove(c->timer);
@@ -129,6 +129,7 @@ net_destructor(plugin_priv *p)
 
 plugin_class class = {
     .count       = 0,
+    .priv_size = sizeof(net_priv),
     .type        = "net",
     .name        = "net usage",
     .version     = "1.0",

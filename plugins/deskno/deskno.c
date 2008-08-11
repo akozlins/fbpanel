@@ -13,10 +13,11 @@
 #include "dbg.h"
 
 typedef struct {
+    plugin_priv plugin;
     GtkWidget *main;
     GtkWidget *namew;
     GtkTooltips *tip;
-} deskno;
+} deskno_priv;
 
 static  void
 clicked( GtkWidget *widget, gpointer data)
@@ -38,7 +39,7 @@ clicked( GtkWidget *widget, gpointer data)
 
 
 static gint
-name_update(GtkWidget *widget, deskno *dc)
+name_update(GtkWidget *widget, deskno_priv *dc)
 {
     char buffer [15];
     int n;
@@ -54,11 +55,11 @@ name_update(GtkWidget *widget, deskno *dc)
 static int
 deskno_constructor(plugin_priv *p)
 {
-    deskno *dc;
+    deskno_priv *dc;
     GtkWidget *button;
     
     ENTER;
-    dc = g_new0(deskno, 1);
+    dc = g_new0(deskno_priv, 1);
     g_return_val_if_fail(dc != NULL, 0);
     p->priv = dc;
     
@@ -82,10 +83,10 @@ deskno_constructor(plugin_priv *p)
 static void
 deskno_destructor(plugin_priv *p)
 {
-  deskno *dc = (deskno *)p->priv;
+  deskno_priv *dc = (deskno_priv *)p->priv;
 
   ENTER;
-  dc = (deskno *) p->priv;
+  dc = (deskno_priv *) p->priv;
   g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), name_update, dc); 
   g_free(dc);
   RET();
@@ -94,6 +95,7 @@ deskno_destructor(plugin_priv *p)
 plugin_class class = {
     fname: NULL,
     count: 0,
+    .priv_size = sizeof(deskno_priv),
 
     type : "deskno",
     name : "Desktop No v1",

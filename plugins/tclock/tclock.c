@@ -18,6 +18,7 @@
 #define DEFAULT_CLOCK_FORMAT  "%R"
 
 typedef struct {
+    plugin_priv plugin;
     GtkWidget *eb;
     GtkWidget *main;
     GtkWidget *clockw;
@@ -27,14 +28,14 @@ typedef struct {
     char *action;
     short lastDay;
     int timer;
-} tclock;
+} tclock_priv;
 
-//static tclock me;
+//static tclock_priv me;
 
 
 
 static  gboolean
-clicked( GtkWidget *widget, gpointer dummy, tclock *dc)
+clicked( GtkWidget *widget, gpointer dummy, tclock_priv *dc)
 {
     ENTER2;
     DBG("%s\n", dc->action);
@@ -50,12 +51,12 @@ clock_update(gpointer data )
     char output[64], str[64];
     time_t now;
     struct tm * detail;
-    tclock *dc;
+    tclock_priv *dc;
     gchar *utf8;
     
     ENTER;
     g_assert(data != NULL);
-    dc = (tclock *)data;
+    dc = (tclock_priv *)data;
     
     time(&now);
     detail = localtime(&now);
@@ -80,13 +81,13 @@ static int
 tclock_constructor(plugin_priv *p)
 {
     line s;
-    tclock *dc;
+    tclock_priv *dc;
     char output [40] ;
     time_t now ;
     struct tm * detail ;
     
     ENTER;
-    dc = g_new0(tclock, 1);
+    dc = g_new0(tclock_priv, 1);
     g_return_val_if_fail(dc != NULL, 0);
     p->priv = dc;
     
@@ -149,10 +150,10 @@ tclock_constructor(plugin_priv *p)
 static void
 tclock_destructor(plugin_priv *p)
 {
-  tclock *dc = (tclock *)p->priv;
+  tclock_priv *dc = (tclock_priv *)p->priv;
 
   ENTER;
-  dc = (tclock *) p->priv;
+  dc = (tclock_priv *) p->priv;
   if (dc->timer)
       g_source_remove(dc->timer);
   gtk_widget_destroy(dc->main);
@@ -166,6 +167,7 @@ tclock_destructor(plugin_priv *p)
 plugin_class class = {
     fname: NULL,
     count: 0,
+    .priv_size = sizeof(tclock_priv),
 
     type : "tclock",
     name : "Text Clock",

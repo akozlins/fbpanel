@@ -41,15 +41,15 @@ struct cpu_stat {
 };
 
 typedef struct {
-    chart_t chart;
+    chart_priv chart;
     struct cpu_stat cpu_prev;
     int timer;
-} cpu_t;
+} cpu_priv;
 
 static chart_class_t *k;
 
 static int
-cpu_get_load(cpu_t *c)
+cpu_get_load(cpu_priv *c)
 {
     gfloat a, b;
     struct cpu_stat cpu, cpu_diff;
@@ -83,12 +83,12 @@ cpu_get_load(cpu_t *c)
 static int
 cpu_constructor(plugin_priv *p)
 {
-    cpu_t *c;
+    cpu_priv *c;
     char *colors[] = { "green" };
 
     if (!(k = class_get("chart")))
         RET(0);
-    c = p->priv = g_new0(cpu_t, 1);
+    c = p->priv = g_new0(cpu_priv, 1);
     if (!k->constructor(p))
         RET(0);
     k->set_rows(&c->chart, 1, colors);
@@ -100,7 +100,7 @@ cpu_constructor(plugin_priv *p)
 static void
 cpu_destructor(plugin_priv *p)
 {
-    cpu_t *c = (cpu_t *) p->priv;
+    cpu_priv *c = (cpu_priv *) p->priv;
 
     ENTER;
     g_source_remove(c->timer);
@@ -113,6 +113,7 @@ cpu_destructor(plugin_priv *p)
 
 plugin_class class = {
     .count       = 0,
+    .priv_size = sizeof(cpu_priv),
     .type        = "cpu",
     .name        = "Cpu usage",
     .version     = "1.0",

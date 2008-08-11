@@ -39,6 +39,7 @@ static cat_info main_cats[] = {
     { "Utility",    "gnome-util" },
 };
 typedef struct {
+    plugin_priv plugin;
     GtkTooltips *tips;
     GtkWidget *menu, *box, *bg, *label;
     gulong handler_id;
@@ -46,12 +47,12 @@ typedef struct {
     GSList *files;
     GHashTable *ht;
     guint tout;
-} menup;
+} menu_priv;
 
 static void
 menu_destructor(plugin_priv *p)
 {
-    menup *m = (menup *)p->priv;
+    menu_priv *m = (menu_priv *)p->priv;
 
     ENTER;
     if (m->tout)
@@ -155,7 +156,7 @@ do_app_dir(plugin_priv *p, const gchar *path)
             GtkWidget **menu, *mi;
 
             DBG("cat: %s\n", *tmp);
-            if (!(menu = g_hash_table_lookup( ((menup *)p->priv)->ht, tmp[0])))
+            if (!(menu = g_hash_table_lookup( ((menu_priv *)p->priv)->ht, tmp[0])))
                 continue;
 
             mi = gtk_image_menu_item_new_with_label(title);
@@ -189,7 +190,7 @@ make_fdo_menu(plugin_priv *p, GtkWidget *menu)
     const char** sys_dirs = (const char**)g_get_system_data_dirs();
     int i;
     gchar *path;
-    menup *m = (menup *)p->priv;
+    menu_priv *m = (menu_priv *)p->priv;
 
     ENTER;
     m->ht = g_hash_table_new(g_str_hash, g_str_equal);
@@ -240,10 +241,10 @@ run_command(GtkWidget *widget, void (*cmd)(void))
 static gboolean
 delayed_menu_creation(plugin_priv *p)
 {
-    menup *m;
+    menu_priv *m;
 
     ENTER;
-    m = (menup *)p->priv;
+    m = (menu_priv *)p->priv;
     if (!m->menu) {
         fseek(p->fp, 0, SEEK_SET);
         read_submenu(p, TRUE);
@@ -255,14 +256,14 @@ delayed_menu_creation(plugin_priv *p)
 static gboolean
 my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin_priv *p)
 {
-    menup *m;
+    menu_priv *m;
 
     ENTER;
     if (event->type == GDK_BUTTON_PRESS && event->button == 3
           && event->state & GDK_CONTROL_MASK) {
         RET(FALSE);
     }
-    m = (menup *)p->priv;
+    m = (menu_priv *)p->priv;
     if ((event->type == GDK_BUTTON_PRESS)
           && (event->x >=0 && event->x < widget->allocation.width)
           && (event->y >=0 && event->y < widget->allocation.height)) {
@@ -283,10 +284,10 @@ static GtkWidget *
 make_button(plugin_priv *p, gchar *iname, gchar *fname, gchar *name, GtkWidget *menu)
 {
     int w, h;
-    menup *m;
+    menu_priv *m;
 
     ENTER;
-    m = (menup *)p->priv;
+    m = (menu_priv *)p->priv;
     if (p->panel->orientation == ORIENT_HORIZ) {
         w = 10000;
         h = p->panel->ah;
@@ -315,7 +316,7 @@ read_item(plugin_priv *p)
     line s;
     gchar *name, *fname, *iname, *action;
     GtkWidget *item;
-    menup *m = (menup *)p->priv;
+    menu_priv *m = (menu_priv *)p->priv;
     void (*cmd)(void);
 
     ENTER;
@@ -402,7 +403,7 @@ read_include(plugin_priv *p)
 {
     gchar *name;
     line s;
-    menup *m = (menup *)p->priv;
+    menu_priv *m = (menu_priv *)p->priv;
     FILE *fp = NULL;
 
     ENTER;
@@ -434,7 +435,7 @@ read_submenu(plugin_priv *p, gboolean as_item)
     line s;
     GtkWidget *mi, *menu;
     gchar name[256], *fname, *iname;
-    menup *m = (menup *)p->priv;
+    menu_priv *m = (menu_priv *)p->priv;
 
 
     ENTER;
@@ -528,10 +529,10 @@ read_submenu(plugin_priv *p, gboolean as_item)
 static void
 menu_icon_theme_changed(GtkIconTheme *icon_theme, plugin_priv *p)
 {
-    menup *m;
+    menu_priv *m;
 
     ENTER;
-    m = (menup *)p->priv;
+    m = (menu_priv *)p->priv;
     if (m->menu) {
         DBG("destroy(m->menu)\n");
         gtk_widget_destroy(m->menu);
@@ -544,10 +545,10 @@ menu_icon_theme_changed(GtkIconTheme *icon_theme, plugin_priv *p)
 static int
 menu_constructor(plugin_priv *p)
 {
-    menup *m;
+    menu_priv *m;
 
     ENTER;
-    m = g_new0(menup, 1);
+    m = g_new0(menu_priv, 1);
     g_return_val_if_fail(m != NULL, 0);
     p->priv = m;
     m->iconsize = 22;
@@ -573,6 +574,7 @@ menu_constructor(plugin_priv *p)
 plugin_class class = {
     fname: NULL,
     count: 0,
+    .priv_size = sizeof(menu_priv),
 
     type : "menu",
     name : "Menu",

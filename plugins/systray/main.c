@@ -21,20 +21,21 @@
 
 
 typedef struct {
+    plugin_priv plugin;
     GtkWidget *mainw;
     plugin_priv *plug;
     GtkWidget *box;
     /////
     EggTrayManager *tray_manager;
     int icon_num;
-} tray;
+} tray_priv;
 
-//static void run_gtktray(tray *tr);
+//static void run_gtktray(tray_priv *tr);
 
 #define USE_ALIGN 0
 
 static void
-tray_added (EggTrayManager *manager, GtkWidget *icon, tray *tr)
+tray_added (EggTrayManager *manager, GtkWidget *icon, tray_priv *tr)
 {
     GtkWidget* aln;
 
@@ -57,7 +58,7 @@ tray_added (EggTrayManager *manager, GtkWidget *icon, tray *tr)
 }
 
 static void
-tray_removed (EggTrayManager *manager, GtkWidget *icon, tray *tr)
+tray_removed (EggTrayManager *manager, GtkWidget *icon, tray_priv *tr)
 {
     if (USE_ALIGN)
         gtk_widget_destroy(gtk_widget_get_parent(icon));
@@ -92,7 +93,7 @@ message_cancelled (EggTrayManager *manager, GtkWidget *icon, glong id,
 static void
 tray_destructor(plugin_priv *p)
 {
-    tray *tr = (tray *)p->priv;
+    tray_priv *tr = (tray_priv *)p->priv;
 
     ENTER;
     /* Make sure we drop the manager selection */
@@ -120,7 +121,7 @@ static int
 tray_constructor(plugin_priv *p)
 {
     line s;
-    tray *tr;
+    tray_priv *tr;
     GdkScreen *screen;
     //GtkWidget *frame;
     
@@ -132,7 +133,7 @@ tray_constructor(plugin_priv *p)
     }
 
     
-    tr = g_new0(tray, 1);
+    tr = g_new0(tray_priv, 1);
     g_return_val_if_fail(tr != NULL, 0);
     p->priv = tr;
     tr->plug = p;
@@ -170,6 +171,7 @@ tray_constructor(plugin_priv *p)
 plugin_class class = {
     fname: NULL,
     count: 0,
+    .priv_size = sizeof(tray_priv),
 
     type : "tray",
     name : "System tray",

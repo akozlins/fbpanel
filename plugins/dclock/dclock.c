@@ -27,6 +27,7 @@
 #define COLON_PAD_H   3
 
 typedef struct {
+    plugin_priv plugin;
     GtkWidget *main;
     GtkWidget *pwid;
     GtkTooltips *tip;
@@ -38,14 +39,14 @@ typedef struct {
     GdkPixbuf *glyphs; //vert row of '0'-'9' and ':'
     GdkPixbuf *clock;
     guint32 color;
-} dclock;
+} dclock_priv;
 
-//static dclock me;
+//static dclock_priv me;
 
 
 
 static  gboolean
-clicked(GtkWidget *widget, GdkEventButton *event, dclock *dc)
+clicked(GtkWidget *widget, GdkEventButton *event, dclock_priv *dc)
 {
     ENTER;
     if (event->type == GDK_BUTTON_PRESS && event->button == 3
@@ -60,7 +61,7 @@ clicked(GtkWidget *widget, GdkEventButton *event, dclock *dc)
 
 
 static gint
-clock_update(dclock *dc )
+clock_update(dclock_priv *dc )
 {
     char output[64], *tmp, *utf8;
     time_t now;
@@ -143,11 +144,11 @@ static int
 dclock_constructor(plugin_priv *p)
 {
     line s;
-    dclock *dc;
+    dclock_priv *dc;
     
     ENTER;
     DBG("dclock: use 'tclock' plugin for text version of a time and date\n");
-    dc = g_new0(dclock, 1);
+    dc = g_new0(dclock_priv, 1);
     g_return_val_if_fail(dc != NULL, 0);
     p->priv = dc;
     dc->pwid = p->pwid;
@@ -225,10 +226,10 @@ dclock_constructor(plugin_priv *p)
 static void
 dclock_destructor(plugin_priv *p)
 {
-  dclock *dc = (dclock *)p->priv;
+  dclock_priv *dc = (dclock_priv *)p->priv;
 
   ENTER;
-  dc = (dclock *) p->priv;
+  dc = (dclock_priv *) p->priv;
   if (dc->timer)
       g_source_remove(dc->timer);
   gtk_widget_destroy(dc->main);
@@ -242,6 +243,7 @@ dclock_destructor(plugin_priv *p)
 plugin_class class = {
     fname: NULL,
     count: 0,
+    .priv_size = sizeof(dclock_priv),
 
     type : "dclock",
     name : "Digital Clock",

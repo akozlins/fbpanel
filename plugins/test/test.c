@@ -26,12 +26,13 @@
 #define WID_NUM 80
 
 typedef struct {
+    plugin_priv plugin;
     GtkWidget *main;
     int count;
     int delta;
     int timer;
     GtkWidget *wid[WID_NUM];
-} test;
+} test_priv;
 
 //static dclock me;
 
@@ -41,7 +42,7 @@ typedef struct {
 static gint
 clock_update(gpointer data )
 {
-    test *dc = (test *)data;
+    test_priv *dc = (test_priv *)data;
      
     ENTER;
     if (dc->count >= WID_NUM-1)
@@ -62,11 +63,11 @@ clock_update(gpointer data )
 static int
 test_constructor(plugin_priv *p)
 {
-    test *dc;
+    test_priv *dc;
     line s;
     
     ENTER;
-    dc = g_new0(test, 1);
+    dc = g_new0(test_priv, 1);
     g_return_val_if_fail(dc != NULL, 0);
     p->priv = dc;
     dc->delta = 1;
@@ -86,10 +87,10 @@ test_constructor(plugin_priv *p)
 static void
 test_destructor(plugin_priv *p)
 {
-  test *dc = (test *)p->priv;
+  test_priv *dc = (test_priv *)p->priv;
 
   ENTER;
-  dc = (test *) p->priv;
+  dc = (test_priv *) p->priv;
   if (dc->timer)
       g_source_remove(dc->timer);
   gtk_widget_destroy(dc->main);
@@ -99,6 +100,7 @@ test_destructor(plugin_priv *p)
 plugin_class class = {
     fname: NULL,
     count: 0,
+    .priv_size = sizeof(test_priv),
 
     type : "test",
     name : "Test plugin",

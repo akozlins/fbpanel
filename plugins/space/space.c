@@ -11,17 +11,18 @@
 
 
 typedef struct {
+    plugin_priv plugin;
     int size;
     GtkWidget *mainw;
 
-} space;
+} space_priv;
 
 
 
 static void
 space_destructor(plugin_priv *p)
 {
-    space *sp = (space *)p->priv;
+    space_priv *sp = (space_priv *)p->priv;
 
     ENTER;
     gtk_widget_destroy(sp->mainw);
@@ -35,12 +36,12 @@ space_destructor(plugin_priv *p)
 static int
 space_constructor(plugin_priv *p)
 {
-    space *sp;
+    space_priv *sp;
     line s;
     int w, h;
 
     ENTER;
-    sp = g_new0(space, 1);
+    sp = g_new0(space_priv, 1);
     g_return_val_if_fail(sp != NULL, 0);
     p->priv = sp;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
@@ -87,6 +88,7 @@ space_constructor(plugin_priv *p)
 plugin_class class = {
     fname: NULL,
     count: 0,
+    .priv_size = sizeof(space_priv),
 
     type : "space",
     name : "Space",

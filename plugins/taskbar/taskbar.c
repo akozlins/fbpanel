@@ -58,6 +58,7 @@ typedef struct _task{
 
 
 typedef struct _taskbar{
+    plugin_priv plugin;
     plugin_priv *plug;
     Window *wins;
     Window topxwin;
@@ -94,7 +95,7 @@ typedef struct _taskbar{
     unsigned int use_mouse_wheel : 1;
     unsigned int use_urgency_hint : 1;
     unsigned int discard_release_event : 1;
-} taskbar;
+} taskbar_priv;
 
 
 static gchar *taskbar_rc = "style 'taskbar-style'\n"
@@ -116,9 +117,9 @@ static gboolean use_net_active=FALSE;
 
 #define TASK_WIDTH_MAX   200
 #define TASK_PADDING     4
-static void tk_display(taskbar *tb, task *tk);
-static void tb_propertynotify(taskbar *tb, XEvent *ev);
-static GdkFilterReturn tb_event_filter( XEvent *, GdkEvent *, taskbar *);
+static void tk_display(taskbar_priv *tb, task *tk);
+static void tb_propertynotify(taskbar_priv *tb, XEvent *ev);
+static GdkFilterReturn tb_event_filter( XEvent *, GdkEvent *, taskbar_priv *);
 static void taskbar_destructor(plugin_priv *p);
 
 static gboolean tk_has_urgency( task* tk );
@@ -132,7 +133,7 @@ extern panel *the_panel;
  ((tk)->desktop == (tb)->cur_desk || (tk)->desktop == -1 /* 0xFFFFFFFF */ )
 
 static int
-task_visible(taskbar *tb, task *tk)
+task_visible(taskbar_priv *tb, task *tk)
 {
     ENTER;
     DBG("%lx: desktop=%d iconified=%d \n", tk->win, tk->desktop, tk->iconified);
@@ -212,7 +213,7 @@ tk_set_names(task *tk)
 
 
 static task *
-find_task (taskbar * tb, Window win)
+find_task (taskbar_priv * tb, Window win)
 {
     ENTER;
     RET(g_hash_table_lookup(tb->task_list, &win));
@@ -220,7 +221,7 @@ find_task (taskbar * tb, Window win)
 
 
 static void
-del_task (taskbar * tb, task *tk, int hdel)
+del_task (taskbar_priv * tb, task *tk, int hdel)
 {
     ENTER;
     DBG("deleting(%d)  %08x %s\n", hdel, tk->win, tk->name);
@@ -519,7 +520,7 @@ get_wm_icon(Window tkwin, int iw, int ih)
 }
 
 inline static GdkPixbuf*
-get_generic_icon(taskbar *tb)
+get_generic_icon(taskbar_priv *tb)
 {
     ENTER;
     g_object_ref(tb->gen_pixbuf);
@@ -527,7 +528,7 @@ get_generic_icon(taskbar *tb)
 }
 
 static void
-tk_update_icon (taskbar *tb, task *tk, Atom a)
+tk_update_icon (taskbar_priv *tb, task *tk, Atom a)
 {
     GdkPixbuf *pixbuf;
     
@@ -795,7 +796,7 @@ tk_callback_button_release_event(GtkWidget *widget, GdkEventButton *event, task 
 
 
 static void
-tk_update(gpointer key, task *tk, taskbar *tb)
+tk_update(gpointer key, task *tk, taskbar_priv *tb)
 {
     ENTER;
     g_assert ((tb != NULL) && (tk != NULL));
@@ -817,7 +818,7 @@ tk_update(gpointer key, task *tk, taskbar *tb)
 }
 
 static void
-tk_display(taskbar *tb, task *tk)
+tk_display(taskbar_priv *tb, task *tk)
 {    
     ENTER;
     tk_update(NULL, tk, tb);
@@ -825,7 +826,7 @@ tk_display(taskbar *tb, task *tk)
 }
 
 static void
-tb_display(taskbar *tb)
+tb_display(taskbar_priv *tb)
 {
     ENTER;
     if (tb->wins)
@@ -835,7 +836,7 @@ tb_display(taskbar *tb)
 }
 
 static void
-tk_build_gui(taskbar *tb, task *tk)
+tk_build_gui(taskbar_priv *tb, task *tk)
 {
     GtkWidget *w1;
 
@@ -940,7 +941,7 @@ tb_remove_stale_tasks(Window *win, task *tk, gpointer data)
 
 
 static void
-tb_net_client_list(GtkWidget *widget, taskbar *tb)
+tb_net_client_list(GtkWidget *widget, taskbar_priv *tb)
 {
     int i;
     task *tk;
@@ -997,7 +998,7 @@ tb_net_client_list(GtkWidget *widget, taskbar *tb)
 
 
 static void
-tb_net_current_desktop(GtkWidget *widget, taskbar *tb)
+tb_net_current_desktop(GtkWidget *widget, taskbar_priv *tb)
 {
     ENTER;
     tb->cur_desk = get_net_current_desktop();
@@ -1007,7 +1008,7 @@ tb_net_current_desktop(GtkWidget *widget, taskbar *tb)
 
 
 static void
-tb_net_number_of_desktops(GtkWidget *widget, taskbar *tb)
+tb_net_number_of_desktops(GtkWidget *widget, taskbar_priv *tb)
 {
     ENTER;
     tb->desk_num = get_net_number_of_desktops();
@@ -1019,7 +1020,7 @@ tb_net_number_of_desktops(GtkWidget *widget, taskbar *tb)
 /* set new active window. if that happens to be us, then remeber
  * current focus to use it for iconify command */
 static void
-tb_net_active_window(GtkWidget *widget, taskbar *tb)
+tb_net_active_window(GtkWidget *widget, taskbar_priv *tb)
 {
     Window *f;
     task *ntk, *ctk;
@@ -1087,7 +1088,7 @@ tk_has_urgency( task* tk )
 }
 
 static void
-tb_propertynotify(taskbar *tb, XEvent *ev)
+tb_propertynotify(taskbar_priv *tb, XEvent *ev)
 {
     Atom at;
     Window win;
@@ -1161,7 +1162,7 @@ tb_propertynotify(taskbar *tb, XEvent *ev)
 }
 
 static GdkFilterReturn
-tb_event_filter( XEvent *xev, GdkEvent *event, taskbar *tb)
+tb_event_filter( XEvent *xev, GdkEvent *event, taskbar_priv *tb)
 {
     
     ENTER;
@@ -1173,7 +1174,7 @@ tb_event_filter( XEvent *xev, GdkEvent *event, taskbar *tb)
 }
 
 static void
-menu_close_window(GtkWidget *widget, taskbar *tb)
+menu_close_window(GtkWidget *widget, taskbar_priv *tb)
 {
     ENTER;    
     DBG("win %x\n", tb->menutask->win);
@@ -1186,7 +1187,7 @@ menu_close_window(GtkWidget *widget, taskbar *tb)
 
 
 static void
-menu_raise_window(GtkWidget *widget, taskbar *tb)
+menu_raise_window(GtkWidget *widget, taskbar_priv *tb)
 {
     ENTER;    
     DBG("win %x\n", tb->menutask->win);
@@ -1196,7 +1197,7 @@ menu_raise_window(GtkWidget *widget, taskbar *tb)
 
 
 static void
-menu_iconify_window(GtkWidget *widget, taskbar *tb)
+menu_iconify_window(GtkWidget *widget, taskbar_priv *tb)
 {
     ENTER;    
     DBG("win %x\n", tb->menutask->win);
@@ -1206,7 +1207,7 @@ menu_iconify_window(GtkWidget *widget, taskbar *tb)
 
 
 static GtkWidget *
-taskbar_make_menu(taskbar *tb)
+taskbar_make_menu(taskbar_priv *tb)
 {
     GtkWidget *mi, *menu;
 
@@ -1246,7 +1247,7 @@ taskbar_make_menu(taskbar *tb)
 static void
 taskbar_build_gui(plugin_priv *p)
 {
-    taskbar *tb = (taskbar *)p->priv;
+    taskbar_priv *tb = (taskbar_priv *)p->priv;
     GtkBarOrientation  bo;
     
     ENTER;
@@ -1302,7 +1303,7 @@ void net_active_detect()
 static int
 taskbar_constructor(plugin_priv *p)
 {
-    taskbar *tb;
+    taskbar_priv *tb;
     line s;
     GtkRequisition req;
  
@@ -1313,7 +1314,7 @@ taskbar_constructor(plugin_priv *p)
    
     net_active_detect();
     
-    tb = g_new0(taskbar, 1);
+    tb = g_new0(taskbar_priv, 1);
     tb->plug = p;
     p->priv = tb;
     
@@ -1391,7 +1392,7 @@ taskbar_constructor(plugin_priv *p)
 static void
 taskbar_destructor(plugin_priv *p)
 {
-    taskbar *tb = (taskbar *)p->priv;
+    taskbar_priv *tb = (taskbar_priv *)p->priv;
     
     ENTER;
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), tb_net_current_desktop, tb);
@@ -1410,6 +1411,7 @@ taskbar_destructor(plugin_priv *p)
 plugin_class class = {
     fname: NULL,
     count: 0,
+    .priv_size = sizeof(taskbar_priv),
 
     type : "taskbar",
     name : "Taskbar",

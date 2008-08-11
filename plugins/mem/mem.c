@@ -17,15 +17,16 @@ extern panel *the_panel;
 
 
 typedef struct {
+    plugin_priv *plugin;
     GtkWidget *pb;
     int timer;
-} mem;
+} mem_priv;
 
 //static mem me;
 
 
 static gint
-clock_update(mem *dc)
+clock_update(mem_priv *dc)
 {
     static gdouble p;
           
@@ -41,12 +42,12 @@ clock_update(mem *dc)
 static int
 mem_constructor(plugin_priv *p)
 {
-    mem *dc;
+    mem_priv *dc;
     GdkColor color;
     GtkRcStyle *rc;
     
     ENTER;
-    dc = g_new0(mem, 1);
+    dc = g_new0(mem_priv, 1);
     g_return_val_if_fail(dc != NULL, 0);
     p->priv = dc;
     
@@ -78,10 +79,10 @@ mem_constructor(plugin_priv *p)
 static void
 mem_destructor(plugin_priv *p)
 {
-    mem *dc = (mem *)p->priv;
+    mem_priv *dc = (mem_priv *)p->priv;
 
     ENTER;
-    dc = (mem *) p->priv;
+    dc = (mem_priv *) p->priv;
     if (dc->timer)
         g_source_remove(dc->timer);
     gtk_widget_destroy(dc->pb);

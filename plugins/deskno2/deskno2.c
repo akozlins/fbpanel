@@ -12,6 +12,7 @@
 #include "dbg.h"
 
 typedef struct {
+    plugin_priv plugin;
     GtkWidget  *main;
     int         dno;            // current desktop nomer
     int         dnum;           // number of desktops
@@ -19,18 +20,18 @@ typedef struct {
     int         dnames_num;     // number of desktop names
     char      **lnames;         // label names
     char       *fmt;    
-} deskno;
+} deskno_priv;
 
 
 
 static  void
-clicked(GtkWidget *widget, deskno *dc)
+clicked(GtkWidget *widget, deskno_priv *dc)
 {
     system("xfce-setting-show workspaces");
 }
 
 static  void
-update_dno(GtkWidget *widget, deskno *dc)
+update_dno(GtkWidget *widget, deskno_priv *dc)
 {
     ENTER;
     dc->dno = fb_ev_current_desktop(fbev);
@@ -42,7 +43,7 @@ update_dno(GtkWidget *widget, deskno *dc)
 
 
 static  void
-update_all(GtkWidget *widget, deskno *dc)
+update_all(GtkWidget *widget, deskno_priv *dc)
 {
     int i;
     
@@ -66,7 +67,7 @@ update_all(GtkWidget *widget, deskno *dc)
 
 
 static gboolean
-scroll (GtkWidget *widget, GdkEventScroll *event, deskno *dc)
+scroll (GtkWidget *widget, GdkEventScroll *event, deskno_priv *dc)
 {
     int dno;
     
@@ -84,9 +85,9 @@ scroll (GtkWidget *widget, GdkEventScroll *event, deskno *dc)
 static int
 deskno_constructor(plugin_priv *p)
 {
-    deskno *dc;
+    deskno_priv *dc;
     ENTER;
-    dc = g_new0(deskno, 1);
+    dc = g_new0(deskno_priv, 1);
     g_return_val_if_fail(dc != NULL, 0);
     p->priv = dc;
     
@@ -113,10 +114,10 @@ deskno_constructor(plugin_priv *p)
 static void
 deskno_destructor(plugin_priv *p)
 {
-  deskno *dc = (deskno *)p->priv;
+  deskno_priv *dc = (deskno_priv *)p->priv;
 
   ENTER;
-  dc = (deskno *) p->priv;
+  dc = (deskno_priv *) p->priv;
   //g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), name_update, dc); 
   g_free(dc);
   RET();
@@ -125,6 +126,7 @@ deskno_destructor(plugin_priv *p)
 plugin_class class = {
     fname: NULL,
     count: 0,
+    .priv_size = sizeof(deskno_priv),
 
     type : "deskno2",
     name : "Desktop No v2",
