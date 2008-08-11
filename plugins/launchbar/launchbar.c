@@ -98,7 +98,7 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, btn *b )
 }
 
 static void
-launchbar_destructor(plugin *p)
+launchbar_destructor(plugin_priv *p)
 {
     launchbar *lb = (launchbar *)p->priv;
     int i;
@@ -182,7 +182,7 @@ drag_data_received_cb (GtkWidget        *widget,
 }
 
 static int
-read_button(plugin *p)
+read_button(plugin_priv *p)
 {
     launchbar *lb = (launchbar *)p->priv;
     gchar *iname, *fname, *tooltip, *action;
@@ -288,7 +288,7 @@ read_button(plugin *p)
 }
 
 static int
-launchbar_constructor(plugin *p)
+launchbar_constructor(plugin_priv *p)
 {
     launchbar *lb; 
     line s;

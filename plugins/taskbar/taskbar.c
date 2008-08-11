@@ -58,7 +58,7 @@ typedef struct _task{
 
 
 typedef struct _taskbar{
-    plugin *plug;
+    plugin_priv *plug;
     Window *wins;
     Window topxwin;
     int win_num;
@@ -119,7 +119,7 @@ static gboolean use_net_active=FALSE;
 static void tk_display(taskbar *tb, task *tk);
 static void tb_propertynotify(taskbar *tb, XEvent *ev);
 static GdkFilterReturn tb_event_filter( XEvent *, GdkEvent *, taskbar *);
-static void taskbar_destructor(plugin *p);
+static void taskbar_destructor(plugin_priv *p);
 
 static gboolean tk_has_urgency( task* tk );
 
@@ -1244,7 +1244,7 @@ taskbar_make_menu(taskbar *tb)
 
 
 static void
-taskbar_build_gui(plugin *p)
+taskbar_build_gui(plugin_priv *p)
 {
     taskbar *tb = (taskbar *)p->priv;
     GtkBarOrientation  bo;
@@ -1300,7 +1300,7 @@ void net_active_detect()
 }
 
 static int
-taskbar_constructor(plugin *p)
+taskbar_constructor(plugin_priv *p)
 {
     taskbar *tb;
     line s;
@@ -1389,7 +1389,7 @@ taskbar_constructor(plugin *p)
 
 
 static void
-taskbar_destructor(plugin *p)
+taskbar_destructor(plugin_priv *p)
 {
     taskbar *tb = (taskbar *)p->priv;
     

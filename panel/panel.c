@@ -675,7 +675,7 @@ static int
 panel_parse_plugin(panel *p, FILE *fp)
 {
     line s;
-    plugin *plug = NULL;
+    plugin_priv *plug = NULL;
     gchar *type = NULL;
     FILE *tmpfp;
     int expand , padding, border, pno = 0;
@@ -751,7 +751,7 @@ panel_parse_plugin(panel *p, FILE *fp)
     fseek(tmpfp, 0, SEEK_SET);
     DBG("starting\n");
     if (!plugin_start(plug)) {
-        ERR( "fbpanel: can't start plugin %s\n", type);
+        ERR( "fbpanel: can't start plugin%s\n", type);
         goto error;
     }
     DBG("plug %s\n", type);
@@ -783,8 +783,8 @@ panel_parse_plugin_late(panel *p)
     fseek(pconf, 0, SEEK_SET);
 #endif
     while (get_line(pconf, &s) != LINE_NONE) {
-        if ((s.type  != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0], "Plugin")) {
-            ERR( "fbpanel: expecting Plugin section\n");            
+        if ((s.type  != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0], "plugin")) {
+            ERR( "fbpanel: expecting plugin section\n");            
             goto error;
         }
         if (!panel_parse_plugin(p, pconf)) {
@@ -849,8 +849,8 @@ panel_start(panel *p, FILE *fp)
 #else
     while (get_line(fp, &s) != LINE_NONE) {
         if ((s.type  != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0],
-                    "Plugin")) {
-            ERR( "fbpanel: expecting Plugin section\n");
+                    "plugin")) {
+            ERR( "fbpanel: expecting pluginsection\n");
             RET(0);
         }
         if (!panel_parse_plugin(p, fp))
@@ -866,8 +866,8 @@ static void
 delete_plugin(gpointer data, gpointer udata)
 {
     ENTER;
-    plugin_stop((plugin *)data);
-    plugin_put((plugin *)data);
+    plugin_stop((plugin_priv *)data);
+    plugin_put((plugin_priv *)data);
     RET();
 
 }

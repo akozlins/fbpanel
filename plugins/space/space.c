@@ -19,7 +19,7 @@ typedef struct {
 
 
 static void
-space_destructor(plugin *p)
+space_destructor(plugin_priv *p)
 {
     space *sp = (space *)p->priv;
 
@@ -33,7 +33,7 @@ space_destructor(plugin *p)
 
 
 static int
-space_constructor(plugin *p)
+space_constructor(plugin_priv *p)
 {
     space *sp;
     line s;

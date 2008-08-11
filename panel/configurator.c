@@ -719,7 +719,7 @@ plug_moveup_plugin(GtkButton* btn, GtkTreeView* view)
     GtkTreeModel* model = gtk_tree_view_get_model(view);
     GtkTreeSelection* tree_sel = gtk_tree_view_get_selection(view);
     int i;
-    plugin* pl;
+    plugin_priv* pl;
     
     ENTER;
     if (gtk_tree_selection_get_selected(tree_sel, &model, &it)) {
@@ -752,7 +752,7 @@ plug_movedown_plugin(GtkButton* btn, GtkTreeView* view)
     GtkTreeModel* model = gtk_tree_view_get_model(view);
     GtkTreeSelection* tree_sel = gtk_tree_view_get_selection(view);
     int i;
-    plugin* pl;
+    plugin_priv* pl;
     
     ENTER;
     if (gtk_tree_selection_get_selected(tree_sel, &model, &it)) {
@@ -784,12 +784,12 @@ plug_remove_plugin(GtkButton* btn, GtkTreeView* view)
     GtkTreeIter it;
     GtkTreeModel* model;
     GtkTreeSelection* tree_sel = gtk_tree_view_get_selection(view);
-    plugin* pl;
+    plugin_priv* pl;
 
     ENTER;
     if (gtk_tree_selection_get_selected(tree_sel, &model, &it)) {
         gtk_tree_model_get(model, &it, PLUGIN_PTR, &pl, -1);
-        plugin_stop(pl); /* free the plugin widget & its data */
+        plugin_stop(pl); /* free the plugin_priv widget & its data */
         plugin_put(pl); /* free the lib if necessary */
         the_panel->plugins = g_list_remove(the_panel->plugins, pl);
         gtk_list_store_remove( GTK_LIST_STORE(model), &it);
@@ -805,7 +805,7 @@ tree_selection_changed_cb (GtkTreeSelection *selection, GtkWidget *vbox)
 {
     GtkTreeIter iter;
     GtkTreeModel *model;
-    plugin* pl;
+    plugin_priv* pl;
     GtkWidget *edit;
     
     ENTER;
@@ -881,7 +881,7 @@ plug_add_plugin_response(GtkDialog *dlg, int response, GtkTreeView* _view)
     GtkTreeIter it;
     GtkTreeModel* model;
     char* type = NULL;
-    plugin* pl;
+    plugin_priv* pl;
 
     ENTER;
     if (response != GTK_RESPONSE_OK)
@@ -932,7 +932,7 @@ plug_edit_plugin(GtkButton* btn, GtkTreeView* view)
     GtkTreeIter it;
     GtkTreeModel* model;
     GtkTreeSelection* tree_sel = gtk_tree_view_get_selection(view);
-    plugin* pl;
+    plugin_priv* pl;
     gchar name[60];
     
     ENTER;
@@ -1034,7 +1034,7 @@ mk_tab_plugins_new()
           G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER);
     for (l = the_panel->plugins; l; l = l->next) {
         GtkTreeIter iter;
-        plugin* pl = (plugin*)l->data;
+        plugin_priv* pl = (plugin_priv*)l->data;
 
         gtk_list_store_append (store, &iter);
         gtk_list_store_set (store, &iter,
@@ -1141,7 +1141,7 @@ mk_tab_plugins()
 
     ENTER;
     hbox = gtk_vbox_new(FALSE, 0);
-    msg = g_strdup_printf("Graphical plugin configuration is not implemented yet.\n"
+    msg = g_strdup_printf("Graphical plugin_priv configuration is not implemented yet.\n"
           "Please edit manually\n\t~/.fbpanel/%s\n\n"
           "You can use as example files in \n\t%s/share/fbpanel/\n"
           "or visit\n"
@@ -1331,7 +1331,7 @@ global_config_save(FILE *fp)
 
 
 static void
-default_plugin_save_config(plugin *pl, FILE *fp)
+default_plugin_save_config(plugin_priv *pl, FILE *fp)
 {
     gchar str[PATH_MAX];
     
@@ -1346,12 +1346,12 @@ void
 plugin_config_save_all(FILE *fp)
 {
     GList *el;
-    plugin *pl;
+    plugin_priv *pl;
     
     ENTER;
     for (el = the_panel->plugins; el; el = el->next) {
         pl = el->data;
-        fprintf(fp, "Plugin {\n");
+        fprintf(fp, "plugin {\n");
         fprintf(fp, "    type = %s\n", pl->class->type);
         fprintf(fp, "    expand = %s\n", num2str(bool_pair, pl->expand, "false"));
         fprintf(fp, "    padding = %d\n", pl->padding);

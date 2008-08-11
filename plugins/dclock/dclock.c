@@ -140,7 +140,7 @@ dclock_set_color(GdkPixbuf *glyphs, guint32 color)
 }
 
 static int
-dclock_constructor(plugin *p)
+dclock_constructor(plugin_priv *p)
 {
     line s;
     dclock *dc;
@@ -223,7 +223,7 @@ dclock_constructor(plugin *p)
 
 
 static void
-dclock_destructor(plugin *p)
+dclock_destructor(plugin_priv *p)
 {
   dclock *dc = (dclock *)p->priv;
 

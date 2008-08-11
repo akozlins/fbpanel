@@ -17,7 +17,7 @@
 
 static const char desktop_ent[] = "Desktop Entry";
 static const gchar app_dir_name[] = "applications";
-static GtkWidget *read_submenu(plugin *p, gboolean as_item);
+static GtkWidget *read_submenu(plugin_priv *p, gboolean as_item);
 
 typedef struct {
     gchar *name;
@@ -49,7 +49,7 @@ typedef struct {
 } menup;
 
 static void
-menu_destructor(plugin *p)
+menu_destructor(plugin_priv *p)
 {
     menup *m = (menup *)p->priv;
 
@@ -103,7 +103,7 @@ _menu_shell_insert_sorted(GtkMenuShell *menu_shell, GtkWidget *mi, const gchar *
 }
 
 static void
-do_app_dir(plugin *p, const gchar *path)
+do_app_dir(plugin_priv *p, const gchar *path)
 {
     GDir* dir;
     const gchar* name;
@@ -184,7 +184,7 @@ do_app_dir(plugin *p, const gchar *path)
 
 
 void
-make_fdo_menu(plugin *p, GtkWidget *menu)
+make_fdo_menu(plugin_priv *p, GtkWidget *menu)
 {
     const char** sys_dirs = (const char**)g_get_system_data_dirs();
     int i;
@@ -238,7 +238,7 @@ run_command(GtkWidget *widget, void (*cmd)(void))
 }
 
 static gboolean
-delayed_menu_creation(plugin *p)
+delayed_menu_creation(plugin_priv *p)
 {
     menup *m;
 
@@ -253,7 +253,7 @@ delayed_menu_creation(plugin *p)
 }
 
 static gboolean
-my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin *p)
+my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin_priv *p)
 {
     menup *m;
 
@@ -280,7 +280,7 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin *p)
 
 
 static GtkWidget *
-make_button(plugin *p, gchar *iname, gchar *fname, gchar *name, GtkWidget *menu)
+make_button(plugin_priv *p, gchar *iname, gchar *fname, gchar *name, GtkWidget *menu)
 {
     int w, h;
     menup *m;
@@ -310,7 +310,7 @@ make_button(plugin *p, gchar *iname, gchar *fname, gchar *name, GtkWidget *menu)
 }
 
 static GtkWidget *
-read_item(plugin *p)
+read_item(plugin_priv *p)
 {
     line s;
     gchar *name, *fname, *iname, *action;
@@ -373,7 +373,7 @@ read_item(plugin *p)
 }
 
 static GtkWidget *
-read_separator(plugin *p)
+read_separator(plugin_priv *p)
 {
     line s;
 
@@ -387,7 +387,7 @@ read_separator(plugin *p)
 
 
 static void
-read_system_menu(plugin *p, GtkWidget *menu)
+read_system_menu(plugin_priv *p, GtkWidget *menu)
 {
     line s;
 
@@ -398,7 +398,7 @@ read_system_menu(plugin *p, GtkWidget *menu)
 }
 
 static void
-read_include(plugin *p)
+read_include(plugin_priv *p)
 {
     gchar *name;
     line s;
@@ -429,7 +429,7 @@ read_include(plugin *p)
 }
 
 static GtkWidget *
-read_submenu(plugin *p, gboolean as_item)
+read_submenu(plugin_priv *p, gboolean as_item)
 {
     line s;
     GtkWidget *mi, *menu;
@@ -526,7 +526,7 @@ read_submenu(plugin *p, gboolean as_item)
 
 
 static void
-menu_icon_theme_changed(GtkIconTheme *icon_theme, plugin *p)
+menu_icon_theme_changed(GtkIconTheme *icon_theme, plugin_priv *p)
 {
     menup *m;
 
@@ -542,7 +542,7 @@ menu_icon_theme_changed(GtkIconTheme *icon_theme, plugin *p)
 
 
 static int
-menu_constructor(plugin *p)
+menu_constructor(plugin_priv *p)
 {
     menup *m;
 

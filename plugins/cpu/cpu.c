@@ -81,7 +81,7 @@ cpu_get_load(cpu_t *c)
 
 
 static int
-cpu_constructor(plugin *p)
+cpu_constructor(plugin_priv *p)
 {
     cpu_t *c;
     char *colors[] = { "green" };
@@ -98,7 +98,7 @@ cpu_constructor(plugin *p)
 
 
 static void
-cpu_destructor(plugin *p)
+cpu_destructor(plugin_priv *p)
 {
     cpu_t *c = (cpu_t *) p->priv;
 

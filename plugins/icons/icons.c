@@ -47,7 +47,7 @@ typedef struct _task{
 
 
 typedef struct _icons{
-    plugin *plug;
+    plugin_priv *plug;
     Window *wins;
     int win_num;
     GHashTable  *task_list;
@@ -61,7 +61,7 @@ typedef struct _icons{
 
 static void ics_propertynotify(icons *ics, XEvent *ev);
 static GdkFilterReturn ics_event_filter( XEvent *, GdkEvent *, icons *);
-static void icons_destructor(plugin *p);
+static void icons_destructor(plugin_priv *p);
 
 
 static void
@@ -317,7 +317,7 @@ ics_propertynotify(icons *ics, XEvent *ev)
 
 
 static int
-read_application(plugin *p)
+read_application(plugin_priv *p)
 {
     icons *ics = (icons *)p->priv;
     GdkPixbuf *gp = NULL;
@@ -406,7 +406,7 @@ read_dicon(icons *ics, gchar *name)
 
 
 static int
-ics_parse_config(GtkIconTheme *icon_theme, plugin *p)
+ics_parse_config(GtkIconTheme *icon_theme, plugin_priv *p)
 {
     icons *ics = (icons *)p->priv;
     wmpix_t *wp;
@@ -460,7 +460,7 @@ error:
 }
 
 static int
-icons_constructor(plugin *p)
+icons_constructor(plugin_priv *p)
 {
     icons *ics;
 
@@ -482,7 +482,7 @@ icons_constructor(plugin *p)
 
 
 static void
-icons_destructor(plugin *p)
+icons_destructor(plugin_priv *p)
 {
     icons *ics = (icons *)p->priv;
     wmpix_t *wp;

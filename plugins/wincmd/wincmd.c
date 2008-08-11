@@ -145,7 +145,7 @@ clicked (GtkWidget *widget, GdkEventButton *event, gpointer data)
 }
 
 static void
-wincmd_destructor(plugin *p)
+wincmd_destructor(plugin_priv *p)
 {
     wincmd *wc = (wincmd *)p->priv;
 
@@ -162,7 +162,7 @@ wincmd_destructor(plugin *p)
 
 
 static int
-wincmd_constructor(plugin *p)
+wincmd_constructor(plugin_priv *p)
 {
     line s;
     gchar *tooltip, *fname, *iname;

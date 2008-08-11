@@ -95,7 +95,7 @@ static void pager_rebuild_all(FbEv *ev, pager *pg);
 static void desk_draw_bg(pager *pg, desk *d1);
 //static void pager_paint_frame(pager *pg, gint no, GtkStateType state);
 
-static void pager_destructor(plugin *p);
+static void pager_destructor(plugin_priv *p);
 
 static inline void desk_set_dirty_by_win(pager *p, task *t);
 static inline void desk_set_dirty(desk *d);
@@ -785,7 +785,7 @@ pager_rebuild_all(FbEv *ev, pager *pg)
 
 #define BORDER 1
 static int
-pager_constructor(plugin *plug)
+pager_constructor(plugin_priv *plug)
 {
     pager *pg;
     line s;
@@ -859,7 +859,7 @@ pager_constructor(plugin *plug)
 }
 
 static void
-pager_destructor(plugin *p)
+pager_destructor(plugin_priv *p)
 {
     pager *pg = (pager *)p->priv;
 

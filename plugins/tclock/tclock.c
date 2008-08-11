@@ -77,7 +77,7 @@ clock_update(gpointer data )
 
 
 static int
-tclock_constructor(plugin *p)
+tclock_constructor(plugin_priv *p)
 {
     line s;
     tclock *dc;
@@ -147,7 +147,7 @@ tclock_constructor(plugin *p)
 
 
 static void
-tclock_destructor(plugin *p)
+tclock_destructor(plugin_priv *p)
 {
   tclock *dc = (tclock *)p->priv;
 

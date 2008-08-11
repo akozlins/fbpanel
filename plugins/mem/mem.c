@@ -39,7 +39,7 @@ clock_update(mem *dc)
 
 
 static int
-mem_constructor(plugin *p)
+mem_constructor(plugin_priv *p)
 {
     mem *dc;
     GdkColor color;
@@ -76,7 +76,7 @@ mem_constructor(plugin *p)
 
 
 static void
-mem_destructor(plugin *p)
+mem_destructor(plugin_priv *p)
 {
     mem *dc = (mem *)p->priv;
 

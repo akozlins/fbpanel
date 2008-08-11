@@ -10,7 +10,7 @@
 
 
 static int
-separator_constructor(plugin *p)
+separator_constructor(plugin_priv *p)
 {
     GtkWidget *sep, *eb;
     line s;
@@ -37,7 +37,7 @@ separator_constructor(plugin *p)
 }
 
 static void
-separator_destructor(plugin *p)
+separator_destructor(plugin_priv *p)
 {
     ENTER; 
     g_free(p->priv);

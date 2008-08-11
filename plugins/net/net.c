@@ -94,7 +94,7 @@ net_get_load(net_t *c)
 
 
 static int
-net_constructor(plugin *p)
+net_constructor(plugin_priv *p)
 {
     net_t *c;
     gchar *colors[] = { "blue", "violet" };
@@ -114,7 +114,7 @@ net_constructor(plugin *p)
 
 
 static void
-net_destructor(plugin *p)
+net_destructor(plugin_priv *p)
 {
     net_t *c = (net_t *) p->priv;
 

@@ -210,7 +210,7 @@ chart_set_rows(chart_t *c, int num, gchar *colors[])
 }
 
 static int
-chart_constructor(plugin *p)
+chart_constructor(plugin_priv *p)
 {
     chart_t *c;
 
@@ -233,7 +233,7 @@ chart_constructor(plugin *p)
 }
 
 static void
-chart_destructor(plugin *p)
+chart_destructor(plugin_priv *p)
 {
     chart_t *c = (chart_t *) p->priv;
 

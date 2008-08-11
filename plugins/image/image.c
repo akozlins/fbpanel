@@ -20,7 +20,7 @@ typedef struct {
 
 
 static void
-image_destructor(plugin *p)
+image_destructor(plugin_priv *p)
 {
     image *img = (image *)p->priv;
 
@@ -39,7 +39,7 @@ image_destructor(plugin *p)
 
 
 static int
-image_constructor(plugin *p)
+image_constructor(plugin_priv *p)
 {
     gchar *tooltip, *fname;
     image *img;

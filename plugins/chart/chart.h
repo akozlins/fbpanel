@@ -17,8 +17,8 @@ typedef struct {
 } chart_t;
 
 typedef struct {
-    int (*constructor)(plugin *p);
-    void (*destructor)(plugin *p);
+    int (*constructor)(plugin_priv *p);
+    void (*destructor)(plugin_priv *p);
     void (*add_tick)(chart_t *c, float *val);
     void (*set_rows)(chart_t *c, int num, gchar *colors[]);
 } chart_class_t;

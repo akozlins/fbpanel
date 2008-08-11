@@ -52,7 +52,7 @@ name_update(GtkWidget *widget, deskno *dc)
 
 
 static int
-deskno_constructor(plugin *p)
+deskno_constructor(plugin_priv *p)
 {
     deskno *dc;
     GtkWidget *button;
@@ -80,7 +80,7 @@ deskno_constructor(plugin *p)
 
 
 static void
-deskno_destructor(plugin *p)
+deskno_destructor(plugin_priv *p)
 {
   deskno *dc = (deskno *)p->priv;
 

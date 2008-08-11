@@ -18,26 +18,26 @@
 #include "dbg.h"
 
 
-plugin *
+plugin_priv *
 plugin_load(char *type)
 {
     GList *tmp;
     plugin_class *pc = NULL;
-    plugin *plug = NULL;
+    plugin_priv *plug = NULL;
       
     ENTER;
     /* nothing was found */
     if (!(pc = class_get(type)))
         RET(NULL);
     
-    plug = g_new0(plugin, 1);
+    plug = g_new0(plugin_priv, 1);
     g_return_val_if_fail (plug != NULL, NULL);
     plug->class = pc;
     RET(plug);
 }
 
 
-void plugin_put(plugin *this)
+void plugin_put(plugin_priv *this)
 {
     ENTER;
     class_put(this->class->type);
@@ -48,7 +48,7 @@ void plugin_put(plugin *this)
 gboolean panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p);
 
 int
-plugin_start(plugin *this)
+plugin_start(plugin_priv *this)
 {
     ENTER;
 
@@ -89,7 +89,7 @@ plugin_start(plugin *this)
 }
 
 
-void plugin_stop(plugin *this)
+void plugin_stop(plugin_priv *this)
 {
     ENTER;
     DBG("%s\n", this->class->type);
@@ -102,7 +102,7 @@ void plugin_stop(plugin *this)
 
 
 GtkWidget *
-default_plugin_edit_config(plugin *pl)
+default_plugin_edit_config(plugin_priv *pl)
 {
     GtkWidget *vbox, *label;
     gchar *msg;

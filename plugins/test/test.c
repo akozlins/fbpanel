@@ -60,7 +60,7 @@ clock_update(gpointer data )
 
 
 static int
-test_constructor(plugin *p)
+test_constructor(plugin_priv *p)
 {
     test *dc;
     line s;
@@ -84,7 +84,7 @@ test_constructor(plugin *p)
 
 
 static void
-test_destructor(plugin *p)
+test_destructor(plugin_priv *p)
 {
   test *dc = (test *)p->priv;
 
