@@ -40,7 +40,6 @@ space_constructor(plugin *p)
     int w, h;
 
     ENTER;
-    s.len = 256;  
     sp = g_new0(space, 1);
     g_return_val_if_fail(sp != NULL, 0);
     p->priv = sp;

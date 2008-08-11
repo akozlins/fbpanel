@@ -49,7 +49,6 @@ image_constructor(plugin *p)
     
     line s;
 
-    s.len = 256;
     ENTER;
     img = g_new0(image, 1);
     g_return_val_if_fail(img != NULL, 0);

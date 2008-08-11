@@ -148,7 +148,7 @@ get_line(FILE *fp, line *s)
     s->type = LINE_NONE;
     if (!fp)
         RET(s->type);
-    while (fgets(s->str, s->len, fp)) {
+    while (fgets(s->str, LINE_LENGTH, fp)) {
         g_strstrip(s->str);
 
         if (s->str[0] == '#' || s->str[0] == 0) {
@@ -191,7 +191,7 @@ get_line_as_is(FILE *fp, line *s)
         RET(s->type);
     }
     s->type = LINE_NONE;
-    while (fgets(s->str, s->len, fp)) {
+    while (fgets(s->str, LINE_LENGTH, fp)) {
         g_strstrip(s->str);
         if (s->str[0] == '#' || s->str[0] == 0)
         continue;

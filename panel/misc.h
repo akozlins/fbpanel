@@ -11,9 +11,10 @@
 
 enum { LINE_NONE, LINE_BLOCK_START, LINE_BLOCK_END, LINE_VAR };
 
+#define LINE_LENGTH 256
 typedef struct {
-    int num, len, type;
-    gchar str[256];
+    int num, type;
+    gchar str[LINE_LENGTH];
     gchar *t[3];
 } line;
 

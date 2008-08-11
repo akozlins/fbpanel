@@ -586,7 +586,6 @@ static int
 panel_parse_global(panel *p, FILE *fp)
 {
     line s;
-    s.len = 256;
 
     ENTER;
     while (get_line(fp, &s) != LINE_NONE) {
@@ -682,7 +681,6 @@ panel_parse_plugin(panel *p, FILE *fp)
     int expand , padding, border, pno = 0;
 
     ENTER;
-    s.len = 256;
     if (!(tmpfp = tmpfile())) {
         ERR( "can't open temporary file with tmpfile()\n");
         RET(0);
@@ -777,7 +775,6 @@ panel_parse_plugin_late(panel *p)
     line s;
     
     ENTER;
-    s.len = 256;
     fseek(pconf, 0, SEEK_SET);
 #if 0
     while (get_line_as_is(pconf, &s) != LINE_NONE) {
@@ -808,7 +805,6 @@ panel_start(panel *p, FILE *fp)
 
     /* parse global section */
     ENTER;
-    s.len = 256;
     memset(p, 0, sizeof(panel));
     p->allign = ALLIGN_CENTER;
     p->edge = EDGE_BOTTOM;

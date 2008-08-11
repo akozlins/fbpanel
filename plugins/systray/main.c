@@ -126,7 +126,6 @@ tray_constructor(plugin *p)
     
     ENTER;
     class_get("tray"); //create extra ref so the plugin could not be unloaded
-    s.len = 256;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         ERR("tray: illegal in this context %s\n", s.str);
         RET(0);

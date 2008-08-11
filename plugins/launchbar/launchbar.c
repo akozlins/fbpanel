@@ -193,7 +193,6 @@ read_button(plugin *p)
     int w, h;
     
     ENTER;
-    s.len = 256;
     if (lb->btn_num >= MAXBUTTONS) {
         ERR("launchbar: max number of buttons (%d) was reached. skipping the rest\n",
               lb->btn_num );
@@ -324,7 +323,6 @@ launchbar_constructor(plugin *p)
     //DBG("button: req width=%d height=%d\n", req.width, req.height);            
     DBG("iconsize=%d\n", lb->iconsize);
 
-    s.len = 256;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {
             ERR( "launchbar: illegal token %s\n", s.str);

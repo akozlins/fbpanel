@@ -328,7 +328,6 @@ read_application(plugin *p)
     int size;
     
     ENTER;
-    s.len = 256;
     iname = fname = appname = classname = NULL;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {
@@ -426,7 +425,6 @@ ics_parse_config(GtkIconTheme *icon_theme, plugin *p)
     ics->wmpixno = 0;
     g_hash_table_foreach_remove(ics->task_list, (GHRFunc) task_remove_all, (gpointer)ics);
     fseek(p->fp, 0, SEEK_SET);
-    s.len = 256;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {
             ERR( "icons: illegal token %s\n", s.str);

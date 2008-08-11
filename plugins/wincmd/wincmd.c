@@ -172,7 +172,6 @@ wincmd_constructor(plugin *p)
     int w, h;
 
     ENTER;
-    s.len = 256;
     wc = g_new0(wincmd, 1);
     g_return_val_if_fail(wc != NULL, 0);
     wc->tips = gtk_tooltips_new();

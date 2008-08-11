@@ -319,7 +319,6 @@ read_item(plugin *p)
     void (*cmd)(void);
 
     ENTER;
-    s.len = 256;
     name = fname = action = iname = NULL;
     cmd = NULL;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
@@ -379,7 +378,6 @@ read_separator(plugin *p)
     line s;
 
     ENTER;
-    s.len = 256;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         ERR("menu: error - separator can not have paramteres\n");
         RET(NULL);
@@ -394,7 +392,6 @@ read_system_menu(plugin *p, GtkWidget *menu)
     line s;
 
     ENTER;
-    s.len = 256;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) ;
     make_fdo_menu(p, menu);
     RET();
@@ -409,7 +406,6 @@ read_include(plugin *p)
     FILE *fp = NULL;
 
     ENTER;
-    s.len = 256;
     name = NULL;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_VAR) {
@@ -442,7 +438,6 @@ read_submenu(plugin *p, gboolean as_item)
 
 
     ENTER;
-    s.len = 256;
     menu = gtk_menu_new ();
     gtk_container_set_border_width(GTK_CONTAINER(menu), 0);
 

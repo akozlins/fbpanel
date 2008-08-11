@@ -90,7 +90,6 @@ tclock_constructor(plugin *p)
     g_return_val_if_fail(dc != NULL, 0);
     p->priv = dc;
     
-    s.len = 256;
     dc->cfmt = dc->tfmt = dc->action = 0;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {

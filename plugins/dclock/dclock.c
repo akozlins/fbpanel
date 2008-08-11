@@ -158,7 +158,6 @@ dclock_constructor(plugin *p)
     dc->clock = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8,
           COLON_WIDTH + 4 * DIGIT_WIDTH, DIGIT_HEIGHT + DIGIT_PAD_H);
     gdk_pixbuf_fill(dc->clock, 0);
-    s.len = 256;
     dc->cfmt = dc->tfmt = dc->action = 0;
     dc->color = 0xff000000;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {

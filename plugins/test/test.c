@@ -70,7 +70,6 @@ test_constructor(plugin *p)
     g_return_val_if_fail(dc != NULL, 0);
     p->priv = dc;
     dc->delta = 1;
-    s.len = 256;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         ERR( "test: illegal in this context %s\n", s.str);
     }

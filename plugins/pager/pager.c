@@ -824,7 +824,6 @@ pager_constructor(plugin *plug)
     pg->wallpaper = 1;
     //pg->scaley = (gfloat)pg->dh / (gfloat)gdk_screen_height();
     //pg->scalex = (gfloat)pg->dw / (gfloat)gdk_screen_width();
-    s.len = 256;
     while (get_line(plug->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_VAR) {
             if (!g_ascii_strcasecmp(s.t[0], "showwallpaper")) {

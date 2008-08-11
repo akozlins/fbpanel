@@ -16,7 +16,6 @@ separator_constructor(plugin *p)
     line s;
     
     ENTER;
-    s.len = 256;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         ERR( "separator: illegal in this context %s\n", s.str);
         RET(0);
