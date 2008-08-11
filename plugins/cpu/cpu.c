@@ -37,7 +37,7 @@
 
 /* cpu.c */
 struct cpu_stat {
-    gulong u, n, s, i;
+    gulong u, n, s, i, w; // user, nice, system, idle, wait
 };
 
 typedef struct {
@@ -60,17 +60,18 @@ cpu_get_load(cpu_t *c)
     stat = fopen("/proc/stat", "r");
     if(!stat)
         RET(TRUE);
-    fscanf(stat, "cpu %lu %lu %lu %lu", &cpu.u, &cpu.n, &cpu.s, &cpu.i);
+    fscanf(stat, "cpu %lu %lu %lu %lu %lu", &cpu.u, &cpu.n, &cpu.s, &cpu.i, &cpu.w);
     fclose(stat);
 
     cpu_diff.u = cpu.u - c->cpu_prev.u;
     cpu_diff.n = cpu.n - c->cpu_prev.n;
     cpu_diff.s = cpu.s - c->cpu_prev.s;
     cpu_diff.i = cpu.i - c->cpu_prev.i;
+    cpu_diff.w = cpu.w - c->cpu_prev.w;
     c->cpu_prev = cpu;
 
     a = cpu_diff.u + cpu_diff.n + cpu_diff.s;
-    b = a + cpu_diff.i;
+    b = a + cpu_diff.i + cpu_diff.w;
     total = b ?  a / b : 1.0;
     DBG("total=%f a=%f b=%f\n", total, a, b);
     k->add_tick(&c->chart, &total);
