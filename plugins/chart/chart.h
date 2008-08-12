@@ -18,11 +18,10 @@ typedef struct {
 } chart_priv;
 
 typedef struct {
-    int (*constructor)(plugin_priv *p);
-    void (*destructor)(plugin_priv *p);
+    plugin_class plugin;
     void (*add_tick)(chart_priv *c, float *val);
     void (*set_rows)(chart_priv *c, int num, gchar *colors[]);
-} chart_class_t;
+} chart_class;
 
 
 #endif

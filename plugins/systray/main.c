@@ -169,15 +169,13 @@ tray_constructor(plugin_priv *p)
 
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
-    .priv_size = sizeof(tray_priv),
+    .count       = 0,
+    .type        = "tray",
+    .name        = "System tray",
+    .version     = "1.0",
+    .description = "System tray aka Notification Area",
+    .priv_size   = sizeof(tray_priv),
 
-    type : "tray",
-    name : "System tray",
-    version: "1.0",
-    description : "System tray aka Notification Area",
-
-    constructor : tray_constructor,
-    destructor  : tray_destructor,
+    .constructor = tray_constructor,
+    .destructor = tray_destructor,
 };

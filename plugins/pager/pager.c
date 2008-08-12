@@ -888,15 +888,14 @@ pager_destructor(plugin_priv *p)
 
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
-    .priv_size = sizeof(pager_priv),
+    .fname       = NULL,
+    .count       = 0,
+    .type        = "pager",
+    .name        = "Pager",
+    .version     = "1.0",
+    .description = "Pager shows thumbnails of your desktops",
+    .priv_size   = sizeof(pager_priv),
 
-    type : "pager",
-    name : "Pager",
-    version: "1.0",
-    description : "Pager shows thumbnails of your desktops",
-
-    constructor : pager_constructor,
-    destructor  : pager_destructor,
+    .constructor = pager_constructor,
+    .destructor  = pager_destructor,
 };

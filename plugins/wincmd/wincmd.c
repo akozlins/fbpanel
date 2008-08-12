@@ -238,16 +238,14 @@ wincmd_constructor(plugin_priv *p)
 
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
-    .priv_size = sizeof(wincmd_priv),
-
-    type : "wincmd",
-    name : "Show desktop",
-    version: "1.0",
-    description : "Show Desktop button",
+    .count       = 0,
+    .type        = "wincmd",
+    .name        = "Show desktop",
+    .version     = "1.0",
+    .description = "Show Desktop button",
+    .priv_size   = sizeof(wincmd_priv),
     
 
-    constructor : wincmd_constructor,
-    destructor  : wincmd_destructor,
+    .constructor = wincmd_constructor,
+    .destructor = wincmd_destructor,
 };

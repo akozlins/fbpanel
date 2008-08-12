@@ -93,15 +93,13 @@ deskno_destructor(plugin_priv *p)
 }
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
-    .priv_size = sizeof(deskno_priv),
+    .count       = 0,
+    .type        = "deskno",
+    .name        = "Desktop No v1",
+    .version     = "0.6",
+    .description = "Display workspace number",
+    .priv_size   = sizeof(deskno_priv),
 
-    type : "deskno",
-    name : "Desktop No v1",
-    version: "0.6",
-    description : "Display workspace number",
-
-    constructor : deskno_constructor,
-    destructor  : deskno_destructor,
+    .constructor = deskno_constructor,
+    .destructor  = deskno_destructor,
 };

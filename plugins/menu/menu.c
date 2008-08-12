@@ -572,16 +572,14 @@ menu_constructor(plugin_priv *p)
 
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
-    .priv_size = sizeof(menu_priv),
+    .count       = 0,
+    .type        = "menu",
+    .name        = "Menu",
+    .version     = "1.0",
+    .description = "Menu",
+    .priv_size   = sizeof(menu_priv),
 
-    type : "menu",
-    name : "Menu",
-    version: "1.0",
-    description : "Menu",
-
-    constructor : menu_constructor,
-    destructor  : menu_destructor,
+    .constructor = menu_constructor,
+    .destructor  = menu_destructor,
 };
 

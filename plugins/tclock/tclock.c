@@ -165,15 +165,13 @@ tclock_destructor(plugin_priv *p)
 }
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
-    .priv_size = sizeof(tclock_priv),
+    .count       = 0,
+    .type        = "tclock",
+    .name        = "Text Clock",
+    .version     = "1.0",
+    .description = "Text clock/date with tooltip",
+    .priv_size   = sizeof(tclock_priv),
 
-    type : "tclock",
-    name : "Text Clock",
-    version: "1.0",
-    description : "Text clock/date with tooltip",
-
-    constructor : tclock_constructor,
-    destructor  : tclock_destructor,
+    .constructor = tclock_constructor,
+    .destructor = tclock_destructor,
 };

@@ -49,7 +49,7 @@ typedef struct {
     gulong max_rx;
 } net_priv;
 
-static chart_class_t *k;
+static chart_class *k;
 
 static int
 net_get_load(net_priv *c)
@@ -102,7 +102,7 @@ net_constructor(plugin_priv *p)
     if (!(k = class_get("chart")))
         RET(0);
     c = p->priv = g_new0(net_priv, 1);
-    if (!k->constructor(p))
+    if (!k->plugin.constructor(p))
         RET(0);
     k->set_rows(&c->chart, 2, colors);
     c->timer = g_timeout_add(1000, (GSourceFunc) net_get_load, (gpointer) c);
@@ -120,7 +120,7 @@ net_destructor(plugin_priv *p)
 
     ENTER;
     g_source_remove(c->timer);
-    k->destructor(p);
+    k->plugin.destructor(p);
     g_free(p->priv);
     class_put("chart");
     RET();
@@ -129,11 +129,11 @@ net_destructor(plugin_priv *p)
 
 plugin_class class = {
     .count       = 0,
-    .priv_size = sizeof(net_priv),
     .type        = "net",
     .name        = "net usage",
     .version     = "1.0",
     .description = "Display net usage",
+    .priv_size   = sizeof(net_priv),
 
     .constructor = net_constructor,
     .destructor  = net_destructor,

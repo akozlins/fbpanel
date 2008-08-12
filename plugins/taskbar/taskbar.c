@@ -1409,16 +1409,15 @@ taskbar_destructor(plugin_priv *p)
 }
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
-    .priv_size = sizeof(taskbar_priv),
-
-    type : "taskbar",
-    name : "Taskbar",
-    version: "1.0",
-    description : "Shows opened windows",
+    .fname       = NULL,
+    .count       = 0,
+    .type        = "taskbar",
+    .name        = "Taskbar",
+    .version     = "1.0",
+    .description = "Shows opened windows",
+    .priv_size   = sizeof(taskbar_priv),
     
-    constructor : taskbar_constructor,
-    destructor  : taskbar_destructor,
+    .constructor = taskbar_constructor,
+    .destructor  = taskbar_destructor,
 };
 

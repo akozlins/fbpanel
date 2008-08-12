@@ -46,14 +46,13 @@ separator_destructor(plugin_priv *p)
 
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
+    .count = 0,
+    .type        = "separator",
+    .name        = "Separator",
+    .version     = "1.0",
+    .description = "Separator line",
+    .priv_size   = sizeof(plugin_priv),
 
-    type : "separator",
-    name : "Separator",
-    version: "1.0",
-    description : "Separator line",
-
-    constructor : separator_constructor,
-    destructor  : separator_destructor,
+    .constructor = separator_constructor,
+    .destructor  = separator_destructor,
 };

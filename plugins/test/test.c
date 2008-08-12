@@ -98,15 +98,13 @@ test_destructor(plugin_priv *p)
 }
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
-    .priv_size = sizeof(test_priv),
+    .count       = 0,
+    .type        = "test",
+    .name        = "Test plugin",
+    .version     = "1.0",
+    .description = "Creates and destroys widgets",
+    .priv_size   = sizeof(test_priv),
 
-    type : "test",
-    name : "Test plugin",
-    version: "1.0",
-    description : "Creates and destroys widgets",
-
-    constructor : test_constructor,
-    destructor  : test_destructor,
+    .constructor = test_constructor,
+    .destructor  = test_destructor,
 };

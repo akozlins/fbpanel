@@ -374,15 +374,13 @@ launchbar_constructor(plugin_priv *p)
 
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
-    .priv_size = sizeof(launchbar_priv),
+    .count       = 0,
+    .type        = "launchbar",
+    .name        = "Launchbar",
+    .version     = "1.0",
+    .description = "Bar with application launchers",
+    .priv_size   = sizeof(launchbar_priv),
 
-    type : "launchbar",
-    name : "Launchbar",
-    version: "1.0",
-    description : "Bar with application launchers",
-
-    constructor : launchbar_constructor,
-    destructor  : launchbar_destructor,
+    .constructor = launchbar_constructor,
+    .destructor  = launchbar_destructor,
 };

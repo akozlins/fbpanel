@@ -507,16 +507,16 @@ icons_destructor(plugin_priv *p)
 }
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
-    .priv_size = sizeof(icons_priv),
+    .count     = 0,
+    .invisible = 1,
 
-    type : "icons",
-    name : "Icons",
-    version: "1.0",
-    description : "Invisible plugin to change window icons",
-    invisible : 1,
+    .type        = "icons",
+    .name        = "Icons",
+    .version     = "1.0",
+    .description = "Invisible plugin to change window icons",
+    .priv_size   = sizeof(icons_priv),
+
     
-    constructor : icons_constructor,
-    destructor  : icons_destructor,
+    .constructor = icons_constructor,
+    .destructor  = icons_destructor,
 };

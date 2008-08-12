@@ -119,15 +119,13 @@ image_constructor(plugin_priv *p)
 
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
-    .priv_size = sizeof(image_priv),
+    .count       = 0,
+    .type        = "image",
+    .name        = "Show Image",
+    .version     = "1.0",
+    .description = "Dispaly Image and Tooltip",
+    .priv_size   = sizeof(image_priv),
 
-    type : "image",
-    name : "Show Image",
-    version: "1.0",
-    description : "Dispaly Image and Tooltip",
-
-    constructor : image_constructor,
-    destructor  : image_destructor,
+    .constructor = image_constructor,
+    .destructor  = image_destructor,
 };

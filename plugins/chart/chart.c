@@ -243,9 +243,12 @@ chart_destructor(plugin_priv *p)
     RET();
 }
 
-chart_class_t class = {
-    .constructor = chart_constructor,
-    .destructor  = chart_destructor,
-    .add_tick    = chart_add_tick,
-    .set_rows    = chart_set_rows,
+chart_class class = {
+    .plugin = {
+        .constructor = chart_constructor,
+        .destructor  = chart_destructor,
+        .priv_size   = sizeof(chart_priv),
+    },
+    .add_tick = chart_add_tick,
+    .set_rows = chart_set_rows,
 };

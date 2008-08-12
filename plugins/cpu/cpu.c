@@ -46,7 +46,7 @@ typedef struct {
     int timer;
 } cpu_priv;
 
-static chart_class_t *k;
+static chart_class *k;
 
 static int
 cpu_get_load(cpu_priv *c)
@@ -89,7 +89,7 @@ cpu_constructor(plugin_priv *p)
     if (!(k = class_get("chart")))
         RET(0);
     c = p->priv = g_new0(cpu_priv, 1);
-    if (!k->constructor(p))
+    if (!k->plugin.constructor(p))
         RET(0);
     k->set_rows(&c->chart, 1, colors);
     c->timer = g_timeout_add(1000, (GSourceFunc) cpu_get_load, (gpointer) c);
@@ -104,7 +104,7 @@ cpu_destructor(plugin_priv *p)
 
     ENTER;
     g_source_remove(c->timer);
-    k->destructor(p);
+    k->plugin.destructor(p);
     g_free(p->priv);
     class_put("chart");
     RET();
@@ -113,11 +113,11 @@ cpu_destructor(plugin_priv *p)
 
 plugin_class class = {
     .count       = 0,
-    .priv_size = sizeof(cpu_priv),
     .type        = "cpu",
     .name        = "Cpu usage",
     .version     = "1.0",
     .description = "Display cpu usage",
+    .priv_size   = sizeof(cpu_priv),
     
     .constructor = cpu_constructor,
     .destructor  = cpu_destructor,

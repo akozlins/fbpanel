@@ -86,15 +86,14 @@ space_constructor(plugin_priv *p)
 
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
-    .priv_size = sizeof(space_priv),
+    .fname       = NULL,
+    .count       = 0,
+    .type        = "space",
+    .name        = "Space",
+    .version     = "1.0",
+    .description = "Ocupy space in a panel",
+    .priv_size   = sizeof(space_priv),
 
-    type : "space",
-    name : "Space",
-    version: "1.0",
-    description : "Ocupy space in a panel",
-
-    constructor : space_constructor,
-    destructor  : space_destructor,
+    .constructor = space_constructor,
+    .destructor  = space_destructor,
 };

@@ -95,6 +95,7 @@ plugin_class class = {
     .name        = "Memory Monitor",
     .version     = "1.0",
     .description = "Show memory usage",
+    .priv_size   = sizeof(mem_priv),
 
     .constructor = mem_constructor,
     .destructor  = mem_destructor,

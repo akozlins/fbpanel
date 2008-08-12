@@ -241,15 +241,14 @@ dclock_destructor(plugin_priv *p)
 }
 
 plugin_class class = {
-    fname: NULL,
-    count: 0,
-    .priv_size = sizeof(dclock_priv),
+    .fname       = NULL,
+    .count       = 0,
+    .type        = "dclock",
+    .name        = "Digital Clock",
+    .version     = "1.0",
+    .description = "Digital clock with tooltip",
+    .priv_size   = sizeof(dclock_priv),
 
-    type : "dclock",
-    name : "Digital Clock",
-    version: "1.0",
-    description : "Digital clock with tooltip",
-
-    constructor : dclock_constructor,
-    destructor  : dclock_destructor,
+    .constructor = dclock_constructor,
+    .destructor  = dclock_destructor,
 };
