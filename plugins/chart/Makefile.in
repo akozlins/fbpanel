@@ -3,4 +3,8 @@ include %%topdir%%/config.mk
 SRCS = chart.c 
 LIBTARGET = chart.so
 
+
+install:
+	$(install) 755 $(LIBEXECDIR)/fbpanel 755 $(LIBTARGET)
+
 include %%topdir%%/rules.mk

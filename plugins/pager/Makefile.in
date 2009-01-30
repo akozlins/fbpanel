@@ -2,5 +2,7 @@ include %%topdir%%/config.mk
 
 SRCS = pager.c 
 LIBTARGET = pager.so
+install:
+	$(install) 755 $(LIBEXECDIR)/fbpanel 755 $(LIBTARGET)
 
 include %%topdir%%/rules.mk
