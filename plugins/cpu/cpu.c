@@ -46,7 +46,33 @@ typedef struct {
     int timer;
 } cpu_priv;
 
-static chart_class *k;
+typedef struct {
+    chart_class chart;
+} cpu_class;
+
+static void cpu_destructor(plugin_priv *p);
+static void cpu_constructor(plugin_priv *p);
+
+static cpu_class class = {
+{
+    .chart = {
+        .plugin = {
+            .count       = 0,
+            .type        = "cpu",
+            .name        = "Cpu usage",
+            .version     = "1.0",
+            .description = "Display cpu usage",
+            .priv_size   = sizeof(cpu_priv),
+            .constructor = cpu_constructor,
+            .destructor  = cpu_destructor,            
+        },
+    },
+};
+
+static cpu_class *cpu_k;
+static chart_class *chart_k;
+static chart_class *chart_ko;
+static plugin_class *plugin_k;
 
 static int
 cpu_get_load(cpu_priv *c)
@@ -74,7 +100,7 @@ cpu_get_load(cpu_priv *c)
     b = a + cpu_diff.i + cpu_diff.w;
     total = b ?  a / b : 1.0;
     DBG("total=%f a=%f b=%f\n", total, a, b);
-    k->add_tick(&c->chart, &total);
+    chart_ko->add_tick(&c->chart, &total);
     RET(TRUE);
 
 }
@@ -86,12 +112,10 @@ cpu_constructor(plugin_priv *p)
     cpu_priv *c;
     char *colors[] = { "green" };
 
-    if (!(k = class_get("chart")))
+    c = (cpu_priv *)  p;
+    if (!PLUGIN_CLASS(chart_ko)->constructor(p))
         RET(0);
-    c = p->priv = g_new0(cpu_priv, 1);
-    if (!k->plugin.constructor(p))
-        RET(0);
-    k->set_rows(&c->chart, 1, colors);
+    chart_ko->set_rows(&c->chart, 1, colors);
     c->timer = g_timeout_add(1000, (GSourceFunc) cpu_get_load, (gpointer) c);
     RET(1);
 }
@@ -104,21 +128,22 @@ cpu_destructor(plugin_priv *p)
 
     ENTER;
     g_source_remove(c->timer);
-    k->plugin.destructor(p);
-    g_free(p->priv);
+    PLUGIN_CLASS(chart_ko)->destructor(p);
     class_put("chart");
     RET();
 }
 
 
-plugin_class class = {
-    .count       = 0,
-    .type        = "cpu",
-    .name        = "Cpu usage",
-    .version     = "1.0",
-    .description = "Display cpu usage",
-    .priv_size   = sizeof(cpu_priv),
-    
-    .constructor = cpu_constructor,
-    .destructor  = cpu_destructor,
+void *
+init_class()
+{
+    if (cpu_k) 
+        RET(cpu_k);
+
+    chart_ko = class_get("chart");
+    if (!chart_ko)
+        RET(NULL);
+    cpu_k = CPU_CLASS(class);
+
+    RET(cpu_k);
 };

@@ -245,9 +245,13 @@ chart_destructor(plugin_priv *p)
 
 chart_class class = {
     .plugin = {
+        .type        = "chart",
+        .name        = "Chart",
+        .description = "Basic chart plugin",
+        .priv_size   = sizeof(chart_priv),
+
         .constructor = chart_constructor,
         .destructor  = chart_destructor,
-        .priv_size   = sizeof(chart_priv),
     },
     .add_tick = chart_add_tick,
     .set_rows = chart_set_rows,

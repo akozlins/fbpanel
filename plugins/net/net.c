@@ -102,7 +102,7 @@ net_constructor(plugin_priv *p)
     if (!(k = class_get("chart")))
         RET(0);
     c = p->priv = g_new0(net_priv, 1);
-    if (!k->plugin.constructor(p))
+    if (!PLUGIN_CLASS(k)->constructor(p))
         RET(0);
     k->set_rows(&c->chart, 2, colors);
     c->timer = g_timeout_add(1000, (GSourceFunc) net_get_load, (gpointer) c);
@@ -120,7 +120,7 @@ net_destructor(plugin_priv *p)
 
     ENTER;
     g_source_remove(c->timer);
-    k->plugin.destructor(p);
+    PLUGIN_CLASS(k)->destructor(p);
     g_free(p->priv);
     class_put("chart");
     RET();
