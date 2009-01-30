@@ -21,19 +21,19 @@
 plugin_priv *
 plugin_load(char *type)
 {
-    GList *tmp;
     plugin_class *pc = NULL;
-    plugin_priv *plug = NULL;
+    plugin_priv  *pp = NULL;
       
     ENTER;
     /* nothing was found */
     if (!(pc = class_get(type)))
         RET(NULL);
     
-    plug = g_new0(plugin_priv, 1);
-    g_return_val_if_fail (plug != NULL, NULL);
-    plug->class = pc;
-    RET(plug);
+    DBG2("%s priv_size=%d\n", pc->type, pc->priv_size);
+    pp = g_malloc0(pc->priv_size);
+    g_return_val_if_fail (pp != NULL, NULL);
+    pp->class = pc;
+    RET(pp);
 }
 
 

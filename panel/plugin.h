@@ -32,6 +32,8 @@ typedef struct {
     GtkWidget *(*edit_config)(struct _plugin_priv *this);
 } plugin_class;
 
+#define PLUGIN_CLASS(class) ((plugin_class *) class)    
+
 typedef struct _plugin_priv{
     plugin_class *class;
     panel        *panel;
@@ -49,22 +51,6 @@ void plugin_put(plugin_priv *this);
 int plugin_start(plugin_priv *this);
 void plugin_stop(plugin_priv *this);
 GtkWidget *default_plugin_priv_edit_config(plugin_priv *pl);
-
-#ifdef STATIC_plugin_privS
-#define STATIC_SEPARATOR
-#define STATIC_IMAGE
-#define STATIC_LAUNCHBAR
-#define STATIC_DCLOCK
-#define STATIC_WINCMD
-#define STATIC_TEST
-#define STATIC_TASKBAR
-#define STATIC_PAGER
-#define STATIC_TRAY
-#define STATIC_MENU
-#define STATIC_SPACE
-#define STATIC_ICONS
-#define STATIC_DESKNO
-#endif
 
 
 #endif
