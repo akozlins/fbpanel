@@ -96,7 +96,7 @@ $(LIBTARGET) : $(OBJS)
 	$Q$(CC) $(OBJS) -o $@ $(LDFLAGS) -shared
 	$Q$(STRIP) $@
 
-CLEANLIST += $(BINTARGET)
+CLEANLIST += $(LIBTARGET)
 endif
 
 # ar archive
