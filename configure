@@ -315,7 +315,7 @@ add_var sysconfdir "read-only single-machine data" '$prefix/etc'
 add_var datadir "read-only architecture-independent data" '$prefix/share'
 add_var includedir "C header files" '$prefix/include'
 add_var topdir "project's top directory" '`pwd`'
-
+add_var version "version" '`< version`'
 add_feature debug "debug build" disabled
 
 #########################
