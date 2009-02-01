@@ -9,17 +9,9 @@ function usage ()
     exit $1
 }
 
-tar="$1"
-csh=scripts/custom.sh
-
 [ $# -ne 1 ] && usage 1
 
-if [ ! -f $csh ]; then
-    echo "run this script frmo topdir directory"
-    exit 1
-fi
-
-
+tar="$1"
 tar --strip-components=1 --exclude doc --exclude src \
     --keep-newer-files -xvf "$tar"
 

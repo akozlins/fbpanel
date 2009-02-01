@@ -44,6 +44,9 @@ CFLAGS += -O2
 STRIP = strip
 endif
 
+TINS = $(wildcard *.in)
+INS = $(TINS:.in=)
+
 
 ######################################################
 ## Compilation rules
@@ -72,6 +75,9 @@ endif
 	$Qsed -f $(TOPDIR)/subst.sed  < $< > $@
 	$Qchmod `stat --printf=%a $<` $@
 
+# autoamtically updates files derived from *.in
+all : $(INS)
+#$(warning $(INS))	
 
 ######################################################
 ## Linkage rules
@@ -119,8 +125,7 @@ clean:
 	rm -f $(CLEANLIST)
 endif
 
-INS += $(wildcard *.in)
-DISTCLEANLIST += $(INS:.in=)
+DISTCLEANLIST += $(INS)
 ifeq ($(TOPDIR),$(CURDIR))
 DISTCLEANLIST += config.h config.mk subst.sed
 endif
