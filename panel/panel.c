@@ -470,9 +470,11 @@ panel_start_gui(panel *p)
     //gdk_window_set_decorations(p->topgwin->window, 0);
     gtk_widget_set_app_paintable(p->topgwin, TRUE);
     calculate_position(p);
-    gdk_window_move_resize(p->topgwin->window, p->ax, p->ay, p->aw, p->ah);
+    gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
+    gtk_window_resize(GTK_WINDOW(p->topgwin), p->aw, p->ah);
     DBG("move-resize x %d y %d w %d h %d\n", p->ax, p->ay, p->aw, p->ah);
     DBG("here\n");
+    gdk_flush();
     
     // background box all over toplevel
     p->bbox = gtk_bgbox_new();
