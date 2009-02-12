@@ -70,7 +70,7 @@ struct _desk {
 };
 
 struct _pager_priv {
-    plugin_priv plugin;
+    plugin_instance plugin;
     GtkWidget *box;
     desk *desks[MAX_DESK_NUM];
     guint desknum;
@@ -96,7 +96,7 @@ static void pager_rebuild_all(FbEv *ev, pager_priv *pg);
 static void desk_draw_bg(pager_priv *pg, desk *d1);
 //static void pager_paint_frame(pager_priv *pg, gint no, GtkStateType state);
 
-static void pager_destructor(plugin_priv *p);
+static void pager_destructor(plugin_instance *p);
 
 static inline void desk_set_dirty_by_win(pager_priv *p, task *t);
 static inline void desk_set_dirty(desk *d);
@@ -786,7 +786,7 @@ pager_rebuild_all(FbEv *ev, pager_priv *pg)
 
 #define BORDER 1
 static int
-pager_constructor(plugin_priv *plug)
+pager_constructor(plugin_instance *plug)
 {
     pager_priv *pg;
     line s;
@@ -860,7 +860,7 @@ pager_constructor(plugin_priv *plug)
 }
 
 static void
-pager_destructor(plugin_priv *p)
+pager_destructor(plugin_instance *p)
 {
     pager_priv *pg = (pager_priv *)p->priv;
 

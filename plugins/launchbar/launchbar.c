@@ -53,7 +53,7 @@ typedef struct btn {
 
 #define MAXBUTTONS 20
 typedef struct launchbar_priv {
-    plugin_priv plugin;
+    plugin_instance plugin;
     GtkWidget *box;
     GtkTooltips *tips;
     btn btns[MAXBUTTONS];
@@ -99,7 +99,7 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, btn *b )
 }
 
 static void
-launchbar_destructor(plugin_priv *p)
+launchbar_destructor(plugin_instance *p)
 {
     launchbar_priv *lb = (launchbar_priv *)p->priv;
     int i;
@@ -183,7 +183,7 @@ drag_data_received_cb (GtkWidget        *widget,
 }
 
 static int
-read_button(plugin_priv *p)
+read_button(plugin_instance *p)
 {
     launchbar_priv *lb = (launchbar_priv *)p->priv;
     gchar *iname, *fname, *tooltip, *action;
@@ -289,7 +289,7 @@ read_button(plugin_priv *p)
 }
 
 static int
-launchbar_constructor(plugin_priv *p)
+launchbar_constructor(plugin_instance *p)
 {
     launchbar_priv *lb; 
     line s;

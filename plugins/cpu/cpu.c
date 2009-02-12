@@ -50,8 +50,8 @@ typedef struct {
     chart_class chart;
 } cpu_class;
 
-static void cpu_destructor(plugin_priv *p);
-static void cpu_constructor(plugin_priv *p);
+static void cpu_destructor(plugin_instance *p);
+static void cpu_constructor(plugin_instance *p);
 
 static cpu_class class = {
 {
@@ -107,7 +107,7 @@ cpu_get_load(cpu_priv *c)
 
 
 static int
-cpu_constructor(plugin_priv *p)
+cpu_constructor(plugin_instance *p)
 {
     cpu_priv *c;
     char *colors[] = { "green" };
@@ -122,7 +122,7 @@ cpu_constructor(plugin_priv *p)
 
 
 static void
-cpu_destructor(plugin_priv *p)
+cpu_destructor(plugin_instance *p)
 {
     cpu_priv *c = (cpu_priv *) p->priv;
 

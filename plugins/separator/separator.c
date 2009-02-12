@@ -10,7 +10,7 @@
 
 
 static int
-separator_constructor(plugin_priv *p)
+separator_constructor(plugin_instance *p)
 {
     GtkWidget *sep, *eb;
     line s;
@@ -37,7 +37,7 @@ separator_constructor(plugin_priv *p)
 }
 
 static void
-separator_destructor(plugin_priv *p)
+separator_destructor(plugin_instance *p)
 {
     ENTER; 
     g_free(p->priv);
@@ -51,7 +51,7 @@ plugin_class class = {
     .name        = "Separator",
     .version     = "1.0",
     .description = "Separator line",
-    .priv_size   = sizeof(plugin_priv),
+    .priv_size   = sizeof(plugin_instance),
 
     .constructor = separator_constructor,
     .destructor  = separator_destructor,

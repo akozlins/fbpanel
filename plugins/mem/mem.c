@@ -17,7 +17,7 @@ extern panel *the_panel;
 
 
 typedef struct {
-    plugin_priv *plugin;
+    plugin_instance *plugin;
     GtkWidget *pb;
     int timer;
 } mem_priv;
@@ -40,7 +40,7 @@ clock_update(mem_priv *dc)
 
 
 static int
-mem_constructor(plugin_priv *p)
+mem_constructor(plugin_instance *p)
 {
     mem_priv *dc;
     GdkColor color;
@@ -77,7 +77,7 @@ mem_constructor(plugin_priv *p)
 
 
 static void
-mem_destructor(plugin_priv *p)
+mem_destructor(plugin_instance *p)
 {
     mem_priv *dc = (mem_priv *)p->priv;
 

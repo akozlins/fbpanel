@@ -11,7 +11,7 @@
 
 
 typedef struct {
-    plugin_priv plugin;
+    plugin_instance plugin;
     GdkPixmap *pix;
     GdkBitmap *mask;
     GtkTooltips *tips;
@@ -21,7 +21,7 @@ typedef struct {
 
 
 static void
-image_destructor(plugin_priv *p)
+image_destructor(plugin_instance *p)
 {
     image_priv *img = (image_priv *)p->priv;
 
@@ -40,7 +40,7 @@ image_destructor(plugin_priv *p)
 
 
 static int
-image_constructor(plugin_priv *p)
+image_constructor(plugin_instance *p)
 {
     gchar *tooltip, *fname;
     image_priv *img;

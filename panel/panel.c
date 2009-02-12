@@ -601,7 +601,7 @@ static int
 panel_parse_plugin(panel *p, FILE *fp)
 {
     line s;
-    plugin_priv *plug = NULL;
+    plugin_instance *plug = NULL;
     gchar *type = NULL;
     FILE *tmpfp;
     int expand , padding, border, pno = 0;
@@ -793,8 +793,8 @@ static void
 delete_plugin(gpointer data, gpointer udata)
 {
     ENTER;
-    plugin_stop((plugin_priv *)data);
-    plugin_put((plugin_priv *)data);
+    plugin_stop((plugin_instance *)data);
+    plugin_put((plugin_instance *)data);
     RET();
 
 }

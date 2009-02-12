@@ -26,7 +26,7 @@
 #define WID_NUM 80
 
 typedef struct {
-    plugin_priv plugin;
+    plugin_instance plugin;
     GtkWidget *main;
     int count;
     int delta;
@@ -61,7 +61,7 @@ clock_update(gpointer data )
 
 
 static int
-test_constructor(plugin_priv *p)
+test_constructor(plugin_instance *p)
 {
     test_priv *dc;
     line s;
@@ -85,7 +85,7 @@ test_constructor(plugin_priv *p)
 
 
 static void
-test_destructor(plugin_priv *p)
+test_destructor(plugin_instance *p)
 {
   test_priv *dc = (test_priv *)p->priv;
 

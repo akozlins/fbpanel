@@ -11,7 +11,7 @@
 
 
 typedef struct {
-    plugin_priv plugin;
+    plugin_instance plugin;
     GdkPixmap *pix;
     GdkBitmap *mask;
     GtkTooltips *tips;
@@ -146,7 +146,7 @@ clicked (GtkWidget *widget, GdkEventButton *event, gpointer data)
 }
 
 static void
-wincmd_destructor(plugin_priv *p)
+wincmd_destructor(plugin_instance *p)
 {
     wincmd_priv *wc = (wincmd_priv *)p->priv;
 
@@ -163,7 +163,7 @@ wincmd_destructor(plugin_priv *p)
 
 
 static int
-wincmd_constructor(plugin_priv *p)
+wincmd_constructor(plugin_instance *p)
 {
     line s;
     gchar *tooltip, *fname, *iname;

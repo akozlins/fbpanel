@@ -94,7 +94,7 @@ net_get_load(net_priv *c)
 
 
 static int
-net_constructor(plugin_priv *p)
+net_constructor(plugin_instance *p)
 {
     net_priv *c;
     gchar *colors[] = { "blue", "violet" };
@@ -114,7 +114,7 @@ net_constructor(plugin_priv *p)
 
 
 static void
-net_destructor(plugin_priv *p)
+net_destructor(plugin_instance *p)
 {
     net_priv *c = (net_priv *) p->priv;
 

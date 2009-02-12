@@ -27,7 +27,7 @@
 #define COLON_PAD_H   3
 
 typedef struct {
-    plugin_priv plugin;
+    plugin_instance plugin;
     GtkWidget *main;
     GtkWidget *pwid;
     GtkTooltips *tip;
@@ -141,7 +141,7 @@ dclock_set_color(GdkPixbuf *glyphs, guint32 color)
 }
 
 static int
-dclock_constructor(plugin_priv *p)
+dclock_constructor(plugin_instance *p)
 {
     line s;
     dclock_priv *dc;
@@ -224,7 +224,7 @@ dclock_constructor(plugin_priv *p)
 
 
 static void
-dclock_destructor(plugin_priv *p)
+dclock_destructor(plugin_instance *p)
 {
   dclock_priv *dc = (dclock_priv *)p->priv;
 

@@ -47,8 +47,8 @@ typedef struct _task{
 
 
 typedef struct _icons{
-    plugin_priv plugin;
-    plugin_priv *plug;
+    plugin_instance plugin;
+    plugin_instance *plug;
     Window *wins;
     int win_num;
     GHashTable  *task_list;
@@ -62,7 +62,7 @@ typedef struct _icons{
 
 static void ics_propertynotify(icons_priv *ics, XEvent *ev);
 static GdkFilterReturn ics_event_filter( XEvent *, GdkEvent *, icons_priv *);
-static void icons_destructor(plugin_priv *p);
+static void icons_destructor(plugin_instance *p);
 
 
 static void
@@ -318,7 +318,7 @@ ics_propertynotify(icons_priv *ics, XEvent *ev)
 
 
 static int
-read_application(plugin_priv *p)
+read_application(plugin_instance *p)
 {
     icons_priv *ics = (icons_priv *)p->priv;
     GdkPixbuf *gp = NULL;
@@ -407,7 +407,7 @@ read_dicon(icons_priv *ics, gchar *name)
 
 
 static int
-ics_parse_config(GtkIconTheme *icon_theme, plugin_priv *p)
+ics_parse_config(GtkIconTheme *icon_theme, plugin_instance *p)
 {
     icons_priv *ics = (icons_priv *)p->priv;
     wmpix_t *wp;
@@ -461,7 +461,7 @@ error:
 }
 
 static int
-icons_constructor(plugin_priv *p)
+icons_constructor(plugin_instance *p)
 {
     icons_priv *ics;
 
@@ -483,7 +483,7 @@ icons_constructor(plugin_priv *p)
 
 
 static void
-icons_destructor(plugin_priv *p)
+icons_destructor(plugin_instance *p)
 {
     icons_priv *ics = (icons_priv *)p->priv;
     wmpix_t *wp;

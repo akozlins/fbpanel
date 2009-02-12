@@ -8,7 +8,7 @@
 
 /* chart.h */
 typedef struct {
-    plugin_priv plugin;
+    plugin_instance plugin;
     GdkGC **gc_cpu;
     GtkWidget *da;
 

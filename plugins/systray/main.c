@@ -20,9 +20,9 @@
 
 
 typedef struct {
-    plugin_priv plugin;
+    plugin_instance plugin;
     GtkWidget *mainw;
-    plugin_priv *plug;
+    plugin_instance *plug;
     GtkWidget *box;
     /////
     EggTrayManager *tray_manager;
@@ -90,7 +90,7 @@ message_cancelled (EggTrayManager *manager, GtkWidget *icon, glong id,
 
 
 static void
-tray_destructor(plugin_priv *p)
+tray_destructor(plugin_instance *p)
 {
     tray_priv *tr = (tray_priv *)p->priv;
 
@@ -117,7 +117,7 @@ tray_notify_style_event(GObject *gobject, GParamSpec *arg1, GtkWidget *widget)
 
 
 static int
-tray_constructor(plugin_priv *p)
+tray_constructor(plugin_instance *p)
 {
     line s;
     tray_priv *tr;

@@ -18,11 +18,11 @@
 #include "dbg.h"
 
 
-plugin_priv *
+plugin_instance *
 plugin_load(char *type)
 {
     plugin_class *pc = NULL;
-    plugin_priv  *pp = NULL;
+    plugin_instance  *pp = NULL;
 
     ENTER;
     /* nothing was found */
@@ -37,7 +37,8 @@ plugin_load(char *type)
 }
 
 
-void plugin_put(plugin_priv *this)
+void
+plugin_put(plugin_instance *this)
 {
     ENTER;
     class_put(this->class->type);
@@ -48,7 +49,7 @@ void plugin_put(plugin_priv *this)
 gboolean panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p);
 
 int
-plugin_start(plugin_priv *this)
+plugin_start(plugin_instance *this)
 {
     ENTER;
 
@@ -81,15 +82,15 @@ plugin_start(plugin_priv *this)
     DBG("here\n");
     if (!this->class->constructor(this)) {
         DBG("here\n");
-        if (!this->class->invisible)
-            gtk_widget_destroy(this->pwid);
+        gtk_widget_destroy(this->pwid);
         RET(0);
     }
     RET(1);
 }
 
 
-void plugin_stop(plugin_priv *this)
+void
+plugin_stop(plugin_instance *this)
 {
     ENTER;
     DBG("%s\n", this->class->type);
@@ -102,7 +103,7 @@ void plugin_stop(plugin_priv *this)
 
 
 GtkWidget *
-default_plugin_edit_config(plugin_priv *pl)
+default_plugin_edit_config(plugin_instance *pl)
 {
     GtkWidget *vbox, *label;
     gchar *msg;

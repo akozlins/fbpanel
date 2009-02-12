@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include "panel.h"
 
-struct _plugin_priv *stam;
+struct _plugin_instance *stam;
 
 typedef struct {
     /* common */
@@ -26,15 +26,15 @@ typedef struct {
     char *description;
     int priv_size;
     
-    int (*constructor)(struct _plugin_priv *this);
-    void (*destructor)(struct _plugin_priv *this);
-    void (*save_config)(struct _plugin_priv *this, FILE *fp);
-    GtkWidget *(*edit_config)(struct _plugin_priv *this);
+    int (*constructor)(struct _plugin_instance *this);
+    void (*destructor)(struct _plugin_instance *this);
+    void (*save_config)(struct _plugin_instance *this, FILE *fp);
+    GtkWidget *(*edit_config)(struct _plugin_instance *this);
 } plugin_class;
 
 #define PLUGIN_CLASS(class) ((plugin_class *) class)    
 
-typedef struct _plugin_priv{
+typedef struct _plugin_instance{
     plugin_class *class;
     panel        *panel;
     FILE         *fp;
@@ -43,14 +43,14 @@ typedef struct _plugin_priv{
     int           padding;
     int           border;
     gpointer      priv;
-} plugin_priv;
+} plugin_instance;
 
-/* if plugin_priv is external it will load its dll */
-plugin_priv * plugin_load(char *type);
-void plugin_put(plugin_priv *this);
-int plugin_start(plugin_priv *this);
-void plugin_stop(plugin_priv *this);
-GtkWidget *default_plugin_priv_edit_config(plugin_priv *pl);
+/* if plugin_instance is external it will load its dll */
+plugin_instance * plugin_load(char *type);
+void plugin_put(plugin_instance *this);
+int plugin_start(plugin_instance *this);
+void plugin_stop(plugin_instance *this);
+GtkWidget *default_plugin_instance_edit_config(plugin_instance *pl);
 
 
 #endif

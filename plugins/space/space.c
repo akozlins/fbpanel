@@ -11,7 +11,7 @@
 
 
 typedef struct {
-    plugin_priv plugin;
+    plugin_instance plugin;
     int size;
     GtkWidget *mainw;
 
@@ -20,7 +20,7 @@ typedef struct {
 
 
 static void
-space_destructor(plugin_priv *p)
+space_destructor(plugin_instance *p)
 {
     space_priv *sp = (space_priv *)p->priv;
 
@@ -34,7 +34,7 @@ space_destructor(plugin_priv *p)
 
 
 static int
-space_constructor(plugin_priv *p)
+space_constructor(plugin_instance *p)
 {
     space_priv *sp;
     line s;

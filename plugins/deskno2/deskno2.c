@@ -12,7 +12,7 @@
 #include "dbg.h"
 
 typedef struct {
-    plugin_priv plugin;
+    plugin_instance plugin;
     GtkWidget  *main;
     int         dno;            // current desktop nomer
     int         dnum;           // number of desktops
@@ -83,7 +83,7 @@ scroll (GtkWidget *widget, GdkEventScroll *event, deskno_priv *dc)
 }
 
 static int
-deskno_constructor(plugin_priv *p)
+deskno_constructor(plugin_instance *p)
 {
     deskno_priv *dc;
     ENTER;
@@ -112,7 +112,7 @@ deskno_constructor(plugin_priv *p)
 
 
 static void
-deskno_destructor(plugin_priv *p)
+deskno_destructor(plugin_instance *p)
 {
   deskno_priv *dc = (deskno_priv *)p->priv;
 

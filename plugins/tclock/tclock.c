@@ -18,7 +18,7 @@
 #define DEFAULT_CLOCK_FORMAT  "%R"
 
 typedef struct {
-    plugin_priv plugin;
+    plugin_instance plugin;
     GtkWidget *eb;
     GtkWidget *main;
     GtkWidget *clockw;
@@ -78,7 +78,7 @@ clock_update(gpointer data )
 
 
 static int
-tclock_constructor(plugin_priv *p)
+tclock_constructor(plugin_instance *p)
 {
     line s;
     tclock_priv *dc;
@@ -148,7 +148,7 @@ tclock_constructor(plugin_priv *p)
 
 
 static void
-tclock_destructor(plugin_priv *p)
+tclock_destructor(plugin_instance *p)
 {
   tclock_priv *dc = (tclock_priv *)p->priv;
 

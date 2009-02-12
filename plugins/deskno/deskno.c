@@ -13,7 +13,7 @@
 #include "dbg.h"
 
 typedef struct {
-    plugin_priv plugin;
+    plugin_instance plugin;
     GtkWidget *main;
     GtkWidget *namew;
     GtkTooltips *tip;
@@ -53,7 +53,7 @@ name_update(GtkWidget *widget, deskno_priv *dc)
 
 
 static int
-deskno_constructor(plugin_priv *p)
+deskno_constructor(plugin_instance *p)
 {
     deskno_priv *dc;
     GtkWidget *button;
@@ -81,7 +81,7 @@ deskno_constructor(plugin_priv *p)
 
 
 static void
-deskno_destructor(plugin_priv *p)
+deskno_destructor(plugin_instance *p)
 {
   deskno_priv *dc = (deskno_priv *)p->priv;
 
