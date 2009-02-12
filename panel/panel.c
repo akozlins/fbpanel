@@ -121,7 +121,7 @@ panel_set_wm_strut(panel *p)
         ERR("wrong edge %d. strut won't be set\n", p->edge);
         RET();
     }
-    DBG("type %d. width %d. from %d to %d\n", i, data[i], data[4 + i*2],
+    DBG("type %d. width %ld. from %ld to %ld\n", i, data[i], data[4 + i*2],
           data[5 + i*2]);
 
     /* if wm supports STRUT_PARTIAL it will ignore STRUT */
@@ -161,13 +161,13 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
     XEvent *ev = (XEvent *) xevent;
 
     ENTER;
-    DBG("win = 0x%x\n", ev->xproperty.window);
+    DBG("win = 0x%lx\n", ev->xproperty.window);
     if (ev->type != PropertyNotify )
         RET(GDK_FILTER_CONTINUE);
 
     at = ev->xproperty.atom;
     win = ev->xproperty.window;
-    DBG("win=%x at=%d\n", win, at);
+    DBG("win=%lx at=%ld\n", win, at);
     if (win == GDK_ROOT_WINDOW()) {
         if (at == a_NET_CLIENT_LIST) {
             DBG("A_NET_CLIENT_LIST\n");
@@ -198,7 +198,7 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
             RET(GDK_FILTER_CONTINUE);
         RET(GDK_FILTER_REMOVE);
     }
-    DBG("non root %x\n", win);
+    DBG("non root %lx\n", win);
     RET(GDK_FILTER_CONTINUE);
 }
 
@@ -285,7 +285,7 @@ static  gboolean
 panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
 {
     int dup,      /* duplicate event */
-        fn_pos,   /* final position  */ 
+        fn_pos,   /* final position  */
         fn_size;  /* final size      */
 
     ENTER;
@@ -296,7 +296,7 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
     DBG("req geom: %dx%d+%d+%d\n", p->aw, p->ah, p->ax, p->ay);
     DBG("dup %d; final pos %d size %d\n", dup, fn_pos, fn_size);
 
-    if (dup) 
+    if (dup)
         RET(FALSE);
 
     p->cw = e->width;
@@ -391,18 +391,6 @@ panel_drag_motion (GtkWidget *widget, GdkDragContext *drag_context, gint x,
     RET(TRUE);
 }
 
-static gboolean
-panel_set_layer(panel *p)
-{
-    ENTER;
-    if (p->layer)
-        Xclimsg(p->topxwin, a_NET_WM_STATE, a_NET_WM_STATE_ADD,
-              (p->layer == LAYER_ABOVE) ? a_NET_WM_STATE_ABOVE :
-              a_NET_WM_STATE_BELOW, 0, 0, 0);
-    RET(FALSE);
-}
-
-
 gboolean
 panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p)
 {
@@ -416,42 +404,15 @@ panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p)
     RET(FALSE);
 }
 
-static gboolean
-panel_map(GtkWidget *widget, GdkEvent  *event, panel *p)
-{
-    ENTER;
-    RET(FALSE);
-}
-    
-static void
-panel_realized (GtkWidget *widget, panel *p)  
-{
-    ENTER;
-    RET();
-}
-
 
 void
 panel_start_gui(panel *p)
 {
-    Atom state[4];
-    XWMHints wmhints;
-    guint32 val;
-
-
     ENTER;
 
     // main toplevel window
     p->topgwin =  gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_container_set_border_width(GTK_CONTAINER(p->topgwin), 0);
-    gtk_window_set_resizable(GTK_WINDOW(p->topgwin), FALSE);
-    gtk_window_set_wmclass(GTK_WINDOW(p->topgwin), "panel", "fbpanel");
-    gtk_window_set_title(GTK_WINDOW(p->topgwin), "panel");
-    gtk_window_set_position(GTK_WINDOW(p->topgwin), GTK_WIN_POS_NONE);
-    gtk_window_set_decorated(GTK_WINDOW(p->topgwin), FALSE);
-    //GTK_WIDGET_UNSET_FLAGS (p->topgwin, GTK_CAN_FOCUS);
-    gtk_window_set_accept_focus(GTK_WINDOW(p->topgwin), FALSE);
-
     g_signal_connect(G_OBJECT(p->topgwin), "delete-event",
           G_CALLBACK(panel_delete_event), p);
     g_signal_connect(G_OBJECT(p->topgwin), "destroy-event",
@@ -462,24 +423,33 @@ panel_start_gui(panel *p)
           (GCallback) panel_configure_event, p);
     g_signal_connect (G_OBJECT (p->topgwin), "button-press-event",
           (GCallback) panel_button_press_event, p);
-    g_signal_connect (G_OBJECT (p->topgwin), "realize",
-          (GCallback) panel_realized, p);
-    g_signal_connect (G_OBJECT (p->topgwin), "map-event",
-          (GCallback) panel_map, p);
+
+    gtk_window_set_resizable(GTK_WINDOW(p->topgwin), FALSE);
+    gtk_window_set_wmclass(GTK_WINDOW(p->topgwin), "panel", "fbpanel");
+    gtk_window_set_title(GTK_WINDOW(p->topgwin), "panel");
+    gtk_window_set_position(GTK_WINDOW(p->topgwin), GTK_WIN_POS_NONE);
+    gtk_window_set_decorated(GTK_WINDOW(p->topgwin), FALSE);
+    gtk_window_set_accept_focus(GTK_WINDOW(p->topgwin), FALSE);
+    if (p->setdocktype)
+        gtk_window_set_type_hint(GTK_WINDOW(p->topgwin), GDK_WINDOW_TYPE_HINT_DOCK);
+
+    if (p->layer == LAYER_ABOVE)
+        gtk_window_set_keep_above(GTK_WINDOW(p->topgwin), TRUE);
+    else if (p->layer == LAYER_BELOW)
+        gtk_window_set_keep_below(GTK_WINDOW(p->topgwin), TRUE);
+    gtk_window_stick (GTK_WINDOW(p->topgwin));
+
     gtk_widget_realize(p->topgwin);
-    //gdk_window_set_decorations(p->topgwin->window, 0);
     gtk_widget_set_app_paintable(p->topgwin, TRUE);
     calculate_position(p);
     gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
     gtk_window_resize(GTK_WINDOW(p->topgwin), p->aw, p->ah);
     DBG("move-resize x %d y %d w %d h %d\n", p->ax, p->ay, p->aw, p->ah);
-    DBG("here\n");
     gdk_flush();
-    
+
     // background box all over toplevel
     p->bbox = gtk_bgbox_new();
     gtk_container_add(GTK_CONTAINER(p->topgwin), p->bbox);
-    gtk_widget_show(p->bbox);
     gtk_container_set_border_width(GTK_CONTAINER(p->bbox), 0);
     if (p->transparent) {
         p->bg = fb_bg_get_for_display();
@@ -490,65 +460,16 @@ panel_start_gui(panel *p)
     p->lbox = p->my_box_new(FALSE, 0);
     gtk_container_set_border_width(GTK_CONTAINER(p->lbox), 0);
     gtk_container_add(GTK_CONTAINER(p->bbox), p->lbox);
-    gtk_widget_show(p->lbox);
 
     p->box = p->my_box_new(FALSE, p->spacing);
     gtk_container_set_border_width(GTK_CONTAINER(p->box), 0);
     gtk_box_pack_start(GTK_BOX(p->lbox), p->box, TRUE, TRUE,
           (p->round_corners) ? p->round_corners_radius : 0);
-    gtk_widget_show(p->box);
-
-    p->topxwin = GDK_WINDOW_XWINDOW(GTK_WIDGET(p->topgwin)->window);
-    DBG("topxwin = %x\n", p->topxwin);
-
-    /* the settings that should be done before window is mapped */
-    wmhints.flags = InputHint;
-    wmhints.input = 0;
-    XSetWMHints (GDK_DISPLAY(), p->topxwin, &wmhints);
-#define WIN_HINTS_SKIP_FOCUS      (1<<0)    /* "alt-tab" skips this win */
-    val = WIN_HINTS_SKIP_FOCUS;
-    XChangeProperty(GDK_DISPLAY(), p->topxwin,
-          XInternAtom(GDK_DISPLAY(), "_WIN_HINTS", False), XA_CARDINAL, 32,
-          PropModeReplace, (unsigned char *) &val, 1);
-
-    if (p->setdocktype) {
-        state[0] = a_NET_WM_WINDOW_TYPE_DOCK;
-        XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_WINDOW_TYPE, XA_ATOM,
-              32, PropModeReplace, (unsigned char *) state, 1);
-    }
 
     /* window mapping point */
     gtk_widget_show_all(p->topgwin);
 
     /* the settings that should be done after window is mapped */
-
-    /* send it to running wm */
-    Xclimsg(p->topxwin, a_NET_WM_DESKTOP, 0xFFFFFFFF, 0, 0, 0, 0);
-    /* and assign it ourself just for case when wm is not running */
-    val = 0xFFFFFFFF;
-    XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_DESKTOP, XA_CARDINAL,
-          32, PropModeReplace, (unsigned char *) &val, 1);
-
-    state[0] = a_NET_WM_STATE_SKIP_PAGER;
-    state[1] = a_NET_WM_STATE_SKIP_TASKBAR;
-    state[2] = a_NET_WM_STATE_STICKY;
-    if (p->layer == LAYER_ABOVE)
-        state[3] = a_NET_WM_STATE_ABOVE;
-    else if (p->layer == LAYER_BELOW)
-        state[3] = a_NET_WM_STATE_BELOW;
-    XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STATE, XA_ATOM,
-          32, PropModeReplace, (unsigned char *) state,
-          (p->layer != LAYER_NONE) ? 4 : 3);
-    DBG("layer is %d\n", p->layer);
-
-    g_timeout_add(1000,  (GSourceFunc) panel_set_layer, p);
-
-    XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), PropertyChangeMask);
-    gdk_window_add_filter(gdk_get_default_root_window (),
-          (GdkFilterFunc)panel_event_filter, p);
-
-
-
     if (p->autohide) {
         gtk_widget_add_events(p->topgwin, GDK_ENTER_NOTIFY_MASK
               | GDK_LEAVE_NOTIFY_MASK);
@@ -576,11 +497,15 @@ panel_start_gui(panel *p)
 
         panel_enter(NULL, NULL, p);
     }
-    //calculate_position(p);
-    //gdk_window_move_resize(p->topgwin->window, p->ax, p->ay, p->aw, p->ah);
-    //DBG("move-resize x %d y %d w %d h %d\n", p->ax, p->ay, p->aw, p->ah);
     if (p->setstrut)
         panel_set_wm_strut(p);
+
+    XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), PropertyChangeMask);
+    gdk_window_add_filter(gdk_get_default_root_window (),
+          (GdkFilterFunc)panel_event_filter, p);
+    p->topxwin = GDK_WINDOW_XWINDOW(GTK_WIDGET(p->topgwin)->window);
+    DBG("topxwin = %lx\n", p->topxwin);
+
     RET();
 }
 
@@ -669,7 +594,6 @@ panel_parse_global(panel *p, FILE *fp)
     p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA,
           XA_CARDINAL, &p->wa_len);
     print_wmdata(p);
-    panel_start_gui(p);
     RET(1);
 }
 
@@ -775,7 +699,7 @@ static gboolean
 panel_parse_plugin_late(panel *p)
 {
     line s;
-    
+
     ENTER;
     fseek(pconf, 0, SEEK_SET);
 #if 0
@@ -786,7 +710,7 @@ panel_parse_plugin_late(panel *p)
 #endif
     while (get_line(pconf, &s) != LINE_NONE) {
         if ((s.type  != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0], "plugin")) {
-            ERR( "fbpanel: expecting plugin section\n");            
+            ERR( "fbpanel: expecting plugin section\n");
             goto error;
         }
         if (!panel_parse_plugin(p, pconf)) {
@@ -799,7 +723,7 @@ error:
     exit(1);
 }
 
-int
+static int
 panel_start(panel *p, FILE *fp)
 {
     line s;
@@ -834,6 +758,7 @@ panel_start(panel *p, FILE *fp)
     }
     if (!panel_parse_global(p, fp))
         RET(0);
+    panel_start_gui(p);
 
     if (!(pconf = tmpfile())) {
         ERR("can't open temporary file\n");
@@ -874,7 +799,8 @@ delete_plugin(gpointer data, gpointer udata)
 
 }
 
-void panel_stop(panel *p)
+static void
+panel_stop(panel *p)
 {
     ENTER;
 
@@ -979,13 +905,6 @@ main(int argc, char *argv[], char *env[])
     FILE *pfp; /* current profile FP */
 
     ENTER;
-#if 0
-    printf("sizeof(gulong)=%d\n", sizeof(gulong));
-    printf("sizeof(Atom)=%d\n", sizeof(Atom));
-    printf("sizeof(Window)=%d\n", sizeof(Window));
-    printf("sizeof(gboolean)=%d\n", sizeof(gboolean));
-    RET(1);
-#endif
     setlocale(LC_CTYPE, "");
     gtk_set_locale();
     gtk_init(&argc, &argv);

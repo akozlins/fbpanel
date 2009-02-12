@@ -23,13 +23,13 @@ plugin_load(char *type)
 {
     plugin_class *pc = NULL;
     plugin_priv  *pp = NULL;
-      
+
     ENTER;
     /* nothing was found */
     if (!(pc = class_get(type)))
         RET(NULL);
-    
-    DBG2("%s priv_size=%d\n", pc->type, pc->priv_size);
+
+    DBG("%s priv_size=%d\n", pc->type, pc->priv_size);
     pp = g_malloc0(pc->priv_size);
     g_return_val_if_fail (pp != NULL, NULL);
     pp->class = pc;
@@ -120,6 +120,6 @@ default_plugin_edit_config(plugin_priv *pl)
     gtk_box_pack_end(GTK_BOX(vbox), label, TRUE, TRUE, 5);
     gtk_container_set_border_width(GTK_CONTAINER(vbox), 14);
     g_free(msg);
-    
+
     RET(vbox);
 }
