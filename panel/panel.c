@@ -208,13 +208,6 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
 
 
 static gint
-panel_delete_event(GtkWidget * widget, GdkEvent * event, gpointer data)
-{
-    ENTER;
-    RET(FALSE);
-}
-
-static gint
 panel_destroy_event(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
     //panel *p = (panel *) data;
@@ -413,8 +406,6 @@ panel_start_gui(panel *p)
     // main toplevel window
     p->topgwin =  gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_container_set_border_width(GTK_CONTAINER(p->topgwin), 0);
-    g_signal_connect(G_OBJECT(p->topgwin), "delete-event",
-          G_CALLBACK(panel_delete_event), p);
     g_signal_connect(G_OBJECT(p->topgwin), "destroy-event",
           G_CALLBACK(panel_destroy_event), p);
     g_signal_connect (G_OBJECT (p->topgwin), "size-request",
@@ -445,7 +436,7 @@ panel_start_gui(panel *p)
     gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
     gtk_window_resize(GTK_WINDOW(p->topgwin), p->aw, p->ah);
     DBG("move-resize x %d y %d w %d h %d\n", p->ax, p->ay, p->aw, p->ah);
-    gdk_flush();
+    //gdk_flush();
 
     // background box all over toplevel
     p->bbox = gtk_bgbox_new();
@@ -696,18 +687,12 @@ error:
 
 
 static gboolean
-panel_parse_plugin_late(panel *p)
+panel_parse_plugins(panel *p)
 {
     line s;
 
     ENTER;
     fseek(pconf, 0, SEEK_SET);
-#if 0
-    while (get_line_as_is(pconf, &s) != LINE_NONE) {
-        fprintf(stdout, "%s\n", s.str);
-    }
-    fseek(pconf, 0, SEEK_SET);
-#endif
     while (get_line(pconf, &s) != LINE_NONE) {
         if ((s.type  != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0], "plugin")) {
             ERR( "fbpanel: expecting plugin section\n");
@@ -771,21 +756,10 @@ panel_start(panel *p, FILE *fp)
     }
     fseek(fp, pos, SEEK_SET);
     fflush(pconf);
-#if 1
-    g_idle_add((GSourceFunc) panel_parse_plugin_late, p);
-#else
-    while (get_line(fp, &s) != LINE_NONE) {
-        if ((s.type  != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0],
-                    "plugin")) {
-            ERR( "fbpanel: expecting pluginsection\n");
-            RET(0);
-        }
-        if (!panel_parse_plugin(p, fp))
-            RET(0);
-    }
-#endif
+    panel_parse_plugins(p);
+
     gtk_widget_show_all(p->topgwin);
-    gdk_flush();
+    //gdk_flush();
     RET(1);
 }
 
