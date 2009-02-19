@@ -7,7 +7,7 @@
 #define RET2(args...)   do { fprintf(stderr, "%s:%s:%-5d: RETURN\n",  __FILE__,__FUNCTION__, __LINE__);\
 return args; } while(0)
 
-enum { LOG_NONE, LOG_ERR, LOG_WARN, LOG_INFO, LOG_ALL };
+enum { LOG_NONE, LOG_ERR, LOG_WARN, LOG_INFO, LOG_DEBUG, LOG_ALL };
 #ifdef DEBUG
 
 #define ENTER          do { fprintf(stderr, "%s:%s:%-5d: ENTER\n",  __FILE__,__FUNCTION__, __LINE__); } while(0)

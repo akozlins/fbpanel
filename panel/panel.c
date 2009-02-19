@@ -244,8 +244,8 @@ make_round_corners(panel *p)
     int w, h, r, br;
 
     ENTER;
-    w = p->cw;
-    h = p->ch;
+    w = p->aw;
+    h = p->ah;
     r = p->round_corners_radius;
     if (2*r > MIN(w, h)) {
         r = MIN(w, h) / 2;
@@ -456,7 +456,10 @@ panel_start_gui(panel *p)
     gtk_container_set_border_width(GTK_CONTAINER(p->box), 0);
     gtk_box_pack_start(GTK_BOX(p->lbox), p->box, TRUE, TRUE,
           (p->round_corners) ? p->round_corners_radius : 0);
-
+    if (p->round_corners) {
+        make_round_corners(p);
+        DBG("make_round_corners\n");
+    }
     /* window mapping point */
     gtk_widget_show_all(p->topgwin);
 
@@ -857,10 +860,9 @@ handle_error(Display * d, XErrorEvent * ev)
     char buf[256];
 
     ENTER;
-    if (log_level >= LOG_WARN) {
-        XGetErrorText(GDK_DISPLAY(), ev->error_code, buf, 256);
-        LOG(LOG_WARN, "fbpanel : X error: %s\n", buf);
-    }
+    XGetErrorText(GDK_DISPLAY(), ev->error_code, buf, 256);
+    DBG("fbpanel : X error: %s\n", buf);
+
     RET();
 }
 
