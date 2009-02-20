@@ -45,7 +45,7 @@ int config = 0;
 FbEv *fbev;
 gint force_quit = 0;
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 
 

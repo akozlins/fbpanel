@@ -25,7 +25,7 @@
  * 1. Add XUrgencyHint support. (Flashing task bar buttons, can be disabled)
  */
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 
 struct _taskbar;

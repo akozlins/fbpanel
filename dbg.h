@@ -8,7 +8,7 @@
 return args; } while(0)
 
 enum { LOG_NONE, LOG_ERR, LOG_WARN, LOG_INFO, LOG_DEBUG, LOG_ALL };
-#ifdef DEBUG
+#ifdef DEBUGPRN
 
 #define ENTER          do { fprintf(stderr, "%s:%s:%-5d: ENTER\n",  __FILE__,__FUNCTION__, __LINE__); } while(0)
 #define RET(args...)   do { fprintf(stderr, "%s:%s:%-5d: RETURN\n", __FILE__, __FUNCTION__, __LINE__);\

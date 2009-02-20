@@ -15,7 +15,7 @@
 #include "fixedtip.h"
 
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 
 

@@ -34,7 +34,7 @@
 #include "bg.h"
 #include "panel.h"
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 
 

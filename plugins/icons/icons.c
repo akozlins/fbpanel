@@ -19,7 +19,7 @@
 #include "gtkbar.h"
 
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 /*
  * TODO : icon_copied

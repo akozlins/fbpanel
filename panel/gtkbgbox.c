@@ -35,7 +35,7 @@
 #include <glib-object.h>
 
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 
 typedef struct {

@@ -16,7 +16,7 @@
 #include "plugin.h"
 #include "gtkbgbox.h"
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 
 

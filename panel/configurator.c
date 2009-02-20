@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <string.h>
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 
 void configure(void);

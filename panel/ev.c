@@ -34,7 +34,7 @@
 #include "ev.h"
 #include "misc.h"
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 
 

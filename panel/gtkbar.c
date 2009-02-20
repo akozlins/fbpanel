@@ -26,7 +26,7 @@
 
 #include "gtkbar.h"
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 
 #define MAX_CHILD_SIZE 150

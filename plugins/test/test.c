@@ -19,7 +19,7 @@
 #include "misc.h"
 #include "plugin.h"
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 
 

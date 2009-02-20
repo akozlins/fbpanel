@@ -25,7 +25,7 @@
 #include "eggtraymanager.h"
 #include "eggmarshalers.h"
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 /* Signals */
 enum

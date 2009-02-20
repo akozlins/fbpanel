@@ -33,7 +33,7 @@
 #include "chart.h"
 
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 
 

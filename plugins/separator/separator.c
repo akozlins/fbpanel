@@ -5,7 +5,7 @@
 #include "plugin.h"
 
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 
 

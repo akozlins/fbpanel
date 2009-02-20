@@ -10,7 +10,7 @@
 #include "misc.h"
 #include "plugin.h"
 
-//#define DEBUG
+//#define DEBUGPRN
 #include "dbg.h"
 
 extern panel *the_panel;
