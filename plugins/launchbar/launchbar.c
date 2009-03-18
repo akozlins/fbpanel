@@ -55,7 +55,7 @@ typedef struct btn {
 typedef struct launchbar_priv {
     plugin_instance plugin;
     GtkWidget *box;
-    GtkTooltips *tips;
+    //GtkTooltips *tips; 
     btn btns[MAXBUTTONS];
     int btn_num;
     int iconsize;
@@ -315,7 +315,7 @@ launchbar_constructor(plugin_instance *p)
     gtk_container_add(GTK_CONTAINER(p->pwid), lb->box);
     gtk_container_set_border_width (GTK_CONTAINER (lb->box), 0);
     gtk_widget_show(lb->box);
-    lb->tips = gtk_tooltips_new();
+    //lb->tips = gtk_tooltips_new();
     
     if  (p->panel->orientation == ORIENT_HORIZ) 
         lb->iconsize = GTK_WIDGET(p->panel->box)->allocation.height;
