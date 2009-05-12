@@ -282,29 +282,27 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
         fn_size;  /* final size      */
 
     ENTER;
-    dup = (e->width == p->cw && e->height == p->ch && e->x == p->cx && e->y == p->cy);
-    fn_pos  = (e->x == p->ax && e->y == p->ay);
-    fn_size = (e->width == p->aw && e->height == p->ah);
     DBG("cur geom: %dx%d+%d+%d\n", e->width, e->height, e->x, e->y);
     DBG("req geom: %dx%d+%d+%d\n", p->aw, p->ah, p->ax, p->ay);
-    DBG("dup %d; final pos %d size %d\n", dup, fn_pos, fn_size);
-
-    if (dup)
+    fn_pos  = (e->x == p->ax && e->y == p->ay);
+    fn_size = (e->width == p->aw && e->height == p->ah);
+    if (!(fn_pos || fn_size)) {
+        DBG("not yet there. exiting\n");
         RET(FALSE);
+    }
 
+    dup = (e->width == p->cw && e->height == p->ch && e->x == p->cx && e->y == p->cy);
+    if (dup) {
+        DBG("dup. exiting\n");
+        RET(FALSE);
+    }
+
+    // panel was just placed to the required postion
     p->cw = e->width;
     p->ch = e->height;
     p->cx = e->x;
     p->cy = e->y;
 
-    if (!fn_size)
-        RET(FALSE);
-
-    if (!fn_pos) {
-        gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
-        DBG("moving to req pos %d %d\n", p->ax, p->ay);
-        RET(FALSE);
-    }
     if (p->transparent) {
         fb_bg_notify_changed_bg(p->bg);
         DBG("remake bg image\n");
@@ -317,6 +315,7 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
         make_round_corners(p);
         DBG("make_round_corners\n");
     }
+    gtk_widget_show(p->topgwin);
     RET(FALSE);
 
 }
@@ -397,7 +396,6 @@ panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p)
     RET(FALSE);
 }
 
-
 void
 panel_start_gui(panel *p)
 {
@@ -436,6 +434,7 @@ panel_start_gui(panel *p)
     gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
     gtk_window_resize(GTK_WINDOW(p->topgwin), p->aw, p->ah);
     DBG("move-resize x %d y %d w %d h %d\n", p->ax, p->ay, p->aw, p->ah);
+    XSync(GDK_DISPLAY(), False);
     //gdk_flush();
 
     // background box all over toplevel
@@ -462,6 +461,7 @@ panel_start_gui(panel *p)
     }
     /* window mapping point */
     gtk_widget_show_all(p->topgwin);
+    gtk_widget_hide(p->topgwin);
 
     /* the settings that should be done after window is mapped */
     if (p->autohide) {
@@ -499,7 +499,7 @@ panel_start_gui(panel *p)
           (GdkFilterFunc)panel_event_filter, p);
     p->topxwin = GDK_WINDOW_XWINDOW(GTK_WIDGET(p->topgwin)->window);
     DBG("topxwin = %lx\n", p->topxwin);
-
+    XSync(GDK_DISPLAY(), False);
     RET();
 }
 
@@ -761,7 +761,7 @@ panel_start(panel *p, FILE *fp)
     fflush(pconf);
     panel_parse_plugins(p);
 
-    gtk_widget_show_all(p->topgwin);
+    //gtk_widget_show_all(p->topgwin);
     //gdk_flush();
     RET(1);
 }

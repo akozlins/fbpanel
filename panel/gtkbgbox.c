@@ -224,7 +224,7 @@ gtk_bgbox_realize (GtkWidget *widget)
           &attributes, attributes_mask);
     gdk_window_set_user_data (widget->window, widget);
     widget->style = gtk_style_attach (widget->style, widget->window);
-    gtk_bgbox_set_background(widget, BG_STYLE, 0, 0);
+    //gtk_bgbox_set_background(widget, BG_STYLE, 0, 0);
     gdk_window_add_filter(widget->window,  (GdkFilterFunc) gtk_bgbox_event_filter, widget);
     RET();
 }
@@ -304,6 +304,7 @@ gtk_bgbox_size_allocate (GtkWidget *widget, GtkAllocation *wa)
     if (GTK_WIDGET_REALIZED (widget) && !GTK_WIDGET_NO_WINDOW (widget)
           && !same_alloc) {
         priv = GTK_BGBOX_GET_PRIVATE (widget);
+        DBG("move resize\n");
         gdk_window_move_resize (widget->window, wa->x, wa->y, wa->width, wa->height);
         if (priv->bg_type == BG_ROOT) {
             gtk_bgbox_free_bg(widget);
@@ -365,6 +366,7 @@ gtk_bgbox_set_background(GtkWidget *widget, int bg_type, guint32 tintcolor, gint
     if (priv->bg_type == BG_STYLE) {
         gtk_style_set_background(widget->style, widget->window, widget->state);
     } else if (priv->bg_type == BG_ROOT) {
+        DBG("root bg\n");
         if (priv->bg == NULL) 
             priv->bg = fb_bg_get_for_display();
         g_signal_connect(G_OBJECT(priv->bg), "changed", G_CALLBACK(gtk_bgbox_bg_changed), widget);
