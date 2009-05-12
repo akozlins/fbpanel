@@ -299,8 +299,8 @@ make_button(plugin_instance *p, gchar *iname, gchar *fname, gchar *name, GtkWidg
     m->bg = fb_button_new_from_icon_file_with_label(iname, fname, w, h, 0x702020, TRUE, name);
     gtk_widget_show(m->bg);
     gtk_box_pack_start(GTK_BOX(m->box), m->bg, FALSE, FALSE, 0);
-    if (p->panel->transparent)
-        gtk_bgbox_set_background(m->bg, BG_ROOT, p->panel->tintcolor, p->panel->alpha);
+    //if (p->panel->transparent)
+      //  gtk_bgbox_set_background(m->bg, BG_INHERIT, p->panel->tintcolor, p->panel->alpha);
 
 
     m->handler_id = g_signal_connect (G_OBJECT (m->bg), "button-press-event",
