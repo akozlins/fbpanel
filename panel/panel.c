@@ -316,6 +316,8 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
         DBG("make_round_corners\n");
     }
     gtk_widget_show(p->topgwin);
+    panel_set_wm_strut(p);
+
     RET(FALSE);
 
 }
