@@ -16,7 +16,6 @@ typedef struct {
     plugin_instance plugin;
     GtkWidget *main;
     GtkWidget *namew;
-    GtkTooltips *tip;
 } deskno_priv;
 
 static  void
@@ -64,7 +63,6 @@ deskno_constructor(plugin_instance *p)
     p->priv = dc;
     
     dc->main = gtk_event_box_new();
-    dc->tip  = gtk_tooltips_new();
     button = gtk_button_new();
     gtk_button_set_relief(GTK_BUTTON(button),GTK_RELIEF_NONE);
     g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (clicked), (gpointer) dc);
