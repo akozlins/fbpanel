@@ -14,7 +14,6 @@ typedef struct {
     plugin_instance plugin;
     GdkPixmap *pix;
     GdkBitmap *mask;
-    GtkTooltips *tips;
     GtkWidget *mainw;
 } image_priv;
 
@@ -53,7 +52,6 @@ image_constructor(plugin_instance *p)
     ENTER;
     img = g_new0(image_priv, 1);
     g_return_val_if_fail(img != NULL, 0);
-    img->tips = gtk_tooltips_new();
     p->priv = img;
     tooltip = fname = 0;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
@@ -105,7 +103,7 @@ image_constructor(plugin_instance *p)
     g_free(fname);
     gtk_container_add(GTK_CONTAINER(p->pwid), img->mainw);
     if (tooltip) {
-        gtk_tooltips_set_tip(GTK_TOOLTIPS (img->tips), img->mainw, tooltip, NULL);
+        gtk_widget_set_tooltip_markup(img->mainw, tooltip);
         g_free(tooltip);
     }
     RET(1);
