@@ -130,7 +130,7 @@ net_destructor(plugin_instance *p)
 plugin_class class = {
     .count       = 0,
     .type        = "net",
-    .name        = "net usage",
+    .name        = "Net usage",
     .version     = "1.0",
     .description = "Display net usage",
     .priv_size   = sizeof(net_priv),
