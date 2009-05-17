@@ -22,7 +22,6 @@ typedef struct {
     GtkWidget *eb;
     GtkWidget *main;
     GtkWidget *clockw;
-    GtkTooltips *tip;
     char *tfmt;
     char *cfmt;
     char *action;
@@ -69,7 +68,7 @@ clock_update(gpointer data )
 
 	strftime (output, sizeof(output), dc->tfmt, detail) ;
         if ((utf8 = g_locale_to_utf8(output, -1, NULL, NULL, NULL))) {
-            gtk_tooltips_set_tip(dc->tip, dc->main, utf8, NULL) ;
+            gtk_widget_set_tooltip_markup(dc->main, utf8);
             g_free(utf8);
         }
     }
@@ -133,7 +132,6 @@ tclock_constructor(plugin_instance *p)
     //gtk_widget_show(dc->clockw);
     gtk_container_add(GTK_CONTAINER(dc->main), dc->clockw);
     gtk_widget_show_all(dc->main);
-    dc->tip = gtk_tooltips_new();
     dc->timer = g_timeout_add(1000, (GSourceFunc) clock_update, (gpointer)dc);
     gtk_container_add(GTK_CONTAINER(p->pwid), dc->main);
     RET(1);
