@@ -14,7 +14,6 @@ typedef struct {
     plugin_instance plugin;
     GdkPixmap *pix;
     GdkBitmap *mask;
-    GtkTooltips *tips;
     int button1, button2;
     int action1, action2;
 } wincmd_priv;
@@ -155,7 +154,6 @@ wincmd_destructor(plugin_instance *p)
         g_object_unref(wc->mask);
     if (wc->pix)
         g_object_unref(wc->pix);
-    //gtk_widget_destroy(wc->tips);
     g_free(wc);
     RET();
 }
@@ -175,7 +173,6 @@ wincmd_constructor(plugin_instance *p)
     ENTER;
     wc = g_new0(wincmd_priv, 1);
     g_return_val_if_fail(wc != NULL, 0);
-    wc->tips = gtk_tooltips_new();
     p->priv = wc;
     tooltip = fname = iname = NULL;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
@@ -223,7 +220,7 @@ wincmd_constructor(plugin_instance *p)
     g_free(fname);
     g_free(iname);
     if (tooltip) {
-        gtk_tooltips_set_tip(GTK_TOOLTIPS (wc->tips), button, tooltip, NULL);
+        gtk_widget_set_tooltip_markup(button, tooltip);
         g_free(tooltip);
     }
     RET(1);
