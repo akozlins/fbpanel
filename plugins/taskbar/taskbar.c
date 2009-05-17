@@ -65,7 +65,6 @@ typedef struct _taskbar{
     int win_num;
     GHashTable  *task_list;
     GtkWidget *hbox, *bar, *space, *menu;
-    GtkTooltips *tips;
     GdkPixbuf *gen_pixbuf;
     GtkStateType normal_state;
     GtkStateType focused_state;
@@ -206,7 +205,7 @@ tk_set_names(task *tk)
     name = tk->iconified ? tk->iname : tk->name;
     gtk_label_set_text(GTK_LABEL(tk->label), name);
     if (tk->tb->tooltips)
-        gtk_tooltips_set_tip(tk->tb->tips, tk->button, tk->name, NULL);
+        gtk_widget_set_tooltip_markup(tk->button, tk->name);
     RET();
 }
 
@@ -808,8 +807,7 @@ tk_update(gpointer key, task *tk, taskbar_priv *tb)
 	gtk_widget_show(tk->button);
 
         if (tb->tooltips) {
-            //DBG("tip %x %s\n", tk->win, tk->name);
-            gtk_tooltips_set_tip(tb->tips, tk->button, tk->name, NULL);
+            gtk_widget_set_tooltip_markup(tk->button, tk->name);
         }
 	RET();
     }    
@@ -1273,8 +1271,6 @@ taskbar_build_gui(plugin_instance *p)
     tb->desk_num = get_net_number_of_desktops();
     tb->cur_desk = get_net_current_desktop();
     tb->focused = NULL;
-    if (tb->tooltips)
-        tb->tips = gtk_tooltips_new();
 
     tb->menu = taskbar_make_menu(tb);
     gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 0);
