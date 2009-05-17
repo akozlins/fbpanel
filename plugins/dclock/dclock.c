@@ -30,7 +30,6 @@ typedef struct {
     plugin_instance plugin;
     GtkWidget *main;
     GtkWidget *pwid;
-    GtkTooltips *tip;
     char *tfmt;
     char *cfmt;
     struct tm time;
@@ -98,7 +97,7 @@ clock_update(dclock_priv *dc )
     gtk_widget_queue_draw(dc->main);
     strftime (output, sizeof(output), dc->tfmt, detail) ;
     if ((utf8 = g_locale_to_utf8(output, -1, NULL, NULL, NULL))) {
-        gtk_tooltips_set_tip(dc->tip, dc->pwid, utf8, NULL) ;
+        gtk_widget_set_tooltip_markup(dc->pwid, utf8);
         g_free(utf8);
     }
   
@@ -208,7 +207,6 @@ dclock_constructor(plugin_instance *p)
         g_signal_connect (G_OBJECT (dc->pwid), "button_press_event",
               G_CALLBACK (clicked), (gpointer) dc);
     gtk_widget_show_all(dc->main);
-    dc->tip = gtk_tooltips_new();
     dc->timer = g_timeout_add(1000, (GSourceFunc) clock_update, (gpointer)dc);
     clock_update(dc);
     
