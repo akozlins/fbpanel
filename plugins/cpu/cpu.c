@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * 
+ *
  */
 /*A little bug fixed by Mykola <mykola@2ka.mipt.ru>:) */
 
@@ -46,33 +46,9 @@ typedef struct {
     int timer;
 } cpu_priv;
 
-typedef struct {
-    chart_class chart;
-} cpu_class;
 
-static void cpu_destructor(plugin_instance *p);
-static void cpu_constructor(plugin_instance *p);
 
-static cpu_class class = {
-{
-    .chart = {
-        .plugin = {
-            .count       = 0,
-            .type        = "cpu",
-            .name        = "Cpu usage",
-            .version     = "1.0",
-            .description = "Display cpu usage",
-            .priv_size   = sizeof(cpu_priv),
-            .constructor = cpu_constructor,
-            .destructor  = cpu_destructor,            
-        },
-    },
-};
-
-static cpu_class *cpu_k;
-static chart_class *chart_k;
-static chart_class *chart_ko;
-static plugin_class *plugin_k;
+static chart_class *k;
 
 static int
 cpu_get_load(cpu_priv *c)
@@ -100,7 +76,7 @@ cpu_get_load(cpu_priv *c)
     b = a + cpu_diff.i + cpu_diff.w;
     total = b ?  a / b : 1.0;
     DBG("total=%f a=%f b=%f\n", total, a, b);
-    chart_ko->add_tick(&c->chart, &total);
+    k->add_tick(&c->chart, &total);
     RET(TRUE);
 
 }
@@ -112,10 +88,12 @@ cpu_constructor(plugin_instance *p)
     cpu_priv *c;
     char *colors[] = { "green" };
 
-    c = (cpu_priv *)  p;
-    if (!PLUGIN_CLASS(chart_ko)->constructor(p))
+    if (!(k = class_get("chart")))
         RET(0);
-    chart_ko->set_rows(&c->chart, 1, colors);
+    c = p->priv = g_new0(cpu_priv, 1);
+    if (!PLUGIN_CLASS(k)->constructor(p))
+        RET(0);
+    k->set_rows(&c->chart, 1, colors);
     c->timer = g_timeout_add(1000, (GSourceFunc) cpu_get_load, (gpointer) c);
     RET(1);
 }
@@ -128,22 +106,21 @@ cpu_destructor(plugin_instance *p)
 
     ENTER;
     g_source_remove(c->timer);
-    PLUGIN_CLASS(chart_ko)->destructor(p);
+    PLUGIN_CLASS(k)->destructor(p);
+    g_free(p->priv);
     class_put("chart");
     RET();
 }
 
 
-void *
-init_class()
-{
-    if (cpu_k) 
-        RET(cpu_k);
 
-    chart_ko = class_get("chart");
-    if (!chart_ko)
-        RET(NULL);
-    cpu_k = CPU_CLASS(class);
-
-    RET(cpu_k);
+plugin_class class = {
+    .count       = 0,
+    .type        = "cpu",
+    .name        = "Cpu usage",
+    .version     = "1.0",
+    .description = "Display cpu usage",
+    .priv_size   = sizeof(cpu_priv),
+    .constructor = cpu_constructor,
+    .destructor  = cpu_destructor,
 };
