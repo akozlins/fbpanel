@@ -3,6 +3,6 @@ include %%topdir%%/config.mk
 SRCS = net.c 
 LIBTARGET = net.so
 install:
-	$(install) 755 $(LIBEXECDIR)/fbpanel 755 $(LIBTARGET)
+	$(install) 755 $(LIBDIR)/fbpanel 755 $(LIBTARGET)
 
 include %%topdir%%/rules.mk
