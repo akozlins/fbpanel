@@ -260,8 +260,8 @@ read_button(plugin_instance *p)
     gtk_box_pack_start(GTK_BOX(lb->box), button, FALSE, FALSE, 0);
     gtk_widget_show(button);
 
-    //if (p->panel->transparent) 
-    //    gtk_bgbox_set_background(button, BG_INHERIT, p->panel->tintcolor, p->panel->alpha);
+    if (p->panel->transparent) 
+        gtk_bgbox_set_background(button, BG_INHERIT, p->panel->tintcolor, p->panel->alpha);
 
     g_free(fname);
     g_free(iname);
