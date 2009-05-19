@@ -542,7 +542,9 @@ menu_icon_theme_changed(GtkIconTheme *icon_theme, plugin_instance *p)
         gtk_widget_destroy(m->menu);
         m->menu = NULL;
     }
-    m->tout = g_timeout_add(3000, (GSourceFunc) delayed_menu_creation, p);
+
+    if (!m->tout)
+        m->tout = g_timeout_add(3000, (GSourceFunc) delayed_menu_creation, p);
 }
 
 

@@ -673,7 +673,7 @@ panel_parse_plugin(panel *p, FILE *fp)
     fseek(tmpfp, 0, SEEK_SET);
     DBG("starting\n");
     if (!plugin_start(plug)) {
-        ERR( "fbpanel: can't start plugin%s\n", type);
+        ERR( "fbpanel: can't start plugin %s\n", type);
         goto error;
     }
     DBG("plug %s\n", type);
