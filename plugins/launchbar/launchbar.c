@@ -309,7 +309,7 @@ launchbar_constructor(plugin_instance *p)
     lb = g_new0(launchbar_priv, 1);
     g_return_val_if_fail(lb != NULL, 0);
     p->priv = lb;
-    lb->box = p->panel->my_box_new(FALSE, 1);
+    lb->box = p->panel->my_box_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(p->pwid), lb->box);
     gtk_container_set_border_width (GTK_CONTAINER (lb->box), 0);
     gtk_widget_show(lb->box);
