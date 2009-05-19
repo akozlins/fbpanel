@@ -491,7 +491,7 @@ icons_destructor(plugin_instance *p)
     ENTER;
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), do_net_client_list, ics);
     g_signal_handlers_disconnect_by_func(G_OBJECT(gtk_icon_theme_get_default()),
-        ics_parse_config, ics);
+        ics_parse_config, p);
     gdk_window_remove_filter(NULL, (GdkFilterFunc)ics_event_filter, ics );
     while (ics->wmpix) {
         wp = ics->wmpix;
