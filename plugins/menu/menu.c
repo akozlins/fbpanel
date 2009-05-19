@@ -40,7 +40,6 @@ static cat_info main_cats[] = {
 };
 typedef struct {
     plugin_instance plugin;
-    GtkTooltips *tips;
     GtkWidget *menu, *box, *bg, *label;
     gulong handler_id;
     int iconsize, paneliconsize;
@@ -48,6 +47,9 @@ typedef struct {
     GHashTable *ht;
     guint tout;
 } menu_priv;
+
+
+static void menu_icon_theme_changed(GtkIconTheme *icon_theme, plugin_instance *p);
 
 static void
 menu_destructor(plugin_instance *p)
@@ -58,6 +60,8 @@ menu_destructor(plugin_instance *p)
     if (m->tout)
         g_source_remove(m->tout);
     g_signal_handler_disconnect(G_OBJECT(m->bg), m->handler_id);
+    g_signal_handlers_disconnect_by_func (G_OBJECT(gtk_icon_theme_get_default()),
+        menu_icon_theme_changed, p);
     if (m->menu) {
         DBG("destroy(m->menu)\n");
         gtk_widget_destroy(m->menu);
