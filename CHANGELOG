@@ -1,3 +1,13 @@
+5.2
+* fixing segfault in menu plugin
+* extra spaces in lunchbar plugin were removed
+* replacing obsolete GtkTooltips with GtkTooltip
+* plugins' install path is set to LIBDIR/fbpanel instead of LIBEXECDIR/fbpanel
+* fixing short flash of wrong background on startup
+
+
+
+
 5.1
 * Tooltips can have mark-uped text, like '<b>T</b>erminal'
 * Cpu plugin is fixed and working
