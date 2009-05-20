@@ -919,10 +919,11 @@ image_icon_theme_changed(GtkIconTheme *icon_theme, GtkWidget *img)
         g_object_get_data(G_OBJECT(img), "fname"),
         (int) g_object_get_data(G_OBJECT(img), "width"),
         (int) g_object_get_data(G_OBJECT(img), "height"));
-    gtk_image_set_from_pixbuf(GTK_IMAGE(img), pb);
-    g_object_set_data_full(G_OBJECT(img), "normal", pb, g_object_unref);
-    g_object_set_data(G_OBJECT(img), "light", NULL);
-
+    if (pb) {
+        gtk_image_set_from_pixbuf(GTK_IMAGE(img), pb);
+        g_object_set_data_full(G_OBJECT(img), "normal", pb, g_object_unref);
+        g_object_set_data_full(G_OBJECT(img), "light", NULL, g_object_unref);
+    }
     RET();
 }
 static void
@@ -968,29 +969,15 @@ GdkPixbuf *
 fb_pixbuf_new_from_icon_file(gchar *iname, gchar *fname, int width, int height)
 {
     GdkPixbuf *pb = NULL;
+    GtkIconTheme *icon_theme = gtk_icon_theme_get_default();
 
     ENTER;
-    if (iname) {
-        GtkIconInfo *icon_info;
-        icon_info = gtk_icon_theme_lookup_icon(gtk_icon_theme_get_default(),
-              iname, MAX(width, height), 0);
-        if (icon_info) {
-
-            DBG("iname = %s file = %s size = %d\n", iname,
-                  gtk_icon_info_get_filename(icon_info),
-                  MAX(width, height));
-            pb = gdk_pixbuf_new_from_file_at_size(gtk_icon_info_get_filename(icon_info),
-                  width, height, NULL);
-
-            gtk_icon_info_free(icon_info);
-        } else
-            DBG("icon info failed\n");
-    }
-
-    if (fname && !pb) {
+    if (iname && !pb)
+        pb = gtk_icon_theme_load_icon (icon_theme, iname, MAX(width, height), 0, NULL);
+    if (fname && !pb) 
         pb = gdk_pixbuf_new_from_file_at_size(fname, width, height, NULL);
-        DBG("%s\n", pb ? "from file" : "from stock");
-    }
+    if (!pb) 
+        pb = gtk_icon_theme_load_icon (icon_theme, "gtk-missing-image", MAX(width, height), 0, NULL);
     RET(pb);
 }
 
