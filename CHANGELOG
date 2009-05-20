@@ -1,3 +1,7 @@
+5.3
+* when no icon exists in a theme, missing-image icon is substituted. theme-avare
+
+
 5.2
 * fixing segfault in menu plugin
 * extra spaces in lunchbar plugin were removed
