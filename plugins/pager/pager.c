@@ -25,9 +25,6 @@
 #include <stdlib.h>
 #include <signal.h>
 
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/xpm.h>
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
