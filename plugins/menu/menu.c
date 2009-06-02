@@ -114,9 +114,15 @@ do_app_dir(plugin_instance *p, const gchar *path)
     const gchar* name;
     gchar *cwd, **cats, **tmp, *exec, *title, *icon, *dot;
     GKeyFile*  file;
+    menu_priv *m = (menu_priv *)p->priv;
 
     ENTER;
-    DBG("path: %s\n", path);
+    DBG2("path: %s\n", path);
+    // prevent scanning same directory twise
+    if (g_hash_table_lookup(m->ht, path))
+    	RET();
+    g_hash_table_insert(m->ht, (void *)path, p);
+    DBG2("proceeding\n");
     dir = g_dir_open(path, 0, NULL);
     if (!dir)
         RET();
