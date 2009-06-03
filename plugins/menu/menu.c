@@ -14,6 +14,31 @@
 //#define DEBUGPRN
 #include "dbg.h"
 
+/* Menu plugin creates menu from description found in config file or/and from
+ * application files (aka system nenu).
+ * 
+ * System menu note
+ * Every directory is processed only once though it may be mentioned many times
+ * in application directory list. This is to prevent duplicate entries. 
+ * For example, on my system '/usr/share' usually mentioned twise
+ *    $ echo $XDG_DATA_DIRS
+ *    /usr/share:/usr/share:/usr/local/share
+ *
+ * Icon Theme change note
+ * When icon theme changes, entire menu is destroyed and scheduled for delayed
+ * rebuild. Thus at any time menu uses small, fast and lightweight icons. 
+ * As opposite to approach where every icon wasts code and data to keep
+ * track of icon them change and then reloads itself
+ * FIXME: panel button that pops up the menu remains as is.
+ *
+ * Engine
+ * The engine consists of 3 function and driver that calls them
+ * make_button - creates a menu button with icon and text. Click on it will
+ *   launch some application
+ * make_separator - creates a visual separator between buttons
+ * make_menu - creates a button with icon and text that will pop up another menu
+ *   on a click
+ */
 
 static const char desktop_ent[] = "Desktop Entry";
 static const gchar app_dir_name[] = "applications";
@@ -88,6 +113,7 @@ spawn_app(GtkWidget *widget, gpointer data)
     RET();
 }
 
+/* Inserts menu item into menu sorted by name */
 static gint
 _menu_shell_insert_sorted(GtkMenuShell *menu_shell, GtkWidget *mi, const gchar *name)
 {
@@ -107,6 +133,10 @@ _menu_shell_insert_sorted(GtkMenuShell *menu_shell, GtkWidget *mi, const gchar *
     return i;
 }
 
+/* Scans directory 'path' for application files and builds corresponding entries
+ * in category menus. If application belongs to several categories, first one
+ * is used.
+ */
 static void
 do_app_dir(plugin_instance *p, const gchar *path)
 {
@@ -117,12 +147,11 @@ do_app_dir(plugin_instance *p, const gchar *path)
     menu_priv *m = (menu_priv *)p->priv;
 
     ENTER;
-    DBG2("path: %s\n", path);
-    // prevent scanning same directory twise
+    DBG("path: %s\n", path);
+    // skip already proceeded dirs to prevent duplicate entries
     if (g_hash_table_lookup(m->ht, path))
     	RET();
     g_hash_table_insert(m->ht, (void *)path, p);
-    DBG2("proceeding\n");
     dir = g_dir_open(path, 0, NULL);
     if (!dir)
         RET();
@@ -195,7 +224,10 @@ do_app_dir(plugin_instance *p, const gchar *path)
     RET();
 }
 
-
+/* Builds Free Desktop Org (fdo) menu. First, all application directories are
+ * scanned to populate category menus. After that, all non-empty category menus
+ * are connected as sub-menus to main (system) menu
+ */
 void
 make_fdo_menu(plugin_instance *p, GtkWidget *menu)
 {
