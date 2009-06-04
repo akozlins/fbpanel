@@ -30,6 +30,8 @@ command commands[] = {
 #define INDENT_SIZE    20
 
 
+GtkWidget *default_plugin_edit_config(plugin_instance *pl);
+
 static GtkWidget *dialog = NULL;
 static GtkSizeGroup *sg;
 

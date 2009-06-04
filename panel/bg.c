@@ -64,7 +64,6 @@ static void fb_bg_init (FbBg *monitor);
 static void fb_bg_finalize (GObject *object);
 static void fb_bg_changed(FbBg *monitor);
 static Pixmap fb_bg_get_xrootpmap_real(FbBg *bg);
-static GdkFilterReturn fb_bg_event_filter(GdkXEvent *xevent, GdkEvent *event, FbBg *bg);
 
 static guint signals [LAST_SIGNAL] = { 0 };
 
