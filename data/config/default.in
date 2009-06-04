@@ -139,7 +139,7 @@ Plugin {
 Plugin {
     type = menu
     config {
-        image = %%datadir%%/fbpanel/images/star.png
+        image = %%datadir%%/fbpanel/images/logo.png
         systemmenu {
         }
         separator {

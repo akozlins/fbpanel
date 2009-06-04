@@ -25,7 +25,7 @@ gnome-util.svg               \
 gnome_terminal.svg           \
 icon.xpm                     \
 mozilla-firefox.svg          \
-star.png                     
+logo.png                     
 
 
 install :

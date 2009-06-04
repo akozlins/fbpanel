@@ -3,6 +3,7 @@
 * menu plugin uses simple icons, and rebuild entire menu upon theme change, rather then 
   creating many heavy theme-aware icons, and let them update
 * cpu, net plugins: linux specific code was put into ifdefs and stub for another case wwas created
+* system menu icon was renamed to logo.png from star.png
 
 
 5.2
