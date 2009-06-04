@@ -116,7 +116,7 @@ Global {
     height = 24
     transparent = true
     tintcolor = #ffffff
-    alpha = 38
+    alpha = 28
     setdocktype = true
     setpartialstrut = true
     autohide = false
@@ -273,12 +273,33 @@ Plugin {
 Plugin {
     type = space
     config {
-        size = 15
+        size = 10
     }
 }
 
 Plugin {
+    type = cpu
+}
+Plugin {
+    type = net
+}
+Plugin {
+    type = space
+    config {
+        size = 10
+    }
+}
+
+
+Plugin {
     type = tray
+}
+
+Plugin {
+    type = space
+    config {
+        size = 10
+    }
 }
 
 # Digital Clock
