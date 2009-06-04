@@ -194,6 +194,9 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
             p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA,
                   XA_CARDINAL, &p->wa_len);
             print_wmdata(p);
+        } else if (at == a_XROOTPMAP_ID) {
+            if (p->transparent) 
+                fb_bg_notify_changed_bg(p->bg);           
         } else
             RET(GDK_FILTER_CONTINUE);
         RET(GDK_FILTER_REMOVE);

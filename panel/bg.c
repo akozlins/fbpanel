@@ -135,8 +135,6 @@ fb_bg_init (FbBg *bg)
         mask |= GCTile ;
     }
     bg->gc = XCreateGC (bg->dpy, bg->xroot, mask, &gcv) ;
-    gdk_window_add_filter(gdk_get_default_root_window (),
-          (GdkFilterFunc)fb_bg_event_filter, bg);
     RET();
 }
 
@@ -156,8 +154,6 @@ fb_bg_finalize (GObject *object)
     ENTER;
     bg = FB_BG (object);
     XFreeGC(bg->dpy, bg->gc);
-    gdk_window_remove_filter(gdk_get_default_root_window (),
-          (GdkFilterFunc)fb_bg_event_filter, bg);
     default_bg = NULL;
     
     RET();
@@ -322,17 +318,3 @@ FbBg *fb_bg_get_for_display(void)
     RET(default_bg);
 }
 
-static GdkFilterReturn
-fb_bg_event_filter(GdkXEvent *xevent, GdkEvent *event, FbBg *bg)
-{
-    XEvent *ev = (XEvent *) xevent;
-
-    ENTER;
-    DBG("win = 0x%lx\n", ev->xproperty.window);
-    if (ev->type != PropertyNotify || ev->xproperty.window != GDK_ROOT_WINDOW()
-          || ev->xproperty.atom != a_XROOTPMAP_ID) 
-        RET(GDK_FILTER_CONTINUE);
-    
-    fb_bg_notify_changed_bg(bg);
-    RET(GDK_FILTER_REMOVE);
-}
