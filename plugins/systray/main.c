@@ -31,7 +31,7 @@ typedef struct {
 
 //static void run_gtktray(tray_priv *tr);
 
-#define USE_ALIGN 0
+#define USE_ALIGN 1
 
 static void
 tray_added (EggTrayManager *manager, GtkWidget *icon, tray_priv *tr)
