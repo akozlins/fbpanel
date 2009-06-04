@@ -1,5 +1,8 @@
 5.3
 * when no icon exists in a theme, missing-image icon is substituted. theme-avare
+* menu plugin uses simple icons, and rebuild entire menu upon theme change, rather then 
+  creating many heavy theme-aware icons, and let them update
+* cpu, net plugins: linux specific code was put into ifdefs and stub for another case wwas created
 
 
 5.2

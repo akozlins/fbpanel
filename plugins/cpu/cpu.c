@@ -21,11 +21,6 @@
 /*A little bug fixed by Mykola <mykola@2ka.mipt.ru>:) */
 
 
-#include <string.h>
-#include <sys/time.h>
-#include <time.h>
-#include <sys/sysinfo.h>
-#include <stdlib.h>
 
 #include "misc.h"
 #include "../chart/chart.h"
@@ -50,6 +45,7 @@ typedef struct {
 
 static chart_class *k;
 
+#if defined __linux__
 static int
 cpu_get_load(cpu_priv *c)
 {
@@ -80,7 +76,14 @@ cpu_get_load(cpu_priv *c)
     RET(TRUE);
 
 }
-
+#else
+static int
+cpu_get_load(cpu_priv *c)
+{
+    ENTER;
+    RET(0);
+}
+#endif
 
 static int
 cpu_constructor(plugin_instance *p)
