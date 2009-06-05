@@ -7,7 +7,7 @@
 * strip moved to separete target and not done automatically after compile
 * by default make leaves output as is, to see summaries only run 'make Q=1'
 * enbling dependency checking by default
-
+* adding svn ebuild fbpanel-2009.ebuild
 
 5.2
 * fixing segfault in menu plugin
