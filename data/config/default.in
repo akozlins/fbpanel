@@ -139,7 +139,7 @@ Plugin {
 Plugin {
     type = menu
     config {
-        image = %%datadir%%/fbpanel/images/logo.png
+        icon = logo
         systemmenu {
         }
         separator {
@@ -194,7 +194,6 @@ Plugin {
     config {
         button {
             icon = gnome-fs-home
-            #image = %%datadir%%/fbpanel/images/file-manager.svg
             tooltip = ROX file manager
             action = rox
         }
@@ -227,7 +226,6 @@ Plugin {
     type = wincmd
     config {
         icon = gnome-fs-desktop
-        #image = %%datadir%%/fbpanel/images/gnome-fs-desktop.svg
         tooltip = Left click to iconify all windows. Middle click to shade them.
     }
 }
@@ -322,22 +320,18 @@ Plugin {
         DefaultIcon = %%datadir%%/fbpanel/images/default.xpm
         application {
             icon = gnome-terminal
-            #Image =  %%datadir%%/fbpanel/images/gnome_terminal.svg
             ClassName = XTerm
         }
         application {
             icon = gnome-terminal
-            #Image =  %%datadir%%/fbpanel/images/gnome_terminal.svg
             ClassName = mlterm
         }
         application {
             icon = gnome-terminal
-            #Image =  %%datadir%%/fbpanel/images/gnome_terminal.svg
             ClassName = URxvt
         }
         application {
             icon = gnome-emacs
-            #Image = %%datadir%%/fbpanel/images/emacs.svg
             ClassName = Emacs
         }
         application {
