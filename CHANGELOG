@@ -6,6 +6,7 @@
 * system menu icon was renamed to logo.png from star.png
 * strip moved to separete target and not done automatically after compile
 * by default make leaves output as is, to see summaries only run 'make Q=1'
+* enbling dependency checking by default
 
 
 5.2

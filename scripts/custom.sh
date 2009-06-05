@@ -19,7 +19,7 @@ add_var os "detect OS flavour" '`uname -s | tr [:lower:] [:upper:]`'
 
 
 # Custom
-add_feature dependency "disable dependency tracking" disabled
+add_feature dependency "disable dependency tracking" enabled
 
 add_var glib_cflags "glib cflags" '`RFS=$rfs scripts/rfs-pkg-config --cflags glib-2.0`'
 add_var gtk_cflags "gtk cflags" '`RFS=$rfs scripts/rfs-pkg-config --cflags gtk+-2.0`'
