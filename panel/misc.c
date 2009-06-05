@@ -667,11 +667,13 @@ calculate_position(panel *np)
         np->aw = MAX(PANEL_HEIGHT_MIN, np->aw);
         np->ax = minx + ((np->edge == EDGE_LEFT) ? 0 : (sswidth - np->aw));
     }
+    /*
     if (!np->visible) {
         DBG("pushing of screen dx=%d dy=%d\n", np->ah_dx, np->ah_dy);
         np->ax += np->ah_dx;
         np->ay += np->ah_dy;
     }
+    */
     DBG("x=%d y=%d w=%d h=%d\n", np->ax, np->ay, np->aw, np->ah);
     RET();
 }

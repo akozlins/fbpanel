@@ -41,6 +41,9 @@ static gchar *cfgfile = NULL;
 static gchar version[] = VERSION;
 gchar *cprofile = "default";
 
+guint mwid; // mouse watcher thread id
+guint hpid; // hide panel thread id
+
 int config = 0;
 FbEv *fbev;
 gint force_quit = 0;
@@ -213,11 +216,9 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
 static gint
 panel_destroy_event(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
-    //panel *p = (panel *) data;
-
     ENTER;
-    //if (!p->self_destroy)
     gtk_main_quit();
+    force_quit = 1;
     RET(FALSE);
 }
 
@@ -325,68 +326,120 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
 
 }
 
+/****************************************************
+ *         autohide                                 *
+ ****************************************************/
+
+/* Autohide is behaviour whne panel hides itself when mouse is "far enough"
+ * and pops up again when mouse comes "close enough". 
+ * Formally, it's a state machine with 3 states that driven by mouse 
+ * coordinates and timer:
+ * 1. VISIBLE - ensures that panel is visible. When/if mouse goes "far enough"
+ *      switches to WAITING state
+ * 2. WAITING - starts timer. If mouse comes "close enough", stops timer and switches to VISIBLE
+ *      If timer expires, switches to HIDDEN
+ * 3. HIDDEN - hides panel. When mouse comes "close enough" switches to VISIBLE
+ *
+ * Note 1
+ * Mouse coordinates are queried every PERIOD milisec
+ *
+ * Note 2
+ * If mouse is less then GAP pixels to panel it's considered to be close, otherwise far
+ *
+ */
+
+#define GAP 30
+#define PERIOD 500
+
+
+static gboolean ah_state_visible(panel *p);
+static gboolean ah_state_waiting(panel *p);
+static gboolean ah_state_hidden(panel *p);
+
+static gboolean 
+mouse_watch(panel *p)
+{
+    gint x, y;
+
+    ENTER;
+    gdk_display_get_pointer(gdk_display_get_default(), NULL, &x, &y, NULL);
+    p->ah_far = ((x < p->cx - GAP) || (x > p->cx + p->cw + GAP) || (y < p->cy - GAP) || (y > p->cy + p->ch + GAP));
+    p->ah_state(p);
+    RET(TRUE);
+}
+
+static gboolean
+ah_state_visible(panel *p)
+{
+    ENTER;
+    if (p->ah_state != ah_state_visible) {
+        p->ah_state = ah_state_visible;
+        gtk_widget_show(p->topgwin);
+        gtk_window_stick (GTK_WINDOW(p->topgwin));
+    } else if (p->ah_far) {
+        ah_state_waiting(p);
+    }
+    RET(FALSE);
+}
+
+static gboolean
+ah_state_waiting(panel *p)
+{
+    ENTER;
+    if (p->ah_state != ah_state_waiting) {
+        p->ah_state = ah_state_waiting;
+        hpid = g_timeout_add(2 * PERIOD, (GSourceFunc) ah_state_hidden, p);
+    } else if (!p->ah_far) {
+        g_source_remove(hpid);
+        hpid = 0;
+        ah_state_visible(p);
+    }
+    RET(FALSE);
+}
+
+static gboolean
+ah_state_hidden(panel *p)
+{
+    ENTER;
+    if (p->ah_state != ah_state_hidden) {
+        p->ah_state = ah_state_hidden;
+        gtk_widget_hide(p->topgwin);
+    } else if (!p->ah_far) {
+        ah_state_visible(p);
+    }
+    RET(FALSE);
+}
+
+/* starts autohide behaviour */
+void
+ah_start(panel *p)
+{
+    ENTER;
+    mwid = g_timeout_add(PERIOD, (GSourceFunc) mouse_watch, p);
+    ah_state_visible(p);
+    RET();
+}
+
+/* stops autohide */
+void
+ah_stop(panel *p)
+{
+    ENTER;
+    if (mwid) {
+        g_source_remove(mwid);
+        mwid = 0;
+    }
+    if (hpid) {
+        g_source_remove(hpid);
+        hpid = 0;
+    }
+    RET();
+}
 
 /****************************************************
  *         panel creation                           *
  ****************************************************/
 
-static gboolean
-panel_leave_real(panel *p)
-{
-    static GdkDisplay *display;
-    static int count;
-    gint x, y;
-
-    ENTER;
-    if (!display)
-        display = gdk_display_get_default();
-
-    if (gdk_display_pointer_is_grabbed(display)) {
-        count = 0;
-        RET(TRUE);
-    }
-    gdk_display_get_pointer(display, NULL, &x, &y, NULL);
-    if ((p->cx <= x && x <= (p->cx + p->cw))
-          && (p->cy <= y && y <= (p->cy + p->ch))) {
-        count = 0;
-        RET(TRUE);
-    }
-    DBG("count=%d\n", count);
-    if (count++ == 0)
-        RET(TRUE);
-    gtk_widget_hide(p->lbox);
-    p->visible = HIDDEN;
-    p->hide_tout = 0;
-    DBG("hide panel\n");
-    count = 0;
-    RET(FALSE);
-}
-
-
-
-
-static gboolean
-panel_enter (GtkImage *widget, GdkEventCrossing *event, panel *p)
-{
-    ENTER;
-    if (p->hide_tout)
-        RET(FALSE);
-
-    p->hide_tout = g_timeout_add(500, (GSourceFunc) panel_leave_real, p);
-    gtk_widget_show(p->lbox);
-    p->visible = VISIBLE;
-    DBG("show panel\n");
-    RET(TRUE);
-}
-
-static gboolean
-panel_drag_motion (GtkWidget *widget, GdkDragContext *drag_context, gint x,
-      gint y, guint time, panel *p)
-{
-    ENTER;
-    panel_enter (NULL, NULL, p);
-    RET(TRUE);
-}
 
 gboolean
 panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p)
@@ -469,36 +522,11 @@ panel_start_gui(panel *p)
     gtk_widget_hide(p->topgwin);
 
     /* the settings that should be done after window is mapped */
-    if (p->autohide) {
-        gtk_widget_add_events(p->topgwin, GDK_ENTER_NOTIFY_MASK
-              | GDK_LEAVE_NOTIFY_MASK);
-        g_signal_connect(G_OBJECT (p->topgwin), "enter-notify-event",
-              G_CALLBACK (panel_enter), p);
-        g_signal_connect (G_OBJECT (p->topgwin), "drag-motion",
-              (GCallback) panel_drag_motion, p);
-        gtk_drag_dest_set (p->topgwin, GTK_DEST_DEFAULT_MOTION,
-              NULL, 0, 0);
-        gtk_drag_dest_set_track_motion(p->topgwin, TRUE);
-
-        if (p->edge == EDGE_BOTTOM) {
-            p->ah_dx = 0;
-            p->ah_dy = p->ah - p->height_when_hidden;
-        } else if (p->edge == EDGE_TOP) {
-            p->ah_dx = 0;
-            p->ah_dy = - (p->ah - p->height_when_hidden);
-        } else if (p->edge == EDGE_LEFT) {
-            p->ah_dx = p->aw - p->height_when_hidden;
-            p->ah_dy = 0;
-        } else if (p->edge == EDGE_RIGHT) {
-            p->ah_dx = - (p->aw - p->height_when_hidden);
-            p->ah_dy = 0;
-        }
-
-        panel_enter(NULL, NULL, p);
-    }
+    if (p->autohide) 
+        ah_start(p);
     if (p->setstrut)
         panel_set_wm_strut(p);
-
+    
     XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), PropertyChangeMask);
     gdk_window_add_filter(gdk_get_default_root_window (),
           (GdkFilterFunc)panel_event_filter, p);
@@ -736,7 +764,6 @@ panel_start(panel *p, FILE *fp)
     p->round_corners = 1;
     p->round_corners_radius = 7;
     p->autohide = 0;
-    p->visible = VISIBLE;
     p->height_when_hidden = 2;
     p->transparent = 0;
     p->alpha = 127;
@@ -786,6 +813,8 @@ panel_stop(panel *p)
 {
     ENTER;
 
+    if (p->autohide) 
+        ah_stop(p);
     g_list_foreach(p->plugins, delete_plugin, NULL);
     g_list_free(p->plugins);
     p->plugins = NULL;
@@ -831,10 +860,6 @@ open_profile(gchar *profile)
 
     ENTER;
     LOG(LOG_INFO, "loading %s profile\n", profile);
-    if (cfgfile) {
-        g_free(cfgfile);
-        cfgfile = NULL;
-    }
     fname = g_strdup_printf("%s/.fbpanel/%s", getenv("HOME"), profile);
     fp = fopen(fname, "r");
     LOG(LOG_INFO, "   %s %s\n", fname, fp ? "ok" : "no");
@@ -859,6 +884,18 @@ open_profile(gchar *profile)
     RET(NULL);
 }
 
+void 
+close_profile(FILE *file)
+{
+    ENTER;
+    fclose(file);
+    if (cfgfile) {
+        g_free(cfgfile);
+        cfgfile = NULL;
+    }
+    RET();
+}
+
 void
 handle_error(Display * d, XErrorEvent * ev)
 {
@@ -872,12 +909,43 @@ handle_error(Display * d, XErrorEvent * ev)
 }
 
 static void
-sig_usr(int signum)
+sig_usr1(int signum)
 {
     if (signum != SIGUSR1)
         return;
     gtk_main_quit();
 }
+
+static void
+sig_usr2(int signum)
+{
+    if (signum != SIGUSR2)
+        return;
+    gtk_main_quit();
+    force_quit = 1;
+}
+
+#ifdef TEST    
+static gboolean
+panel_exit(void *p)
+{
+    static int count = 0;
+
+    count++;
+    DBG2("count=%d\n", count);
+    gtk_main_quit();
+    if (count == 1) {
+        g_timeout_add(20 * 1000, (GSourceFunc) panel_exit, p);
+        RET(FALSE);
+    }
+    if (count > 2) {
+        force_quit = 1;    
+        DBG2("force_quit=%d\n", force_quit);
+        RET(FALSE);
+    }
+    RET(TRUE);
+}
+#endif
 
 int
 main(int argc, char *argv[], char *env[])
@@ -927,7 +995,11 @@ main(int argc, char *argv[], char *env[])
     }
 
     gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), IMGPREFIX);
-    signal(SIGUSR1, sig_usr);
+    signal(SIGUSR1, sig_usr1);
+    signal(SIGUSR2, sig_usr2);
+#ifdef TEST    
+    g_timeout_add(25 * 1000, (GSourceFunc) panel_exit, p);
+#endif
     do {
         if (!(pfp = open_profile(cprofile)))
             exit(1);
@@ -937,12 +1009,13 @@ main(int argc, char *argv[], char *env[])
             ERR( "fbpanel: can't start panel\n");
             exit(1);
         }
-        fclose(pfp);
         if (config)
             configure();
         gtk_main();
         panel_stop(p);
+        close_profile(pfp);
         g_free(p);
+        DBG("force_quit=%d\n", force_quit);
     } while (force_quit == 0);
 
     exit(0);

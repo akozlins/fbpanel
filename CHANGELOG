@@ -11,6 +11,10 @@
 * adding svn ebuild fbpanel-2009.ebuild
 * adding tooltips to cpu and net plugins
 * BgBox use BG_STYLE by default
+* close_profile function was added to group relevant stuff
+* autohide was simplified. Now it hides completly and ignoress heightWhenHidden
+
+
 
 5.2
 * fixing segfault in menu plugin

@@ -17,7 +17,7 @@ enum { WIDTH_NONE, WIDTH_REQUEST, WIDTH_PIXEL, WIDTH_PERCENT };
 enum { HEIGHT_NONE, HEIGHT_PIXEL, HEIGHT_REQUEST };
 enum { ORIENT_NONE, ORIENT_VERT, ORIENT_HORIZ };
 enum { POS_NONE, POS_START, POS_END };
-enum { HIDDEN, TO_HIDE, VISIBLE };
+enum { HIDDEN, WAITING, VISIBLE };
 enum { LAYER_NONE, LAYER_ABOVE, LAYER_BELOW };
 
 #define PANEL_HEIGHT_DEFAULT  26
@@ -26,7 +26,7 @@ enum { LAYER_NONE, LAYER_ABOVE, LAYER_BELOW };
 
 #define IMGPREFIX  DATADIR "/fbpanel/images"
 
-typedef struct {
+typedef struct _panel {
 
     GtkWidget *topgwin;           /* main panel window */
     Window topxwin;               /* and it X window   */
@@ -50,15 +50,15 @@ typedef struct {
     int heighttype, height;
     int round_corners_radius;
 
-    guint self_destroy : 1;
-    guint setdocktype : 1;
-    guint setstrut : 1;
+    guint self_destroy  : 1;
+    guint setdocktype   : 1;
+    guint setstrut      : 1;
     guint round_corners : 1;
-    guint transparent : 1;
+    guint transparent   : 1;
+    guint autohide      : 1;
+    guint ah_far        : 1;
+    guint layer         : 2;
 
-    guint autohide : 1;
-    guint visible : 2;
-    guint layer   : 2;
     int ah_dx, ah_dy; // autohide shift for x and y
     int height_when_hidden;
     guint hide_tout;
@@ -74,6 +74,7 @@ typedef struct {
     int plug_num;
     GList *plugins;
 
+    gboolean (*ah_state)(struct _panel *);
 } panel;
 
 
