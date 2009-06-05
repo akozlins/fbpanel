@@ -337,11 +337,11 @@ make_button(plugin_instance *p, gchar *iname, gchar *fname, gchar *name, GtkWidg
     ENTER;
     m = (menu_priv *)p->priv;
     if (p->panel->orientation == ORIENT_HORIZ) {
-        w = 5;
+        w = -1;
         h = p->panel->ah;
     } else {
         w = p->panel->aw;
-        h = 5;
+        h = -1;
     }
     DBG("iname=%s\n", iname);
     m->bg = fb_button_new_from_icon_file_with_label(iname, fname, w, h, 0x702020, TRUE, name);
