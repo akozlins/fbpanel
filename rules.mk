@@ -4,8 +4,8 @@
 
 .DEFAULT_GOAL := all
 .PHONY : all clean distclean
-.PHONY : install subdirs $(SUBDIRS) svnignore svnwarning
-all clean distclean install svnignore : subdirs FORCE
+.PHONY : install subdirs $(SUBDIRS) svnignore svnwarning strip
+all clean distclean install svnignore strip: subdirs FORCE
 # this one to prevent printing make[1]: Nothing to be done for `all'
 FORCE:
 	@#
@@ -19,11 +19,13 @@ export DESTDIR
 ######################################################
 ## make output customization
 
-# quiet -  'Q = @'
-# normal - 'Q ='
-Q := 
+# quiet -  'Q = smth' set Q to any non-empty value to get terse output
+# normal - 'Q =' set Q to empty val (default) to see normal unchaged output
+ifeq ($Q,)
+summary = @true
+else
+override Q := @ 
 summary = @echo "$(1)" $(subst $(TOPDIR)/,,$(CURDIR)/)$(2)
-ifeq ($Q,@)
 MAKEFLAGS += --no-print-directory
 endif
 
@@ -37,11 +39,9 @@ CFLAGS += -Wall -I$(TOPDIR)
 # debug - debug symbols, no optimization, no striping
 # release - striped, -O2 optimized code
 ifeq ($(DEBUG),enabled)
-CFLAGS += -g
-STRIP = @true
+    CFLAGS += -g
 else
-CFLAGS += -O2
-STRIP = strip
+    CFLAGS += -O2
 endif
 
 TINS = $(wildcard *.in)
@@ -88,7 +88,6 @@ all : $(BINTARGET)
 $(BINTARGET) : $(OBJS)
 	$(call summary,LD  ,$@)
 	$Q$(CC) $(OBJS) -o $@ $(LDFLAGS)
-	$Q$(STRIP) $@
 
 CLEANLIST += $(BINTARGET)
 endif
@@ -100,7 +99,6 @@ all : $(LIBTARGET)
 $(LIBTARGET) : $(OBJS)
 	$(call summary,LD  ,$@)
 	$Q$(CC) $(OBJS) -o $@ $(LDFLAGS) -shared
-	$Q$(STRIP) $@
 
 CLEANLIST += $(LIBTARGET)
 endif
@@ -116,6 +114,13 @@ $(ARTARGET) : $(OBJS)
 CLEANLIST += $(ARTARGET)
 endif
 
+######################################################
+## Strip rules
+strip:
+ifneq (,$(strip $(BINTARGET) $(LIBTARGET)))
+	$(call summary,STRIP ,$@)
+	$Qstrip $(BINTARGET) $(LIBTARGET)
+endif
 
 ######################################################
 ## Clean rules
