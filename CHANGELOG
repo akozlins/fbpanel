@@ -1,13 +1,16 @@
 5.3
 * when no icon exists in a theme, missing-image icon is substituted. theme-avare
-* menu plugin uses simple icons, and rebuild entire menu upon theme change, rather then 
-  creating many heavy theme-aware icons, and let them update
-* cpu, net plugins: linux specific code was put into ifdefs and stub for another case wwas created
+* menu plugin uses simple icons, and rebuild entire menu upon theme change, 
+  rather then creating many heavy theme-aware icons, and let them update
+* cpu, net plugins: linux specific code was put into ifdefs and stub for another
+  case wwas created
 * system menu icon was renamed to logo.png from star.png
 * strip moved to separete target and not done automatically after compile
 * by default make leaves output as is, to see summaries only run 'make Q=1'
 * enbling dependency checking by default
 * adding svn ebuild fbpanel-2009.ebuild
+* adding tooltips to cpu and net plugins
+* BgBox use BG_STYLE by default
 
 5.2
 * fixing segfault in menu plugin

@@ -219,7 +219,8 @@ gtk_bgbox_realize (GtkWidget *widget)
           &attributes, attributes_mask);
     gdk_window_set_user_data (widget->window, widget);
     widget->style = gtk_style_attach (widget->style, widget->window);
-    //gtk_bgbox_set_background(widget, BG_STYLE, 0, 0);
+    if (priv->bg_type == BG_NONE)
+        gtk_bgbox_set_background(widget, BG_STYLE, 0, 0);
     gdk_window_add_filter(widget->window,  (GdkFilterFunc) gtk_bgbox_event_filter, widget);
     RET();
 }
