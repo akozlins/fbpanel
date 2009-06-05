@@ -110,6 +110,7 @@ net_constructor(plugin_instance *p)
     if (!PLUGIN_CLASS(k)->constructor(p))
         RET(0);
     k->set_rows(&c->chart, 2, colors);
+    gtk_widget_set_tooltip_markup(p->pwid, "Net usage");
     c->timer = g_timeout_add(1000, (GSourceFunc) net_get_load, (gpointer) c);
     c->iface = "eth0";
     c->max_rx = 120;

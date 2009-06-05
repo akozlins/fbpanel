@@ -97,6 +97,7 @@ cpu_constructor(plugin_instance *p)
     if (!PLUGIN_CLASS(k)->constructor(p))
         RET(0);
     k->set_rows(&c->chart, 1, colors);
+    gtk_widget_set_tooltip_markup(p->pwid, "Cpu usage");
     c->timer = g_timeout_add(1000, (GSourceFunc) cpu_get_load, (gpointer) c);
     RET(1);
 }
