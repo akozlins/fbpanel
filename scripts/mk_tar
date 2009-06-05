@@ -3,7 +3,7 @@
 # for this script to work you have to have text file 'version'
 # with a version (as a string) inside 
 
-n=`basename $PWD`-`cat version`
+n=${NAME:-`basename $PWD`}-`cat version`
 t=$n.tbz2
 pwd=`pwd`
 
