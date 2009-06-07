@@ -356,7 +356,7 @@ read_application(plugin_instance *p)
     DBG("appname=%s classname=%s\n", appname, classname);
     if (!(fname || iname))
         goto error;
-    gp = fb_pixbuf_new_from_icon_file(iname, fname, 48, 48);  
+    gp = fb_pixbuf_new(iname, fname, 48, 48);  
     if (gp) {
         if ((data = pixbuf2argb(gp, &size))) {
             wp = g_new0 (wmpix_t, 1);

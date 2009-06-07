@@ -16,17 +16,17 @@
 
 /* Menu plugin creates menu from description found in config file or/and from
  * application files (aka system nenu).
- * 
+ *
  * System menu note
  * Every directory is processed only once though it may be mentioned many times
- * in application directory list. This is to prevent duplicate entries. 
+ * in application directory list. This is to prevent duplicate entries.
  * For example, on my system '/usr/share' usually mentioned twise
  *    $ echo $XDG_DATA_DIRS
  *    /usr/share:/usr/share:/usr/local/share
  *
  * Icon Theme change note
  * When icon theme changes, entire menu is destroyed and scheduled for delayed
- * rebuild. Thus at any time menu uses small, fast and lightweight icons. 
+ * rebuild. Thus at any time menu uses small, fast and lightweight icons.
  * As opposite to approach where every icon wasts code and data to keep
  * track of icon them change and then reloads itself
  * FIXME: panel button that pops up the menu remains as is.
@@ -113,6 +113,20 @@ spawn_app(GtkWidget *widget, gpointer data)
     RET();
 }
 
+static void
+menu_item_set_image(GtkWidget *mi, gchar *iname, gchar *fname, int width, int height)
+{
+    GdkPixbuf *pb;
+
+    ENTER;
+    pb = fb_pixbuf_new(iname, fname, 22, 22);
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
+            gtk_image_new_from_pixbuf(pb));
+    g_object_unref(G_OBJECT(pb));
+    RET();
+}
+
+
 /* Inserts menu item into menu sorted by name */
 static gint
 _menu_shell_insert_sorted(GtkMenuShell *menu_shell, GtkWidget *mi, const gchar *name)
@@ -150,7 +164,7 @@ do_app_dir(plugin_instance *p, const gchar *path)
     DBG("path: %s\n", path);
     // skip already proceeded dirs to prevent duplicate entries
     if (g_hash_table_lookup(m->ht, path))
-    	RET();
+        RET();
     g_hash_table_insert(m->ht, (void *)path, p);
     dir = g_dir_open(path, 0, NULL);
     if (!dir)
@@ -176,6 +190,8 @@ do_app_dir(plugin_instance *p, const gchar *path)
             continue;
         if (!(exec = g_key_file_get_string(file, desktop_ent, "Exec", NULL)))
             goto free_cats;
+
+        /* ignore program arguments */
         while ((dot = strchr(exec, '%'))) {
             if (dot[1] != '\0')
                 dot[0] = dot[1] = ' ';
@@ -186,7 +202,9 @@ do_app_dir(plugin_instance *p, const gchar *path)
         DBG("title: %s\n", title);
         icon = g_key_file_get_string(file, desktop_ent, "Icon", NULL);
         if (icon) {
-            dot = strchr( icon, '.' );
+            /* if icon is not a absolute path, drop an extenstion (if any)
+             * to allow to load it as themable icon */
+            dot = strchr( icon, '.' ); // FIXME: get last dot not first
             if(icon[0] !='/' && dot )
                 *dot = '\0';
         }
@@ -199,11 +217,13 @@ do_app_dir(plugin_instance *p, const gchar *path)
                 continue;
 
             mi = gtk_image_menu_item_new_with_label(title);
-            gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
-                  gtk_image_new_from_pixbuf(
-                    fb_pixbuf_new_from_icon_file(icon, icon, 22, 22)));
+            menu_item_set_image(mi, icon, icon, 22, 22);
 
-            g_signal_connect(G_OBJECT(mi), "activate", (GCallback)spawn_app,g_strdup(exec));
+            /* exec str is referenced as mi's object data and will be automatically fried 
+             * upon mi's destruction. it was allocated by g_key_get_string */
+            g_signal_connect(G_OBJECT(mi), "activate", (GCallback)spawn_app, exec);
+            g_object_set_data_full(G_OBJECT(mi), "exec", exec, g_free);
+
             if (!(*menu))
                 *menu = gtk_menu_new();
             g_object_set_data_full(G_OBJECT(mi), "item-name", title, g_free);
@@ -215,7 +235,6 @@ do_app_dir(plugin_instance *p, const gchar *path)
         }
         g_free(icon);
     free_exec:
-        g_free(exec);
     free_cats:
         g_strfreev(cats);
     }
@@ -261,11 +280,7 @@ make_fdo_menu(plugin_instance *p, GtkWidget *menu)
         if (main_cats[i].menu) {
             name = main_cats[i].local_name ? main_cats[i].local_name : main_cats[i].name;
             mi = gtk_image_menu_item_new_with_label(name);
-            gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
-                gtk_image_new_from_pixbuf(
-                    fb_pixbuf_new_from_icon_file(main_cats[i].icon,
-                        NULL, 22, 22)));
-                //fb_image_new(main_cats[i].icon, NULL, m->iconsize, m->iconsize, TRUE));
+            menu_item_set_image(mi, main_cats[i].icon, NULL, 22, 22);
 
             gtk_menu_item_set_submenu (GTK_MENU_ITEM (mi), main_cats[i].menu);
             gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
@@ -401,10 +416,7 @@ read_item(plugin_instance *p)
     if (name)
         g_free(name);
     if (fname || iname) {
-        gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item),
-            gtk_image_new_from_pixbuf(
-                fb_pixbuf_new_from_icon_file(iname, fname, 22, 22)));
-
+        menu_item_set_image(item, iname, fname, 22, 22);
         g_free(fname);
         g_free(iname);
     }
@@ -551,12 +563,7 @@ read_submenu(plugin_instance *p, gboolean as_item)
     if (as_item) {
         mi = gtk_image_menu_item_new_with_label(name);
         if (fname || iname) {
-            //gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
-            //    fb_image_new(iname, fname, m->iconsize, m->iconsize, TRUE));
-            gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
-                gtk_image_new_from_pixbuf(
-                    fb_pixbuf_new_from_icon_file(iname, fname, 22, 22)));
-
+            menu_item_set_image(mi, iname, fname, 22, 22);
             g_free(fname);
             g_free(iname);
         }

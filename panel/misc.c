@@ -741,17 +741,6 @@ Select_Window(Display *dpy)
 }
 #endif
 
-/*
- * SuxPanel version 0.1
- * Copyright (c) 2003 Leandro Pereira <leandro@linuxmag.com.br>
- *
- * This program may be distributed under the terms of GNU General
- * Public License version 2. You should have received a copy of the
- * license with this program; if not, please consult http://www.fsf.org/.
- *
- * This program comes with no warranty. Use at your own risk.
- *
- */
 
 GdkPixbuf *
 gdk_pixbuf_scale_ratio(GdkPixbuf *p, int width, int height, GdkInterpType itype, gboolean keep_ratio)
@@ -888,7 +877,7 @@ fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
     gtk_container_set_border_width(GTK_CONTAINER(b), 0);
     GTK_WIDGET_UNSET_FLAGS (b, GTK_CAN_FOCUS);
     //make image
-    image = fb_image_new(iname, fname, width, height, keep_ratio);
+    image = fb_image_new(iname, fname, width, height);
     if (!image)
         image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
     gtk_container_add(GTK_CONTAINER(b), image);
@@ -910,78 +899,6 @@ fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
 }
 
 
-static void
-image_icon_theme_changed(GtkIconTheme *icon_theme, GtkWidget *img)
-{
-    GdkPixbuf *pb;
-
-    ENTER;
-    pb = fb_pixbuf_new_from_icon_file(
-        g_object_get_data(G_OBJECT(img), "iname"),
-        g_object_get_data(G_OBJECT(img), "fname"),
-        (int) g_object_get_data(G_OBJECT(img), "width"),
-        (int) g_object_get_data(G_OBJECT(img), "height"));
-    if (pb) {
-        gtk_image_set_from_pixbuf(GTK_IMAGE(img), pb);
-        g_object_set_data_full(G_OBJECT(img), "normal", pb, g_object_unref);
-        g_object_set_data_full(G_OBJECT(img), "light", NULL, g_object_unref);
-    }
-    RET();
-}
-static void
-gtk_fbimage_destroy(GObject *img)
-{
-    ENTER;
-    g_signal_handlers_disconnect_by_func(G_OBJECT(gtk_icon_theme_get_default()),
-        image_icon_theme_changed, img);
-    RET();
-}
-
-GtkWidget *
-fb_image_new(gchar *iname, gchar *fname, int width, int height,
-      gboolean keep_ratio)
-{
-    GtkWidget *image = NULL;
-    GdkPixbuf *pb;
-
-    pb = fb_pixbuf_new_from_icon_file(iname, fname, width, height);
-    if (pb) {
-        image = gtk_image_new_from_pixbuf(pb);
-        DBG("px: w=%d h=%d\n", gdk_pixbuf_get_width(pb), gdk_pixbuf_get_height(pb));
-        g_signal_connect_after (G_OBJECT(gtk_icon_theme_get_default()),
-           "changed", (GCallback) image_icon_theme_changed, image);
-        g_signal_connect (G_OBJECT(image),
-           "destroy", (GCallback) gtk_fbimage_destroy, NULL);
-        if (iname)
-            g_object_set_data_full (G_OBJECT(image), "iname", g_strdup(iname), g_free);
-        if (fname)
-            g_object_set_data_full (G_OBJECT(image), "fname", g_strdup(fname), g_free);
-        g_object_set_data(G_OBJECT(image), "width", (gpointer) width);
-        g_object_set_data(G_OBJECT(image), "height", (gpointer) height);
-        g_object_set_data_full(G_OBJECT(image), "normal", pb, g_object_unref);
-        gtk_widget_show(image);
-    }
-    DBG("image = %p\n", image);
-    RET(image);
-}
-
-
-
-GdkPixbuf *
-fb_pixbuf_new_from_icon_file(gchar *iname, gchar *fname, int width, int height)
-{
-    GdkPixbuf *pb = NULL;
-    GtkIconTheme *icon_theme = gtk_icon_theme_get_default();
-
-    ENTER;
-    if (iname && !pb)
-        pb = gtk_icon_theme_load_icon (icon_theme, iname, MAX(width, height), 0, NULL);
-    if (fname && !pb) 
-        pb = gdk_pixbuf_new_from_file_at_size(fname, width, height, NULL);
-    if (!pb) 
-        pb = gtk_icon_theme_load_icon (icon_theme, "gtk-missing-image", MAX(width, height), 0, NULL);
-    RET(pb);
-}
 
 GtkWidget *
 fb_button_new_from_icon_file_with_label(gchar *iname, gchar *fname, int width, int height,
@@ -998,7 +915,7 @@ fb_button_new_from_icon_file_with_label(gchar *iname, gchar *fname, int width, i
     gtk_container_add(GTK_CONTAINER(b), box);
 
     DBG("here\n");
-    image = fb_image_new(iname, fname, width, height, keep_ratio);
+    image = fb_image_new(iname, fname, width, height);
     if (!image)
         image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
     g_object_set_data(G_OBJECT(image), "hicolor", (gpointer)hicolor);
@@ -1089,22 +1006,22 @@ indent(int level)
 
 
 
-void 
+void
 class_put(char *name)
 {
-    GModule *m;    
+    GModule *m;
     gchar *s;
 
     ENTER;
     s = g_strdup_printf(LIBDIR "/fbpanel/%s.so", name);
-    m = g_module_open(s, G_MODULE_BIND_LAZY);                
+    m = g_module_open(s, G_MODULE_BIND_LAZY);
     g_free(s);
 
     if (!m) {
-        ERR("error is %s\n", g_module_error());                    
+        ERR("error is %s\n", g_module_error());
         RET();
     }
-    g_module_close(m); /* 1 for this open and 1 for prev. glib does return same object 
+    g_module_close(m); /* 1 for this open and 1 for prev. glib does return same object
                           when you open same file */
     g_module_close(m);
     RET();
@@ -1113,20 +1030,20 @@ class_put(char *name)
 gpointer
 class_get(char *name)
 {
-    GModule *m;    
+    GModule *m;
     gpointer tmp;
     gchar *s;
 
     ENTER;
     s = g_strdup_printf(LIBDIR "/fbpanel/%s.so", name);
-    m = g_module_open(s, G_MODULE_BIND_LAZY);                
+    m = g_module_open(s, G_MODULE_BIND_LAZY);
     g_free(s);
 
     if (!m) {
-        ERR("error is %s\n", g_module_error());                    
+        ERR("error is %s\n", g_module_error());
         RET(NULL);
     }
-    if (g_module_symbol(m, "class", &tmp)) 
+    if (g_module_symbol(m, "class", &tmp))
         RET(tmp);
     g_module_close(m);
     RET(NULL);
@@ -1135,5 +1052,100 @@ class_get(char *name)
 
 
 
+/**********************************************************************
+ * Image manipulating functions                                       *
+ **********************************************************************/
 
+
+#define MAX_SIZE 192
+
+static GtkIconTheme *icon_theme;
+
+
+
+/* Creates a pixbuf from icon name or file or "missing image" icon and scales it
+ * to be width x height. Set any of these to -1 to get original size.
+ * Ensures that sizes are less then MAX_SIZE
+ */
+GdkPixbuf *
+fb_pixbuf_new(gchar *iname, gchar *fname, int width, int height)
+{
+    GdkPixbuf *pb = NULL;
+    int size;
+
+    ENTER;
+    if (!icon_theme)
+        icon_theme = gtk_icon_theme_get_default();
+    size = MIN(192, MAX(width, height));
+    if (iname && !pb)
+        pb = gtk_icon_theme_load_icon(icon_theme, iname, size,
+            GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
+    if (fname && !pb)
+        pb = gdk_pixbuf_new_from_file_at_size(fname, width, height, NULL);
+    if (!pb)
+        pb = gtk_icon_theme_load_icon(icon_theme, "gtk-missing-image", size,
+            GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
+    RET(pb);
+}
+
+/* reloads image's pixbuf upon icon theme change
+ */
+static void
+fb_image_icon_theme_changed(GtkIconTheme *icon_theme, GtkWidget *img)
+{
+    GdkPixbuf *pb;
+
+    ENTER;
+    pb = fb_pixbuf_new(
+        g_object_get_data(G_OBJECT(img), "iname"),
+        g_object_get_data(G_OBJECT(img), "fname"),
+        GPOINTER_TO_INT(g_object_get_data(G_OBJECT(img), "width")),
+        GPOINTER_TO_INT(g_object_get_data(G_OBJECT(img), "height")));
+    if (pb) {
+        gtk_image_set_from_pixbuf(GTK_IMAGE(img), pb);
+        g_object_set_data_full(G_OBJECT(img), "light", NULL, g_object_unref);
+        g_object_unref(G_OBJECT(pb));
+    }
+    RET();
+}
+
+/* disconnects image's signal handler when it is destroyed
+ */
+static void
+fb_image_disconnect(GObject *img)
+{
+    ENTER;
+    g_signal_handlers_disconnect_by_func(G_OBJECT(icon_theme),
+        fb_image_icon_theme_changed, img);
+    RET();
+}
+
+/* creates image that follows icon theme changes
+ */
+GtkWidget *
+fb_image_new(gchar *iname, gchar *fname, int width, int height)
+{
+    GtkWidget *image = NULL;
+    GdkPixbuf *pb;
+
+    pb = fb_pixbuf_new(iname, fname, width, height);
+    if (pb) {
+        image = gtk_image_new_from_pixbuf(pb);
+        DBG("px: w=%d h=%d\n", gdk_pixbuf_get_width(pb), gdk_pixbuf_get_height(pb));
+        g_signal_connect_after (G_OBJECT(icon_theme),
+           "changed", (GCallback) fb_image_icon_theme_changed, image);
+        g_signal_connect (G_OBJECT(image),
+           "destroy", (GCallback) fb_image_disconnect, NULL);
+        if (iname)
+            g_object_set_data_full (G_OBJECT(image), "iname", g_strdup(iname), g_free);
+        if (fname)
+            g_object_set_data_full (G_OBJECT(image), "fname", g_strdup(fname), g_free);
+        g_object_set_data(G_OBJECT(image), "width", GINT_TO_POINTER(width));
+        g_object_set_data(G_OBJECT(image), "height", GINT_TO_POINTER(height));
+        gtk_widget_show(image);
+        g_object_unref(G_OBJECT(pb));
+    }
+    DBG("image = %p\n", image);
+    RET(image);
+}
 
