@@ -692,56 +692,6 @@ expand_tilda(gchar *file)
 
 
 
-
-#if 0
-Window
-Select_Window(Display *dpy)
-{
-    int status;
-    Cursor cursor;
-    XEvent event;
-    Window target_win = None, root = RootWindow(dpy,DefaultScreen(dpy));
-    int buttons = 0;
-
-    ENTER;
-    /* Make the target cursor */
-    cursor = XCreateFontCursor(dpy, XC_crosshair);
-
-    /* Grab the pointer using target cursor, letting it room all over */
-    status = XGrabPointer(dpy, root, False,
-          ButtonPressMask|ButtonReleaseMask, GrabModeSync,
-          GrabModeAsync, root, cursor, CurrentTime);
-    if (status != GrabSuccess) {
-        ERR("Can't grab the mouse.");
-        RET(None);
-    }
-    /* Let the user select a window... */
-    while ((target_win == None) || (buttons != 0)) {
-        /* allow one more event */
-        XAllowEvents(dpy, SyncPointer, CurrentTime);
-        XWindowEvent(dpy, root, ButtonPressMask|ButtonReleaseMask, &event);
-        switch (event.type) {
-        case ButtonPress:
-            if (target_win == None) {
-                target_win = event.xbutton.subwindow; /* window selected */
-                DBG("target win = 0x%x\n", target_win);
-                if (target_win == None) target_win = root;
-            }
-            buttons++;
-            break;
-        case ButtonRelease:
-            if (buttons > 0) /* there may have been some down before we started */
-                buttons--;
-            break;
-        }
-    }
-
-    XUngrabPointer(dpy, CurrentTime);      /* Done with pointer */
-    RET(target_win);
-}
-#endif
-
-
 GdkPixbuf *
 gdk_pixbuf_scale_ratio(GdkPixbuf *p, int width, int height, GdkInterpType itype)
 {
@@ -784,7 +734,8 @@ get_button_spacing(GtkRequisition *req, GtkContainer *parent, gchar *name)
 }
 
 
-guint32 gcolor2rgb24(GdkColor *color)
+guint32 
+gcolor2rgb24(GdkColor *color)
 {
     guint32 i;
     guint16 r, g, b;
@@ -804,138 +755,6 @@ guint32 gcolor2rgb24(GdkColor *color)
     DBG("i=%x\n", i);
     RET(i);
 }
-
-
-static gboolean
-fb_button_enter (GtkImage *widget, GdkEventCrossing *event)
-{
-    GdkPixbuf *dark, *light;
-    int i;
-    gulong hicolor;
-    guchar *src, *up, extra[3];
-
-    ENTER;
-    if (gtk_image_get_storage_type(widget) != GTK_IMAGE_PIXBUF)
-        RET(TRUE);
-    light = g_object_get_data(G_OBJECT(widget), "light");
-    dark = g_object_get_data(G_OBJECT(widget), "normal");
-    if (!light) {
-        hicolor = (gulong) g_object_get_data(G_OBJECT(widget), "hicolor");
-        light = gdk_pixbuf_add_alpha(dark, FALSE, 0, 0, 0);
-        if (!light)
-            RET(TRUE);
-        src = gdk_pixbuf_get_pixels (light);
-        for (i = 2; i >= 0; i--, hicolor >>= 8)
-            extra[i] = hicolor & 0xFF;
-        for (up = src + gdk_pixbuf_get_height(light) * gdk_pixbuf_get_rowstride (light);
-             src < up; src+=4) {
-            if (src[3] == 0)
-                continue;
-            for (i = 0; i < 3; i++) {
-                if (src[i] + extra[i] >= 255)
-                    src[i] = 255;
-                else
-                    src[i] += extra[i];
-            }
-        }
-        g_object_set_data_full (G_OBJECT(widget), "light", light, g_object_unref);
-    }
-    DBG("light=%p, dark=%p\n", light, dark);
-    gtk_image_set_from_pixbuf(GTK_IMAGE(widget), light);
-    RET(TRUE);
-
-}
-
-static gboolean
-fb_button_leave (GtkImage *widget, GdkEventCrossing *event)
-{
-    GdkPixbuf *normal;
-
-    ENTER;
-    if (gtk_image_get_storage_type(widget) != GTK_IMAGE_PIXBUF)
-        RET(TRUE);
-    normal = g_object_get_data(G_OBJECT(widget), "normal");
-    DBG("dark=%p\n", normal);
-    if (normal)
-        gtk_image_set_from_pixbuf(GTK_IMAGE(widget), normal);
-    RET(TRUE);
-}
-
-GtkWidget *
-fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
-      gulong hicolor)
-{
-    GtkWidget *b, *image;
-
-    ENTER;
-    DBG("iname = %s\n", iname);
-    DBG("fname = %s\n", fname);
-    //make background window
-    b = gtk_bgbox_new();
-    gtk_container_set_border_width(GTK_CONTAINER(b), 0);
-    GTK_WIDGET_UNSET_FLAGS (b, GTK_CAN_FOCUS);
-    //make image
-    image = fb_image_new(iname, fname, width, height);
-    if (!image)
-        image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
-    gtk_container_add(GTK_CONTAINER(b), image);
-    gtk_misc_set_alignment(GTK_MISC(image), 0, 1);
-    gtk_misc_set_padding (GTK_MISC(image), 0, 0);
-    g_object_set_data(G_OBJECT(image), "hicolor", GINT_TO_POINTER(hicolor));
-    if (hicolor > 0) {
-        gtk_widget_add_events(b, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-        g_signal_connect_swapped (G_OBJECT (b), "enter-notify-event",
-              G_CALLBACK (fb_button_enter), image);
-        g_signal_connect_swapped (G_OBJECT (b), "leave-notify-event",
-              G_CALLBACK (fb_button_leave), image);
-    }
-
-    gtk_widget_show(image);
-    gtk_widget_show(b);
-    RET(b);
-}
-
-
-
-GtkWidget *
-fb_button_new_from_icon_file_with_label(gchar *iname, gchar *fname, int width, int height,
-      gulong hicolor, gchar *name)
-{
-    GtkWidget *b, *image, *box, *label;
-
-    ENTER;
-    b = gtk_bgbox_new();
-
-    box = gtk_hbox_new(FALSE, 0);
-    gtk_container_set_border_width(GTK_CONTAINER(box), 0);
-    GTK_WIDGET_UNSET_FLAGS (box, GTK_CAN_FOCUS);
-    gtk_container_add(GTK_CONTAINER(b), box);
-
-    DBG("here\n");
-    image = fb_image_new(iname, fname, width, height);
-    if (!image)
-        image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
-    g_object_set_data(G_OBJECT(image), "hicolor", (gpointer)hicolor);
-    gtk_misc_set_padding (GTK_MISC(image), 0, 0);
-    if (hicolor > 0) {
-        gtk_widget_add_events(b, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-        g_signal_connect_swapped (G_OBJECT (b), "enter-notify-event",
-              G_CALLBACK (fb_button_enter), image);
-        g_signal_connect_swapped (G_OBJECT (b), "leave-notify-event",
-              G_CALLBACK (fb_button_leave), image);
-    }
-    DBG("here\n");
-    gtk_box_pack_start(GTK_BOX(box), image, FALSE, FALSE, 0);
-    DBG("here\n");
-    if (name) {
-        label =  gtk_label_new(name);
-        gtk_misc_set_padding(GTK_MISC(label), 2, 0);
-        gtk_box_pack_end(GTK_BOX(box), label, FALSE, FALSE, 0);
-    }
-    gtk_widget_show_all(b);
-    RET(b);
-}
-
 
 
 void
@@ -1050,7 +869,7 @@ class_get(char *name)
 
 
 /**********************************************************************
- * Image manipulating functions                                       *
+ * fbpanel's pixbuf and image                                         *
  **********************************************************************/
 
 
@@ -1100,9 +919,9 @@ fb_image_icon_theme_changed(GtkIconTheme *icon_theme, GtkWidget *img)
         GPOINTER_TO_INT(g_object_get_data(G_OBJECT(img), "height")));
     if (pb) {
         gtk_image_set_from_pixbuf(GTK_IMAGE(img), pb);
-        g_object_set_data_full(G_OBJECT(img), "light", NULL, g_object_unref);
         g_object_unref(G_OBJECT(pb));
     }
+    g_object_set_data_full(G_OBJECT(img), "back", NULL, g_object_unref);
     RET();
 }
 
@@ -1144,5 +963,155 @@ fb_image_new(gchar *iname, gchar *fname, int width, int height)
     }
     DBG("image = %p\n", image);
     RET(image);
+}
+
+
+
+
+/**********************************************************************
+ * fbpanel's button                                                   *
+ **********************************************************************/
+
+/* Creates hilighted version of front image to reflect mouse enter
+ */ 
+static GdkPixbuf *
+fb_button_make_back_image(GtkImage *widget, GdkPixbuf *front)
+{
+    GdkPixbuf *back;
+    gulong hicolor;
+    guchar *src, *up, extra[3];
+    int i;
+
+    ENTER;
+    hicolor = (gulong) g_object_get_data(G_OBJECT(widget), "hicolor");
+    back = gdk_pixbuf_add_alpha(front, FALSE, 0, 0, 0);
+    if (!back)
+        goto cleanup;
+    src = gdk_pixbuf_get_pixels (back);
+    for (i = 2; i >= 0; i--, hicolor >>= 8)
+        extra[i] = hicolor & 0xFF;
+    for (up = src + gdk_pixbuf_get_height(back) * gdk_pixbuf_get_rowstride (back);
+            src < up; src+=4) {
+        if (src[3] == 0)
+            continue;
+        for (i = 0; i < 3; i++) {
+            if (src[i] + extra[i] >= 255)
+                src[i] = 255;
+            else
+                src[i] += extra[i];
+        }
+    }
+
+cleanup:
+    RET(back);
+}
+
+/* Flips front and back images upon mouse cross event - GDK_ENTER_NOTIFY
+ * or GDK_LEAVE_NOTIFY
+ */ 
+static gboolean
+fb_button_cross(GtkImage *widget, GdkEventCrossing *event)
+{
+    GdkPixbuf *front, *back;
+
+    ENTER;
+    if (event->type == GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "type")))
+        RET(TRUE);            
+    g_object_set_data(G_OBJECT(widget), "type", GINT_TO_POINTER(event->type));
+
+    front = gtk_image_get_pixbuf(widget);
+    back = g_object_get_data(G_OBJECT(widget), "back");
+    if (!back) 
+        back = fb_button_make_back_image(widget, front);
+    DBG("%s: front=%p back=%p\n", 
+            event->type == GDK_ENTER_NOTIFY ? "enter" : "leave", 
+            front, back);
+    if (!back) 
+        RET(TRUE);
+    g_object_ref(G_OBJECT(front));
+    gtk_image_set_from_pixbuf(GTK_IMAGE(widget), back);
+    g_object_set_data_full(G_OBJECT(widget), "back", front, g_object_unref);
+    RET(TRUE);
+
+}
+
+/* Creates fbpanel button - bgbox with fb_image. bgbox provide pseudo 
+ * transparent background and event capture. fb_image follows icon theme change. 
+ * On mouse enter, button wil hilight its image
+ */ 
+GtkWidget *
+fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
+      gulong hicolor)
+{
+    GtkWidget *b, *image;
+
+    ENTER;
+    DBG("iname = %s\n", iname);
+    DBG("fname = %s\n", fname);
+    //make background window
+    b = gtk_bgbox_new();
+    gtk_container_set_border_width(GTK_CONTAINER(b), 0);
+    GTK_WIDGET_UNSET_FLAGS (b, GTK_CAN_FOCUS);
+    //make image
+    image = fb_image_new(iname, fname, width, height);
+    if (!image)
+        image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
+    gtk_container_add(GTK_CONTAINER(b), image);
+    gtk_misc_set_alignment(GTK_MISC(image), 0, 1);
+    gtk_misc_set_padding (GTK_MISC(image), 0, 0);
+    g_object_set_data(G_OBJECT(image), "hicolor", GINT_TO_POINTER(hicolor));
+    if (hicolor > 0) {
+        gtk_widget_add_events(b, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+        g_signal_connect_swapped (G_OBJECT (b), "enter-notify-event",
+              G_CALLBACK (fb_button_cross), image);
+        g_signal_connect_swapped (G_OBJECT (b), "leave-notify-event",
+              G_CALLBACK (fb_button_cross), image);
+    }
+
+    gtk_widget_show(image);
+    gtk_widget_show(b);
+    RET(b);
+}
+
+
+/* Creates fbpanel button (see above) with label
+ */ 
+GtkWidget *
+fb_button_new_from_icon_file_with_label(gchar *iname, gchar *fname, int width, int height,
+      gulong hicolor, gchar *name)
+{
+    GtkWidget *b, *image, *box, *label;
+
+    ENTER;
+    b = gtk_bgbox_new();
+
+    box = gtk_hbox_new(FALSE, 0);
+    gtk_container_set_border_width(GTK_CONTAINER(box), 0);
+    GTK_WIDGET_UNSET_FLAGS (box, GTK_CAN_FOCUS);
+    gtk_container_add(GTK_CONTAINER(b), box);
+
+    DBG("here\n");
+    image = fb_image_new(iname, fname, width, height);
+    if (!image)
+        image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
+    g_object_set_data(G_OBJECT(image), "hicolor", (gpointer)hicolor);
+    gtk_misc_set_padding (GTK_MISC(image), 0, 0);
+    if (hicolor > 0) {
+        gtk_widget_add_events(b, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+        g_signal_connect_swapped (G_OBJECT (b), "enter-notify-event",
+              G_CALLBACK (fb_button_cross), image);
+        g_signal_connect_swapped (G_OBJECT (b), "leave-notify-event",
+              G_CALLBACK (fb_button_cross), image);
+    }
+    DBG("here\n");
+    gtk_box_pack_start(GTK_BOX(box), image, FALSE, FALSE, 0);
+    DBG("here\n");
+    if (name) {
+        label =  gtk_label_new(name);
+        gtk_misc_set_padding(GTK_MISC(label), 2, 0);
+        gtk_box_pack_end(GTK_BOX(box), label, FALSE, FALSE, 0);
+    }
+    gtk_widget_show_all(b);
+    RET(b);
 }
 
