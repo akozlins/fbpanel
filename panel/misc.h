@@ -54,8 +54,7 @@ void get_net_wm_window_type(Window win, net_wm_window_type *nwwt);
 
 void calculate_position(panel *np);
 gchar *expand_tilda(gchar *file);
-GdkPixbuf *gdk_pixbuf_scale_ratio(GdkPixbuf *p, int width, int height, GdkInterpType itype,
-                                  gboolean keep_ratio);
+GdkPixbuf *gdk_pixbuf_scale_ratio(GdkPixbuf *p, int width, int height, GdkInterpType itype);
 
 void get_button_spacing(GtkRequisition *req, GtkContainer *parent, gchar *name);
 guint32 gcolor2rgb24(GdkColor *color);
@@ -65,10 +64,10 @@ GdkPixbuf *fb_pixbuf_new(gchar *iname, gchar *fname, int width, int height);
 GtkWidget *fb_image_new(gchar *iname, gchar *fname, int width, int height);
 
 GtkWidget *fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
-      gulong hicolor, gboolean keep_ratio);
+      gulong hicolor);
 
 GtkWidget *fb_button_new_from_icon_file_with_label(gchar *iname, gchar *fname, int width, int height,
-      gulong hicolor, gboolean keep_ratio, gchar *name);
+      gulong hicolor, gchar *name);
 
 
 void menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *widget);

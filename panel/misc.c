@@ -743,20 +743,18 @@ Select_Window(Display *dpy)
 
 
 GdkPixbuf *
-gdk_pixbuf_scale_ratio(GdkPixbuf *p, int width, int height, GdkInterpType itype, gboolean keep_ratio)
+gdk_pixbuf_scale_ratio(GdkPixbuf *p, int width, int height, GdkInterpType itype)
 {
     gfloat w, h, rw, rh;
 
-    if (keep_ratio) {
-        w = gdk_pixbuf_get_width(p);
-        h = gdk_pixbuf_get_height(p);
-        rw = w / width;
-        rh = h / height;
-        if (rw > rh)
-            height = h / rw;
-        else
-            width =  w / rh;
-    }
+    w = gdk_pixbuf_get_width(p);
+    h = gdk_pixbuf_get_height(p);
+    rw = w / width;
+    rh = h / height;
+    if (rw > rh)
+        height = h / rw;
+    else
+        width =  w / rh;
     return  gdk_pixbuf_scale_simple(p, width, height, itype);
 
 }
@@ -865,7 +863,7 @@ fb_button_leave (GtkImage *widget, GdkEventCrossing *event)
 
 GtkWidget *
 fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
-      gulong hicolor, gboolean keep_ratio)
+      gulong hicolor)
 {
     GtkWidget *b, *image;
 
@@ -881,10 +879,9 @@ fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
     if (!image)
         image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
     gtk_container_add(GTK_CONTAINER(b), image);
-    //set calbacks
     gtk_misc_set_alignment(GTK_MISC(image), 0, 1);
-    g_object_set_data(G_OBJECT(image), "hicolor", (gpointer)hicolor);
     gtk_misc_set_padding (GTK_MISC(image), 0, 0);
+    g_object_set_data(G_OBJECT(image), "hicolor", GINT_TO_POINTER(hicolor));
     if (hicolor > 0) {
         gtk_widget_add_events(b, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
         g_signal_connect_swapped (G_OBJECT (b), "enter-notify-event",
@@ -902,7 +899,7 @@ fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
 
 GtkWidget *
 fb_button_new_from_icon_file_with_label(gchar *iname, gchar *fname, int width, int height,
-      gulong hicolor, gboolean keep_ratio, gchar *name)
+      gulong hicolor, gchar *name)
 {
     GtkWidget *b, *image, *box, *label;
 

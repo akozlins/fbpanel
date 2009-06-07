@@ -359,7 +359,7 @@ make_button(plugin_instance *p, gchar *iname, gchar *fname, gchar *name, GtkWidg
         h = -1;
     }
     DBG("iname=%s\n", iname);
-    m->bg = fb_button_new_from_icon_file_with_label(iname, fname, w, h, 0x702020, TRUE, name);
+    m->bg = fb_button_new_from_icon_file_with_label(iname, fname, w, h, 0x702020, name);
     gtk_widget_show(m->bg);
     gtk_box_pack_start(GTK_BOX(m->box), m->bg, FALSE, FALSE, 0);
     if (p->panel->transparent)

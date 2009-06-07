@@ -459,7 +459,7 @@ get_netwm_icon(Window tkwin, int iw, int ih)
                 RET(NULL);
             ret = src;
             if (w != iw || h != ih) {
-                ret = gdk_pixbuf_scale_ratio (src, iw, ih, GDK_INTERP_HYPER, TRUE);
+                ret = gdk_pixbuf_scale_ratio (src, iw, ih, GDK_INTERP_HYPER);
                 g_object_unref(src);
             }
         }
