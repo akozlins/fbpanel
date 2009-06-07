@@ -1369,7 +1369,7 @@ taskbar_constructor(plugin_instance *p)
             tb->task_width_max = tb->iconsize + req.width;
     } else {
         tb->iconsize = 24;
-        tb->task_width_max = tb->iconsize + req.height + 10;
+        tb->task_width_max = tb->iconsize + req.height;
     }
     taskbar_build_gui(p);
     tb_net_client_list(NULL, tb);
