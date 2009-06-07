@@ -556,7 +556,7 @@ tk_update_icon (taskbar_priv *tb, task *tk, Atom a)
             g_object_unref(pixbuf);
     }
     DBGE(" %dx%d \n", gdk_pixbuf_get_width(tk->pixbuf), gdk_pixbuf_get_height(tk->pixbuf));
-    RET2();
+    RET();
 }
 
 static gboolean 
