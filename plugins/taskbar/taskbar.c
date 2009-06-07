@@ -203,9 +203,10 @@ tk_set_names(task *tk)
     
     ENTER;
     name = tk->iconified ? tk->iname : tk->name;
-    gtk_label_set_text(GTK_LABEL(tk->label), name);
+    if (!tk->tb->icons_only)
+        gtk_label_set_text(GTK_LABEL(tk->label), name);
     if (tk->tb->tooltips)
-        gtk_widget_set_tooltip_markup(tk->button, tk->name);
+        gtk_widget_set_tooltip_text(tk->button, tk->name);
     RET();
 }
 
@@ -228,8 +229,7 @@ del_task (taskbar_priv * tb, task *tk, int hdel)
         g_source_remove( tk->flash_timeout );
     gtk_widget_destroy(tk->button);
     tb->num_tasks--;
-    if (!tb->icons_only)
-        tk_free_names(tk);	    
+    tk_free_names(tk);	    
     if (tb->focused == tk)
         tb->focused = NULL;
     if (hdel)
@@ -449,6 +449,7 @@ get_netwm_icon(Window tkwin, int iw, int ih)
             
             w = data[0];
             h = data[1];
+            DBG("orig  %dx%d dest %dx%d\n", w, h, iw, ih);
             p = argbdata_to_pixdata(data + 2, w * h);
             if (!p)
                 RET(NULL);
@@ -456,8 +457,11 @@ get_netwm_icon(Window tkwin, int iw, int ih)
                   8, w, h, w * 4, free_pixels, NULL);
             if (src == NULL)
                 RET(NULL);
-            ret = gdk_pixbuf_scale_ratio (src, iw, ih, GDK_INTERP_HYPER, TRUE);
-            g_object_unref(src);
+            ret = src;
+            if (w != iw || h != ih) {
+                ret = gdk_pixbuf_scale_ratio (src, iw, ih, GDK_INTERP_HYPER, TRUE);
+                g_object_unref(src);
+            }
         }
         XFree (data);
     }
@@ -551,8 +555,8 @@ tk_update_icon (taskbar_priv *tb, task *tk, Atom a)
         if (pixbuf)
             g_object_unref(pixbuf);
     }
-    DBGE("\n");
-    RET();
+    DBGE(" %dx%d \n", gdk_pixbuf_get_width(tk->pixbuf), gdk_pixbuf_get_height(tk->pixbuf));
+    RET2();
 }
 
 static gboolean 
@@ -807,7 +811,7 @@ tk_update(gpointer key, task *tk, taskbar_priv *tb)
 	gtk_widget_show(tk->button);
 
         if (tb->tooltips) {
-            gtk_widget_set_tooltip_markup(tk->button, tk->name);
+            gtk_widget_set_tooltip_text(tk->button, tk->name);
         }
 	RET();
     }    
@@ -872,35 +876,30 @@ tk_build_gui(taskbar_priv *tb, task *tk)
     	g_signal_connect_after(G_OBJECT(tk->button), "scroll-event",
               G_CALLBACK(tk_callback_scroll_event), (gpointer)tk);	  
 
- 
-    /* pix and name */
-    w1 = gtk_hbox_new(FALSE, 1);
-    gtk_container_set_border_width(GTK_CONTAINER(w1), 0);
 
+    
     /* pix */
     tk_update_icon(tb, tk, None);
-    tk->image = gtk_image_new_from_pixbuf(tk->pixbuf);
-    gtk_widget_show(tk->image);
-    gtk_box_pack_start(GTK_BOX(w1), tk->image, FALSE, FALSE, 0);
+    w1 = tk->image = gtk_image_new_from_pixbuf(tk->pixbuf);
+    gtk_misc_set_alignment(GTK_MISC(tk->image), 0.5, 0.5);
+    gtk_misc_set_padding(GTK_MISC(tk->image), 0, 0);
 
-    /* name */
     if (!tb->icons_only) {
+        w1 = gtk_hbox_new(FALSE, 1);
+        gtk_container_set_border_width(GTK_CONTAINER(w1), 0);
+        gtk_box_pack_start(GTK_BOX(w1), tk->image, FALSE, FALSE, 0);
         tk->label = gtk_label_new(tk->iconified ? tk->iname : tk->name);
-        //gtk_label_set_justify(GTK_LABEL(tk->label), GTK_JUSTIFY_LEFT);
         gtk_label_set_ellipsize(GTK_LABEL(tk->label), PANGO_ELLIPSIZE_END);
         gtk_misc_set_alignment(GTK_MISC(tk->label), 0.0, 0.5); 
-        gtk_widget_show(tk->label);
         gtk_box_pack_start(GTK_BOX(w1), tk->label, TRUE, TRUE, 0);
     }
-    gtk_widget_show(w1);
-    gtk_container_add (GTK_CONTAINER (tk->button), w1);
 
-    //gtk_container_add (GTK_CONTAINER (tk->eb), tk->button);
+    gtk_container_add (GTK_CONTAINER (tk->button), w1);
     gtk_box_pack_start(GTK_BOX(tb->bar), tk->button, FALSE, TRUE, 0);
     GTK_WIDGET_UNSET_FLAGS (tk->button, GTK_CAN_FOCUS);    
     GTK_WIDGET_UNSET_FLAGS (tk->button, GTK_CAN_DEFAULT);
     
-    gtk_widget_show(tk->button);
+    gtk_widget_show_all(tk->button);
     if (!task_visible(tb, tk)) {
         gtk_widget_hide(tk->button);
     }
@@ -978,10 +977,9 @@ tb_net_client_list(GtkWidget *widget, taskbar_priv *tb)
             }
          
             tk_build_gui(tb, tk);
-            if (!tb->icons_only) {
-                tk_get_names(tk);
-                tk_set_names(tk);
-            }
+            tk_get_names(tk);
+            tk_set_names(tk);
+            
             g_hash_table_insert(tb->task_list, &tk->win, tk);
             DBG("adding %08x(%p) %s\n", tk->win, FBPANEL_WIN(tk->win), tk->name);
         }
@@ -1106,10 +1104,8 @@ tb_propertynotify(taskbar_priv *tb, XEvent *ev)
 	    tb_display(tb);	
 	} else if (at == XA_WM_NAME) {
             DBG("WM_NAME\n");
-            if (!tb->icons_only) {
-                tk_get_names(tk);
-                tk_set_names(tk);
-            }
+            tk_get_names(tk);
+            tk_set_names(tk);
 	} else if (at == XA_WM_HINTS)	{
 	    /* some windows set their WM_HINTS icon after mapping */
 	    DBG("XA_WM_HINTS\n");
@@ -1132,7 +1128,7 @@ tb_propertynotify(taskbar_priv *tb, XEvent *ev)
             if (!accept_net_wm_state(&nws, tb->accept_skip_pager)) {
 		del_task(tb, tk, 1);
 		tb_display(tb);
-	    } else if (!tb->icons_only){
+	    } else {
                 tk->iconified = nws.hidden;
                 tk_set_names(tk);
             }
@@ -1296,7 +1292,7 @@ void net_active_detect()
     XFree(data);
 }
 
-static int
+int
 taskbar_constructor(plugin_instance *p)
 {
     taskbar_priv *tb;
@@ -1366,12 +1362,14 @@ taskbar_constructor(plugin_instance *p)
     }
     if (p->panel->orientation == ORIENT_HORIZ) {
         tb->iconsize = GTK_WIDGET(p->panel->box)->allocation.height - req.height;
-        DBG("pwid height = %d\n", GTK_WIDGET(p->pwid)->allocation.height);
+        DBG("pwid height = %d\n", GTK_WIDGET(p->panel->box)->allocation.height);
+        DBG("req.height = %d\n", req.height);
+        DBG("icnosize = %d\n", tb->iconsize);
         if (tb->icons_only)
             tb->task_width_max = tb->iconsize + req.width;
     } else {
         tb->iconsize = 24;
-        tb->task_width_max = tb->iconsize + req.height;
+        tb->task_width_max = tb->iconsize + req.height + 10;
     }
     taskbar_build_gui(p);
     tb_net_client_list(NULL, tb);
