@@ -1,3 +1,10 @@
+5.4
+* fb_image and icon loading code refactoring
+* chart: making frame around a chart more distinguishable
+* taskbar: enable tooltips in IconsOnly mode
+* taskbar: build tooltips from text rather then from markup
+
+
 5.3
 * when no icon exists in a theme, missing-image icon is substituted. theme-avare
 * prevent duplicate entries in menu
