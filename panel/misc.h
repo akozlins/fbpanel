@@ -60,14 +60,11 @@ void get_button_spacing(GtkRequisition *req, GtkContainer *parent, gchar *name);
 guint32 gcolor2rgb24(GdkColor *color);
 
 
-GdkPixbuf *fb_pixbuf_new(gchar *iname, gchar *fname, int width, int height);
+GdkPixbuf *fb_pixbuf_new(gchar *iname, gchar *fname, int width, int height, 
+        gboolean use_fallback);
 GtkWidget *fb_image_new(gchar *iname, gchar *fname, int width, int height);
-
-GtkWidget *fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
-      gulong hicolor);
-
-GtkWidget *fb_button_new_from_icon_file_with_label(gchar *iname, gchar *fname, int width, int height,
-      gulong hicolor, gchar *name);
+GtkWidget *fb_button_new(gchar *iname, gchar *fname, int width, int height,
+        gulong hicolor, gchar *name);
 
 
 void menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *widget);
