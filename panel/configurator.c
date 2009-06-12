@@ -287,7 +287,7 @@ set_transparency_color(GtkWidget *b, gpointer bp)
     gtk_main_quit();
     RET2();
 }
-
+#if 0
 static void
 set_dock_type(GtkToggleButton* toggle, gpointer user_data)
 {
@@ -302,7 +302,6 @@ set_dock_type(GtkToggleButton* toggle, gpointer user_data)
     gtk_widget_queue_resize(the_panel->topgwin);
     RET();
 }
-
 static void
 set_strut(GtkToggleButton* toggle, gpointer user_data)
 {
@@ -318,6 +317,7 @@ set_strut(GtkToggleButton* toggle, gpointer user_data)
     RET();
 }
 
+#endif
 
 GtkWidget *
 mk_position()
