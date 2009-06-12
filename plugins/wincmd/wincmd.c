@@ -207,7 +207,7 @@ wincmd_constructor(plugin_instance *p)
         w = p->panel->aw;
         h = -1;
     }
-    button = fb_button_new_from_icon_file(iname, fname, w, h, 0x202020);
+    button = fb_button_new(iname, fname, w, h, 0x202020, NULL);
     gtk_container_set_border_width(GTK_CONTAINER(button), 0);
     g_signal_connect(G_OBJECT(button), "button_press_event",
           G_CALLBACK(clicked), (gpointer)wc);

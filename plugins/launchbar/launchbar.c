@@ -237,7 +237,7 @@ read_button(plugin_instance *p)
     }
     w = h = lb->iconsize;
     //button = fb_button_new_from_file(iname, fname, w, h, 0x202020, TRUE);
-    button = fb_button_new_from_icon_file(iname, fname, w, h, 0x202020);
+    button = fb_button_new(iname, fname, w, h, 0x202020, NULL);
     //gtk_container_set_border_width(GTK_CONTAINER(button), 0);
     g_signal_connect (G_OBJECT (button), "button-release-event",
           G_CALLBACK (my_button_pressed), (gpointer) &lb->btns[lb->btn_num]);
