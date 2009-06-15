@@ -20,6 +20,8 @@
 
 extern panel *the_panel;
 
+static GtkIconTheme *icon_theme;
+
 /* X11 data types */
 Atom a_UTF8_STRING;
 Atom a_XROOTPMAP_ID;
@@ -266,6 +268,12 @@ void resolve_atoms()
     RET();
 }
 
+
+void fb_init()
+{
+    resolve_atoms();
+    icon_theme = gtk_icon_theme_get_default();
+}
 
 void
 Xclimsg(Window win, long type, long l0, long l1, long l2, long l3, long l4)
@@ -869,121 +877,206 @@ class_get(char *name)
 
 
 /**********************************************************************
- * fbpanel's pixbuf and image                                         *
+ * FB Pixbuf                                                          *
  **********************************************************************/
-
 
 #define MAX_SIZE 192
 
-static GtkIconTheme *icon_theme;
-
-
-
-/* Creates a pixbuf from icon name or file or "missing image" icon and scales it
- * to be width x height. Set any of these to -1 to get original size.
- * Ensures that sizes are less then MAX_SIZE
+/* Creates a pixbuf. Several sources are tried in these order:
+ *   icon named @iname
+ *   file from @fname
+ *   icon named "missing-image" as a fallabck, if @use_fallback is TRUE.
+ * Returns pixbuf or NULL on failure
+ * 
+ * Result pixbuf is always smaller then MAX_SIZE 
  */
 GdkPixbuf *
-fb_pixbuf_new(gchar *iname, gchar *fname, int width, int height)
+fb_pixbuf_new(gchar *iname, gchar *fname, int width, int height, 
+        gboolean use_fallback)
 {
     GdkPixbuf *pb = NULL;
     int size;
 
     ENTER;
-    if (!icon_theme)
-        icon_theme = gtk_icon_theme_get_default();
     size = MIN(192, MAX(width, height));
     if (iname && !pb)
         pb = gtk_icon_theme_load_icon(icon_theme, iname, size,
             GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
     if (fname && !pb)
         pb = gdk_pixbuf_new_from_file_at_size(fname, width, height, NULL);
-    if (!pb)
+    if (use_fallback && !pb)
         pb = gtk_icon_theme_load_icon(icon_theme, "gtk-missing-image", size,
             GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
     RET(pb);
 }
 
-/* reloads image's pixbuf upon icon theme change
- */
-static void
-fb_image_icon_theme_changed(GtkIconTheme *icon_theme, GtkWidget *img)
-{
-    GdkPixbuf *pb;
+/**********************************************************************
+ * FB Image                                                           *
+ **********************************************************************/
 
-    ENTER;
-    pb = fb_pixbuf_new(
-        g_object_get_data(G_OBJECT(img), "iname"),
-        g_object_get_data(G_OBJECT(img), "fname"),
-        GPOINTER_TO_INT(g_object_get_data(G_OBJECT(img), "width")),
-        GPOINTER_TO_INT(g_object_get_data(G_OBJECT(img), "height")));
-    if (pb) {
-        gtk_image_set_from_pixbuf(GTK_IMAGE(img), pb);
-        g_object_unref(G_OBJECT(pb));
-    }
-    g_object_set_data_full(G_OBJECT(img), "back", NULL, g_object_unref);
-    RET();
-}
+#define PIXBBUF_NUM 3
+typedef struct {
+    gchar *iname, *fname;
+    int width, height;
+    gulong itc_id; /* icon theme change callback id */
+    gulong hicolor;
+    int i; /* pixbuf index */
+    GdkPixbuf *pix[PIXBBUF_NUM];
+} fb_image_conf_t;
 
-/* disconnects image's signal handler when it is destroyed
- */
-static void
-fb_image_disconnect(GObject *img)
-{
-    ENTER;
-    g_signal_handlers_disconnect_by_func(G_OBJECT(icon_theme),
-        fb_image_icon_theme_changed, img);
-    RET();
-}
+static void fb_image_free(GObject *image);
+static void fb_image_icon_theme_changed(GtkIconTheme *icon_theme,
+        GtkWidget *image);
 
-/* creates image that follows icon theme changes
+/* Creates an image widget from fb_pixbuf and updates it on every icon theme
+ * change. To keep its internal state, image allocates some data and frees it
+ * in "destroy" callback
  */
 GtkWidget *
 fb_image_new(gchar *iname, gchar *fname, int width, int height)
 {
-    GtkWidget *image = NULL;
-    GdkPixbuf *pb;
+    GtkWidget *image;
+    fb_image_conf_t *conf;
 
-    pb = fb_pixbuf_new(iname, fname, width, height);
-    if (pb) {
-        image = gtk_image_new_from_pixbuf(pb);
-        DBG("px: w=%d h=%d\n", gdk_pixbuf_get_width(pb), gdk_pixbuf_get_height(pb));
-        g_signal_connect_after (G_OBJECT(icon_theme),
-           "changed", (GCallback) fb_image_icon_theme_changed, image);
-        g_signal_connect (G_OBJECT(image),
-           "destroy", (GCallback) fb_image_disconnect, NULL);
-        if (iname)
-            g_object_set_data_full (G_OBJECT(image), "iname", g_strdup(iname), g_free);
-        if (fname)
-            g_object_set_data_full (G_OBJECT(image), "fname", g_strdup(fname), g_free);
-        g_object_set_data(G_OBJECT(image), "width", GINT_TO_POINTER(width));
-        g_object_set_data(G_OBJECT(image), "height", GINT_TO_POINTER(height));
-        gtk_widget_show(image);
-        g_object_unref(G_OBJECT(pb));
-    }
-    DBG("image = %p\n", image);
+    image = gtk_image_new();
+    conf = g_new0(fb_image_conf_t, 1); /* exits if fails */
+    g_object_set_data(G_OBJECT(image), "conf", conf); 
+    conf->itc_id = g_signal_connect_after (G_OBJECT(icon_theme),
+            "changed", (GCallback) fb_image_icon_theme_changed, image);
+    g_signal_connect (G_OBJECT(image),
+            "destroy", (GCallback) fb_image_free, NULL);
+    conf->iname = g_strdup(iname);
+    conf->fname = g_strdup(fname);
+    conf->width = width;
+    conf->height = height;
+    conf->pix[0] = fb_pixbuf_new(iname, fname, width, height, TRUE);
+    gtk_image_set_from_pixbuf(GTK_IMAGE(image), conf->pix[0]);
+    gtk_widget_show(image);
     RET(image);
 }
 
+    
+/* Frees image's resources
+ */
+static void
+fb_image_free(GObject *image)
+{
+    fb_image_conf_t *conf;
+    int i;
 
+    ENTER;
+    conf = g_object_get_data(image, "conf");
+    g_signal_handler_disconnect(G_OBJECT(icon_theme), conf->itc_id);
+    g_free(conf->iname);
+    g_free(conf->fname);
+    for (i = 0; i < PIXBBUF_NUM; i++)
+        if (conf->pix[i]) 
+            g_object_unref(G_OBJECT(conf->pix[i]));
+    g_free(conf);
+    RET();
+}
+
+/* Reloads image's pixbuf upon icon theme change
+ */
+static void
+fb_image_icon_theme_changed(GtkIconTheme *icon_theme, GtkWidget *image)
+{
+    fb_image_conf_t *conf;
+    int i;
+
+    ENTER;
+    conf = g_object_get_data(G_OBJECT(image), "conf");
+    for (i = 0; i < PIXBBUF_NUM; i++)
+        if (conf->pix[i]) 
+            g_object_unref(G_OBJECT(conf->pix[i]));
+
+    conf->pix[0] = fb_pixbuf_new(conf->iname, conf->fname, 
+            conf->width, conf->height, TRUE);
+    gtk_image_set_from_pixbuf(GTK_IMAGE(image), conf->pix[0]);
+    RET();
+}
 
 
 /**********************************************************************
- * fbpanel's button                                                   *
+ * FB Button                                                          *
  **********************************************************************/
+
+static gboolean fb_button_cross(GtkImage *widget, GdkEventCrossing *event);
+static GdkPixbuf *fb_button_make_back_image(GtkImage *widget, GdkPixbuf *front,
+        gulong hicolor);
+
+/* Creates fb_button - bgbox with fb_image. bgbox provides pseudo transparent
+ * background and event capture. fb_image follows icon theme change.
+ * Additionaly, fb_button highlightes an image on mouse enter and runs simple
+ * animation when clicked.
+ * FIXME: @label parameter is currently ignored
+ */ 
+GtkWidget *
+fb_button_new(gchar *iname, gchar *fname, int width, int height,
+      gulong hicolor, gchar *label)
+{
+    GtkWidget *b, *image;
+    fb_image_conf_t *conf;
+
+    ENTER;
+    b = gtk_bgbox_new();
+    gtk_container_set_border_width(GTK_CONTAINER(b), 0);
+    GTK_WIDGET_UNSET_FLAGS (b, GTK_CAN_FOCUS);
+    image = fb_image_new(iname, fname, width, height);
+    gtk_misc_set_alignment(GTK_MISC(image), 0.5, 0.5);
+    gtk_misc_set_padding (GTK_MISC(image), 0, 0);
+    conf = g_object_get_data(G_OBJECT(image), "conf");
+    if ((conf->hicolor = hicolor)) {
+        gtk_widget_add_events(b, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+        g_signal_connect_swapped (G_OBJECT (b), "enter-notify-event",
+              G_CALLBACK (fb_button_cross), image);
+        g_signal_connect_swapped (G_OBJECT (b), "leave-notify-event",
+              G_CALLBACK (fb_button_cross), image);
+    }
+    gtk_container_add(GTK_CONTAINER(b), image);
+    gtk_widget_show_all(b);
+    RET(b);
+}
+
+
+/* Flips front and back images upon mouse cross event - GDK_ENTER_NOTIFY
+ * or GDK_LEAVE_NOTIFY
+ */ 
+static gboolean
+fb_button_cross(GtkImage *widget, GdkEventCrossing *event)
+{
+    fb_image_conf_t *conf;
+    int i;
+
+    ENTER;
+    conf = g_object_get_data(G_OBJECT(widget), "conf");
+    if (event->type == GDK_LEAVE_NOTIFY) {
+        i = 0;
+    } else {
+        i = 1;
+        if (!conf->pix[1]) {
+            conf->pix[1] = fb_button_make_back_image(widget, conf->pix[0], conf->hicolor);
+            if (!conf->pix[1])
+                i = 0;
+        }
+    }
+    if (conf->i != i) {
+        conf->i = i;
+        gtk_image_set_from_pixbuf(GTK_IMAGE(widget), conf->pix[i]);
+    }
+    RET(TRUE);
+}
 
 /* Creates hilighted version of front image to reflect mouse enter
  */ 
 static GdkPixbuf *
-fb_button_make_back_image(GtkImage *widget, GdkPixbuf *front)
+fb_button_make_back_image(GtkImage *widget, GdkPixbuf *front, gulong hicolor)
 {
     GdkPixbuf *back;
-    gulong hicolor;
     guchar *src, *up, extra[3];
     int i;
 
     ENTER;
-    hicolor = (gulong) g_object_get_data(G_OBJECT(widget), "hicolor");
     back = gdk_pixbuf_add_alpha(front, FALSE, 0, 0, 0);
     if (!back)
         goto cleanup;
@@ -1006,112 +1099,4 @@ cleanup:
     RET(back);
 }
 
-/* Flips front and back images upon mouse cross event - GDK_ENTER_NOTIFY
- * or GDK_LEAVE_NOTIFY
- */ 
-static gboolean
-fb_button_cross(GtkImage *widget, GdkEventCrossing *event)
-{
-    GdkPixbuf *front, *back;
-
-    ENTER;
-    if (event->type == GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "type")))
-        RET(TRUE);            
-    g_object_set_data(G_OBJECT(widget), "type", GINT_TO_POINTER(event->type));
-
-    front = gtk_image_get_pixbuf(widget);
-    back = g_object_get_data(G_OBJECT(widget), "back");
-    if (!back) 
-        back = fb_button_make_back_image(widget, front);
-    DBG("%s: front=%p back=%p\n", 
-            event->type == GDK_ENTER_NOTIFY ? "enter" : "leave", 
-            front, back);
-    if (!back) 
-        RET(TRUE);
-    g_object_ref(G_OBJECT(front));
-    gtk_image_set_from_pixbuf(GTK_IMAGE(widget), back);
-    g_object_set_data_full(G_OBJECT(widget), "back", front, g_object_unref);
-    RET(TRUE);
-
-}
-
-/* Creates fbpanel button - bgbox with fb_image. bgbox provide pseudo 
- * transparent background and event capture. fb_image follows icon theme change. 
- * On mouse enter, button wil hilight its image
- */ 
-GtkWidget *
-fb_button_new_from_icon_file(gchar *iname, gchar *fname, int width, int height,
-      gulong hicolor)
-{
-    GtkWidget *b, *image;
-
-    ENTER;
-    DBG("iname = %s\n", iname);
-    DBG("fname = %s\n", fname);
-    //make background window
-    b = gtk_bgbox_new();
-    gtk_container_set_border_width(GTK_CONTAINER(b), 0);
-    GTK_WIDGET_UNSET_FLAGS (b, GTK_CAN_FOCUS);
-    //make image
-    image = fb_image_new(iname, fname, width, height);
-    if (!image)
-        image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
-    gtk_container_add(GTK_CONTAINER(b), image);
-    gtk_misc_set_alignment(GTK_MISC(image), 0, 1);
-    gtk_misc_set_padding (GTK_MISC(image), 0, 0);
-    g_object_set_data(G_OBJECT(image), "hicolor", GINT_TO_POINTER(hicolor));
-    if (hicolor > 0) {
-        gtk_widget_add_events(b, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-        g_signal_connect_swapped (G_OBJECT (b), "enter-notify-event",
-              G_CALLBACK (fb_button_cross), image);
-        g_signal_connect_swapped (G_OBJECT (b), "leave-notify-event",
-              G_CALLBACK (fb_button_cross), image);
-    }
-
-    gtk_widget_show(image);
-    gtk_widget_show(b);
-    RET(b);
-}
-
-
-/* Creates fbpanel button (see above) with label
- */ 
-GtkWidget *
-fb_button_new_from_icon_file_with_label(gchar *iname, gchar *fname, int width, int height,
-      gulong hicolor, gchar *name)
-{
-    GtkWidget *b, *image, *box, *label;
-
-    ENTER;
-    b = gtk_bgbox_new();
-
-    box = gtk_hbox_new(FALSE, 0);
-    gtk_container_set_border_width(GTK_CONTAINER(box), 0);
-    GTK_WIDGET_UNSET_FLAGS (box, GTK_CAN_FOCUS);
-    gtk_container_add(GTK_CONTAINER(b), box);
-
-    DBG("here\n");
-    image = fb_image_new(iname, fname, width, height);
-    if (!image)
-        image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_BUTTON);
-    g_object_set_data(G_OBJECT(image), "hicolor", (gpointer)hicolor);
-    gtk_misc_set_padding (GTK_MISC(image), 0, 0);
-    if (hicolor > 0) {
-        gtk_widget_add_events(b, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-        g_signal_connect_swapped (G_OBJECT (b), "enter-notify-event",
-              G_CALLBACK (fb_button_cross), image);
-        g_signal_connect_swapped (G_OBJECT (b), "leave-notify-event",
-              G_CALLBACK (fb_button_cross), image);
-    }
-    DBG("here\n");
-    gtk_box_pack_start(GTK_BOX(box), image, FALSE, FALSE, 0);
-    DBG("here\n");
-    if (name) {
-        label =  gtk_label_new(name);
-        gtk_misc_set_padding(GTK_MISC(label), 2, 0);
-        gtk_box_pack_end(GTK_BOX(box), label, FALSE, FALSE, 0);
-    }
-    gtk_widget_show_all(b);
-    RET(b);
-}
 

@@ -959,7 +959,7 @@ main(int argc, char *argv[], char *env[])
     gtk_init(&argc, &argv);
     XSetLocaleModifiers("");
     XSetErrorHandler((XErrorHandler) handle_error);
-    resolve_atoms();
+    fb_init();
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
             usage();

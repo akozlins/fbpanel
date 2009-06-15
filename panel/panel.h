@@ -62,7 +62,7 @@ typedef struct _panel {
     int ah_dx, ah_dy; // autohide shift for x and y
     int height_when_hidden;
     guint hide_tout;
-    
+
     int spacing;
 
     guint desknum;
