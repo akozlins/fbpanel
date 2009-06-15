@@ -119,10 +119,11 @@ menu_item_set_image(GtkWidget *mi, gchar *iname, gchar *fname, int width, int he
     GdkPixbuf *pb;
 
     ENTER;
-    pb = fb_pixbuf_new(iname, fname, 22, 22, FALSE);
-    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
-            gtk_image_new_from_pixbuf(pb));
-    g_object_unref(G_OBJECT(pb));
+    if ((pb = fb_pixbuf_new(iname, fname, 22, 22, FALSE))) {
+        gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
+                gtk_image_new_from_pixbuf(pb));
+        g_object_unref(G_OBJECT(pb));
+    }
     RET();
 }
 
