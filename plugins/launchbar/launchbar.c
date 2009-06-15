@@ -66,8 +66,6 @@ typedef struct launchbar_priv {
 static gboolean
 my_button_pressed(GtkWidget *widget, GdkEventButton *event, btn *b )
 {
-    GtkWidget *image;
-
     ENTER;
     if (event->type == GDK_BUTTON_PRESS && event->button == 3
           && event->state & GDK_CONTROL_MASK) {
@@ -78,7 +76,6 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, btn *b )
         b->lb->discard_release_event = 0;
         RET(TRUE);
     }
-    image = gtk_bin_get_child(GTK_BIN(widget));
     g_assert(b != NULL);
     if (event->type == GDK_BUTTON_RELEASE) {
         if ((event->x >=0 && event->x < widget->allocation.width)
@@ -86,13 +83,6 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, btn *b )
             
             g_spawn_command_line_async(b->action, NULL);
         }
-        gtk_misc_set_padding (GTK_MISC(image), 0, 0);
-        
-        //system(b->action);
-    } else if (event->type == GDK_BUTTON_PRESS) {
-      
-        gtk_misc_set_padding (GTK_MISC(image), 0, 3);
-        //ERR("here\n");
     }
     RET(TRUE);
 }

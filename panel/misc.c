@@ -910,6 +910,69 @@ fb_pixbuf_new(gchar *iname, gchar *fname, int width, int height,
     RET(pb);
 }
 
+/* Creates hilighted version of front image to reflect mouse enter
+ */ 
+static GdkPixbuf *
+fb_pixbuf_make_back_image(GdkPixbuf *front, gulong hicolor)
+{
+    GdkPixbuf *back;
+    guchar *src, *up, extra[3];
+    int i;
+
+    ENTER;
+    back = gdk_pixbuf_add_alpha(front, FALSE, 0, 0, 0);
+    if (!back) {
+        g_object_ref(G_OBJECT(front));
+        RET(front);
+    }
+    src = gdk_pixbuf_get_pixels (back);
+    for (i = 2; i >= 0; i--, hicolor >>= 8)
+        extra[i] = hicolor & 0xFF;
+    for (up = src + gdk_pixbuf_get_height(back) * gdk_pixbuf_get_rowstride (back);
+            src < up; src+=4) {
+        if (src[3] == 0)
+            continue;
+        for (i = 0; i < 3; i++) {
+            if (src[i] + extra[i] >= 255)
+                src[i] = 255;
+            else
+                src[i] += extra[i];
+        }
+    }
+    RET(back);
+}
+
+#define PRESS_GAP 2
+static GdkPixbuf *
+fb_pixbuf_make_press_image(GdkPixbuf *front)
+{
+    GdkPixbuf *press, *tmp;
+    int w, h;
+
+    ENTER;
+    w = gdk_pixbuf_get_width(front) - 2 * PRESS_GAP;
+    h = gdk_pixbuf_get_height(front) - 2 * PRESS_GAP;
+    press = gdk_pixbuf_copy(front);
+    tmp = gdk_pixbuf_scale_simple(front, w, h, GDK_INTERP_HYPER);
+    if (press && tmp) {
+        gdk_pixbuf_fill(press, 0);
+        gdk_pixbuf_copy_area(tmp, 
+                0, 0,  // src_x, src_y
+                w, h,  // width, height
+                press, // dest_pixbuf
+                PRESS_GAP, PRESS_GAP);  // dst_x, dst_y
+        g_object_unref(G_OBJECT(tmp));
+        RET(press);
+    }
+    if (press)
+        g_object_unref(G_OBJECT(press));
+    if (tmp)
+        g_object_unref(G_OBJECT(tmp));
+
+    g_object_ref(G_OBJECT(front));
+    RET(front);
+}
+
 /**********************************************************************
  * FB Image                                                           *
  **********************************************************************/
@@ -1002,8 +1065,7 @@ fb_image_icon_theme_changed(GtkIconTheme *icon_theme, GtkWidget *image)
  **********************************************************************/
 
 static gboolean fb_button_cross(GtkImage *widget, GdkEventCrossing *event);
-static GdkPixbuf *fb_button_make_back_image(GtkImage *widget, GdkPixbuf *front,
-        gulong hicolor);
+static gboolean fb_button_pressed(GtkWidget *widget, GdkEventButton *event);
 
 /* Creates fb_button - bgbox with fb_image. bgbox provides pseudo transparent
  * background and event capture. fb_image follows icon theme change.
@@ -1026,13 +1088,18 @@ fb_button_new(gchar *iname, gchar *fname, int width, int height,
     gtk_misc_set_alignment(GTK_MISC(image), 0.5, 0.5);
     gtk_misc_set_padding (GTK_MISC(image), 0, 0);
     conf = g_object_get_data(G_OBJECT(image), "conf");
-    if ((conf->hicolor = hicolor)) {
-        gtk_widget_add_events(b, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
-        g_signal_connect_swapped (G_OBJECT (b), "enter-notify-event",
-              G_CALLBACK (fb_button_cross), image);
-        g_signal_connect_swapped (G_OBJECT (b), "leave-notify-event",
-              G_CALLBACK (fb_button_cross), image);
-    }
+    conf->hicolor = hicolor;
+    conf->pix[1] = fb_pixbuf_make_back_image(conf->pix[0], conf->hicolor);
+    conf->pix[2] = fb_pixbuf_make_press_image(conf->pix[1]);
+    gtk_widget_add_events(b, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+    g_signal_connect_swapped (G_OBJECT (b), "enter-notify-event",
+            G_CALLBACK (fb_button_cross), image);
+    g_signal_connect_swapped (G_OBJECT (b), "leave-notify-event",
+            G_CALLBACK (fb_button_cross), image);
+    g_signal_connect_swapped (G_OBJECT (b), "button-release-event",
+          G_CALLBACK (fb_button_pressed), image);
+    g_signal_connect_swapped (G_OBJECT (b), "button-press-event",
+          G_CALLBACK (fb_button_pressed), image);
     gtk_container_add(GTK_CONTAINER(b), image);
     gtk_widget_show_all(b);
     RET(b);
@@ -1054,11 +1121,6 @@ fb_button_cross(GtkImage *widget, GdkEventCrossing *event)
         i = 0;
     } else {
         i = 1;
-        if (!conf->pix[1]) {
-            conf->pix[1] = fb_button_make_back_image(widget, conf->pix[0], conf->hicolor);
-            if (!conf->pix[1])
-                i = 0;
-        }
     }
     if (conf->i != i) {
         conf->i = i;
@@ -1067,36 +1129,28 @@ fb_button_cross(GtkImage *widget, GdkEventCrossing *event)
     RET(TRUE);
 }
 
-/* Creates hilighted version of front image to reflect mouse enter
- */ 
-static GdkPixbuf *
-fb_button_make_back_image(GtkImage *widget, GdkPixbuf *front, gulong hicolor)
+static gboolean
+fb_button_pressed(GtkWidget *widget, GdkEventButton *event)
 {
-    GdkPixbuf *back;
-    guchar *src, *up, extra[3];
+    fb_image_conf_t *conf;
     int i;
 
     ENTER;
-    back = gdk_pixbuf_add_alpha(front, FALSE, 0, 0, 0);
-    if (!back)
-        goto cleanup;
-    src = gdk_pixbuf_get_pixels (back);
-    for (i = 2; i >= 0; i--, hicolor >>= 8)
-        extra[i] = hicolor & 0xFF;
-    for (up = src + gdk_pixbuf_get_height(back) * gdk_pixbuf_get_rowstride (back);
-            src < up; src+=4) {
-        if (src[3] == 0)
-            continue;
-        for (i = 0; i < 3; i++) {
-            if (src[i] + extra[i] >= 255)
-                src[i] = 255;
-            else
-                src[i] += extra[i];
-        }
+    conf = g_object_get_data(G_OBJECT(widget), "conf");
+    if (event->type == GDK_BUTTON_PRESS) {
+        i = 2;
+    } else {
+        if ((event->x >=0 && event->x < widget->allocation.width)
+                && (event->y >=0 && event->y < widget->allocation.height)) 
+            i = 1;   
+        else
+            i = 0;
     }
-
-cleanup:
-    RET(back);
+    if (conf->i != i) {
+        conf->i = i;
+        gtk_image_set_from_pixbuf(GTK_IMAGE(widget), conf->pix[i]);
+    }
+    RET(FALSE);
 }
 
 
