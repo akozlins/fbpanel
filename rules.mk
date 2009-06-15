@@ -39,7 +39,7 @@ CFLAGS += -Wall -I$(TOPDIR)
 # debug - debug symbols, no optimization, no striping
 # release - striped, -O2 optimized code
 ifeq ($(DEBUG),enabled)
-    CFLAGS += -g
+    CFLAGS += -g -Werror
 else
     CFLAGS += -O2
 endif
