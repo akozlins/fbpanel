@@ -132,7 +132,7 @@ endif
 
 DISTCLEANLIST += $(INS)
 ifeq ($(TOPDIR),$(CURDIR))
-DISTCLEANLIST += config.h config.mk subst.sed
+DISTCLEANLIST += config.h config.mk subst.sed tags
 endif
 distclean : clean
 	rm -f $(DISTCLEANLIST)
