@@ -38,6 +38,7 @@ tray_added (EggTrayManager *manager, GtkWidget *icon, tray_priv *tr)
 {
     GtkWidget* aln;
 
+    ENTER;
     if (USE_ALIGN) {
         aln = gtk_alignment_new(0.5, 0.5, 0, 0);
         gtk_alignment_set_padding(GTK_ALIGNMENT(aln), 0, 0, 0, 0);
@@ -53,12 +54,13 @@ tray_added (EggTrayManager *manager, GtkWidget *icon, tray_priv *tr)
         gtk_widget_show_all(tr->box);
     }
     tr->icon_num++;
-    DBG("add icon\n");
+    RET();
 }
 
 static void
 tray_removed (EggTrayManager *manager, GtkWidget *icon, tray_priv *tr)
 {
+    ENTER;
     if (USE_ALIGN)
         gtk_widget_destroy(gtk_widget_get_parent(icon));
     tr->icon_num--;
@@ -67,6 +69,7 @@ tray_removed (EggTrayManager *manager, GtkWidget *icon, tray_priv *tr)
         gtk_widget_hide(tr->box);
         DBG("last icon\n");
     }
+    RET();
 }
 
 static void
@@ -76,14 +79,18 @@ message_sent (EggTrayManager *manager, GtkWidget *icon, const char *text, glong 
     /* FIXME multihead */
     int x, y;
     
+    ENTER;
     gdk_window_get_origin (icon->window, &x, &y);
     fixed_tip_show (0, x, y, FALSE, gdk_screen_height () - 50, text);
+    RET();
 }
 
 static void
 message_cancelled (EggTrayManager *manager, GtkWidget *icon, glong id,
                    void *data)
 {
+    ENTER;
+    RET();
   
 }
 
