@@ -29,26 +29,17 @@ typedef struct {
     int icon_num;
 } tray_priv;
 
-//static void run_gtktray(tray_priv *tr);
+static void tray_notify_style_event(GtkWidget *w, GParamSpec *arg1, GtkWidget *widget);
 
-#define USE_ALIGN 1
 
 static void
 tray_added (EggTrayManager *manager, GtkWidget *icon, tray_priv *tr)
 {
-    GtkWidget* aln;
-
     ENTER;
-    if (USE_ALIGN) {
-        aln = gtk_alignment_new(0.5, 0.5, 0, 0);
-        gtk_alignment_set_padding(GTK_ALIGNMENT(aln), 0, 0, 0, 0);
-        gtk_container_add(GTK_CONTAINER(aln), icon);
-        gtk_container_set_border_width(GTK_CONTAINER(aln), 0);
-    } else {
-        aln = icon;
-    }
-    gtk_box_pack_end (GTK_BOX (tr->box), aln, FALSE, FALSE, 0);
-    gtk_widget_show_all (aln);
+    gtk_box_pack_end (GTK_BOX (tr->box), icon, FALSE, FALSE, 0);
+    gtk_widget_show(icon);
+    gdk_display_sync(gtk_widget_get_display(icon));
+
     if (!tr->icon_num) {
         DBG("first icon\n");
         gtk_widget_show_all(tr->box);
@@ -61,8 +52,6 @@ static void
 tray_removed (EggTrayManager *manager, GtkWidget *icon, tray_priv *tr)
 {
     ENTER;
-    if (USE_ALIGN)
-        gtk_widget_destroy(gtk_widget_get_parent(icon));
     tr->icon_num--;
     DBG("del icon\n");
     if (!tr->icon_num) {
@@ -113,12 +102,18 @@ tray_destructor(plugin_instance *p)
     
 
 static void
-tray_notify_style_event(GObject *gobject, GParamSpec *arg1, GtkWidget *widget)
+tray_notify_style_event(GtkWidget *w, GParamSpec *arg1, GtkWidget *widget)
 {
     ENTER;
     /* generates expose event on plugged (reparented) windows */
-    gtk_container_foreach (GTK_CONTAINER (widget), (GtkCallback) gtk_widget_hide, NULL);
-    gtk_container_foreach (GTK_CONTAINER (widget), (GtkCallback) gtk_widget_show, NULL);
+    gtk_widget_set_size_request(w, w->allocation.width, w->allocation.height);
+    gtk_widget_hide(widget);
+    if (gtk_events_pending())
+        gtk_main_iteration();
+    gtk_widget_show(widget);
+    gtk_widget_set_size_request(w, -1, -1);
+    //gtk_container_foreach (GTK_CONTAINER (widget), (GtkCallback) gtk_widget_hide, NULL);
+    //gtk_container_foreach (GTK_CONTAINER (widget), (GtkCallback) gtk_widget_show, NULL);
     RET();
 }
 
