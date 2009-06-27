@@ -416,6 +416,26 @@ argbdata_to_pixdata (gulong *argb_data, int len)
     RET(ret);
 }
 
+#if 0
+GdkPixbuf *
+gdk_pixbuf_scale_ratio(GdkPixbuf *p, int width, int height, GdkInterpType itype)
+{
+    gfloat w, h, rw, rh;
+
+    w = gdk_pixbuf_get_width(p);
+    h = gdk_pixbuf_get_height(p);
+    rw = w / width;
+    rh = h / height;
+    if (rw > rh)
+        height = h / rw;
+    else
+        width =  w / rh;
+    return  gdk_pixbuf_scale_simple(p, width, height, itype);
+
+}
+#endif
+
+
 
 static GdkPixbuf *
 get_netwm_icon(Window tkwin, int iw, int ih)
@@ -459,7 +479,7 @@ get_netwm_icon(Window tkwin, int iw, int ih)
                 RET(NULL);
             ret = src;
             if (w != iw || h != ih) {
-                ret = gdk_pixbuf_scale_ratio (src, iw, ih, GDK_INTERP_HYPER);
+                ret = gdk_pixbuf_scale_simple(src, iw, ih, GDK_INTERP_HYPER);
                 g_object_unref(src);
             }
         }
