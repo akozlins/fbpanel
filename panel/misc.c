@@ -699,24 +699,6 @@ expand_tilda(gchar *file)
 }
 
 
-
-GdkPixbuf *
-gdk_pixbuf_scale_ratio(GdkPixbuf *p, int width, int height, GdkInterpType itype)
-{
-    gfloat w, h, rw, rh;
-
-    w = gdk_pixbuf_get_width(p);
-    h = gdk_pixbuf_get_height(p);
-    rw = w / width;
-    rh = h / height;
-    if (rw > rh)
-        height = h / rw;
-    else
-        width =  w / rh;
-    return  gdk_pixbuf_scale_simple(p, width, height, itype);
-
-}
-
 void
 get_button_spacing(GtkRequisition *req, GtkContainer *parent, gchar *name)
 {
@@ -826,51 +808,6 @@ indent(int level)
     if (level > sizeof(space))
         level = sizeof(space);
     RET(space[level]);
-}
-
-
-
-void
-class_put(char *name)
-{
-    GModule *m;
-    gchar *s;
-
-    ENTER;
-    s = g_strdup_printf(LIBDIR "/fbpanel/%s.so", name);
-    m = g_module_open(s, G_MODULE_BIND_LAZY);
-    g_free(s);
-
-    if (!m) {
-        ERR("error is %s\n", g_module_error());
-        RET();
-    }
-    g_module_close(m); /* 1 for this open and 1 for prev. glib does return same object
-                          when you open same file */
-    g_module_close(m);
-    RET();
-}
-
-gpointer
-class_get(char *name)
-{
-    GModule *m;
-    gpointer tmp;
-    gchar *s;
-
-    ENTER;
-    s = g_strdup_printf(LIBDIR "/fbpanel/%s.so", name);
-    m = g_module_open(s, G_MODULE_BIND_LAZY);
-    g_free(s);
-
-    if (!m) {
-        ERR("error is %s\n", g_module_error());
-        RET(NULL);
-    }
-    if (g_module_symbol(m, "class", &tmp))
-        RET(tmp);
-    g_module_close(m);
-    RET(NULL);
 }
 
 

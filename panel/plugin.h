@@ -45,6 +45,8 @@ typedef struct _plugin_instance{
     gpointer      priv;
 } plugin_instance;
 
+void class_put(char *name);
+gpointer class_get(char *name);
 /* if plugin_instance is external it will load its dll */
 plugin_instance * plugin_load(char *type);
 void plugin_put(plugin_instance *this);
@@ -52,5 +54,15 @@ int plugin_start(plugin_instance *this);
 void plugin_stop(plugin_instance *this);
 GtkWidget *default_plugin_instance_edit_config(plugin_instance *pl);
 
+void class_register(plugin_class *p);
+void class_unregister(plugin_class *p);
+
+#ifdef PLUGIN
+static plugin_class *class_ptr; 
+static void ctor(void) __attribute__ ((constructor)); 
+static void ctor(void) { class_register(class_ptr); }
+static void dtor(void) __attribute__ ((destructor));  
+static void dtor(void) { class_unregister(class_ptr); }   
+#endif
 
 #endif

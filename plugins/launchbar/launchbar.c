@@ -360,7 +360,7 @@ launchbar_constructor(plugin_instance *p)
 
 
 
-plugin_class class = {
+static plugin_class class = {
     .count       = 0,
     .type        = "launchbar",
     .name        = "Launchbar",
@@ -371,3 +371,4 @@ plugin_class class = {
     .constructor = launchbar_constructor,
     .destructor  = launchbar_destructor,
 };
+static plugin_class *class_ptr = (plugin_class *) &class;

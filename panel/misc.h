@@ -54,7 +54,6 @@ void get_net_wm_window_type(Window win, net_wm_window_type *nwwt);
 
 void calculate_position(panel *np);
 gchar *expand_tilda(gchar *file);
-GdkPixbuf *gdk_pixbuf_scale_ratio(GdkPixbuf *p, int width, int height, GdkInterpType itype);
 
 void get_button_spacing(GtkRequisition *req, GtkContainer *parent, gchar *name);
 guint32 gcolor2rgb24(GdkColor *color);
@@ -72,7 +71,5 @@ void menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *wid
 void configure();
 gchar *indent(int level);
 
-void class_put(char *name);
-gpointer class_get(char *name);
 
 #endif

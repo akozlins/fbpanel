@@ -169,7 +169,7 @@ tray_constructor(plugin_instance *p)
 }
 
 
-plugin_class class = {
+static plugin_class class = {
     .count       = 0,
     .type        = "tray",
     .name        = "System tray",
@@ -180,3 +180,4 @@ plugin_class class = {
     .constructor = tray_constructor,
     .destructor = tray_destructor,
 };
+static plugin_class *class_ptr = (plugin_class *) &class;

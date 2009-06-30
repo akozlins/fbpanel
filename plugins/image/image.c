@@ -116,7 +116,7 @@ image_constructor(plugin_instance *p)
 }
 
 
-plugin_class class = {
+static plugin_class class = {
     .count       = 0,
     .type        = "image",
     .name        = "Show Image",
@@ -127,3 +127,4 @@ plugin_class class = {
     .constructor = image_constructor,
     .destructor  = image_destructor,
 };
+static plugin_class *class_ptr = (plugin_class *) &class;

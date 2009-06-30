@@ -1422,7 +1422,7 @@ taskbar_destructor(plugin_instance *p)
     RET();
 }
 
-plugin_class class = {
+static plugin_class class = {
     .fname       = NULL,
     .count       = 0,
     .type        = "taskbar",
@@ -1435,3 +1435,4 @@ plugin_class class = {
     .destructor  = taskbar_destructor,
 };
 
+static plugin_class *class_ptr = (plugin_class *) &class;

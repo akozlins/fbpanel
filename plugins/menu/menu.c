@@ -635,7 +635,7 @@ menu_constructor(plugin_instance *p)
 }
 
 
-plugin_class class = {
+static plugin_class class = {
     .count       = 0,
     .type        = "menu",
     .name        = "Menu",
@@ -647,3 +647,4 @@ plugin_class class = {
     .destructor  = menu_destructor,
 };
 
+static plugin_class *class_ptr = (plugin_class *) &class;

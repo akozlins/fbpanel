@@ -97,7 +97,7 @@ test_destructor(plugin_instance *p)
   RET();
 }
 
-plugin_class class = {
+static plugin_class class = {
     .count       = 0,
     .type        = "test",
     .name        = "Test plugin",
@@ -108,3 +108,4 @@ plugin_class class = {
     .constructor = test_constructor,
     .destructor  = test_destructor,
 };
+static plugin_class *class_ptr = (plugin_class *) &class;

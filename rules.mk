@@ -34,19 +34,29 @@ endif
 
 ##
 # always recommended: warnings on, and path to #include <config.h>
-CFLAGS += -Wall -I$(TOPDIR)
+override CFLAGS += -Wall -I$(TOPDIR)
 # select between debug or release build
 # debug - debug symbols, no optimization, no striping
 # release - striped, -O2 optimized code
 ifeq ($(DEBUG),enabled)
-    CFLAGS += -g -Werror
+    override CFLAGS += -g -Werror
 else
     CFLAGS += -O2
 endif
 
+ 
+T := $(subst $(TOPDIR)/,,$(CURDIR)/)
+T := $(subst /, ,$(T))
+T := $(firstword $(T))
+ifeq ($(T),plugins)
+    CFLAGSX += -DPLUGIN
+endif
+
+override CFLAGS  += $(CFLAGSX)
+override LDFLAGS += $(LDFLAGSX)
+
 TINS = $(wildcard *.in)
 INS = $(TINS:.in=)
-
 
 ######################################################
 ## Compilation rules

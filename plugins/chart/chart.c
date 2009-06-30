@@ -256,3 +256,6 @@ chart_class class = {
     .add_tick = chart_add_tick,
     .set_rows = chart_set_rows,
 };
+
+
+static plugin_class *class_ptr = (plugin_class *) &class;

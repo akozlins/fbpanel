@@ -90,7 +90,7 @@ mem_destructor(plugin_instance *p)
     RET();
 }
 
-plugin_class class = {
+static plugin_class class = {
     .type        = "mem",
     .name        = "Memory Monitor",
     .version     = "1.0",
@@ -100,3 +100,4 @@ plugin_class class = {
     .constructor = mem_constructor,
     .destructor  = mem_destructor,
 };
+static plugin_class *class_ptr = (plugin_class *) &class;

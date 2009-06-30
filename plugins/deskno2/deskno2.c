@@ -123,7 +123,7 @@ deskno_destructor(plugin_instance *p)
   RET();
 }
 
-plugin_class class = {
+static plugin_class class = {
     .count       = 0,
     .type        = "deskno2",
     .name        = "Desktop No v2",
@@ -134,3 +134,4 @@ plugin_class class = {
     .constructor = deskno_constructor,
     .destructor  = deskno_destructor,
 };
+static plugin_class *class_ptr = (plugin_class *) &class;

@@ -85,7 +85,7 @@ space_constructor(plugin_instance *p)
 }
 
 
-plugin_class class = {
+static plugin_class class = {
     .fname       = NULL,
     .count       = 0,
     .type        = "space",
@@ -97,3 +97,4 @@ plugin_class class = {
     .constructor = space_constructor,
     .destructor  = space_destructor,
 };
+static plugin_class *class_ptr = (plugin_class *) &class;

@@ -16,7 +16,105 @@
 
 //#define DEBUGPRN
 #include "dbg.h"
+extern panel *the_panel;
 
+
+/**************************************************************/
+GHashTable *class_ht;
+
+
+void 
+class_register(plugin_class *p)
+{
+    ENTER2;
+    if (!class_ht) {
+        class_ht = g_hash_table_new(g_str_hash, g_str_equal);
+        DBG2("creating class hash table\n");
+    }
+    DBG2("registering %s\n", p->type);
+    if (g_hash_table_lookup(class_ht, p->type)) {
+        ERR("Can't register plugin %s. Such name already exists.\n", p->type);
+        exit(1);
+    }
+    p->dynamic = (the_panel != NULL); /* dynamic modules register after main */
+    g_hash_table_insert(class_ht, p->type, p);
+    RET2();
+}
+
+void
+class_unregister(plugin_class *p)
+{
+    ENTER2;
+    DBG2("unregistering %s\n", p->type);
+    if (!g_hash_table_remove(class_ht, p->type)) {
+        ERR("Can't unregister plugin %s. No such name\n", p->type);
+    }
+    if (!g_hash_table_size(class_ht)) {
+        DBG2("dwstroying class hash table\n");
+        g_hash_table_destroy(class_ht);
+        class_ht = NULL;
+    }
+    RET2();
+}
+
+void 
+class_put(char *name)
+{
+    GModule *m;    
+    gchar *s;
+    plugin_class *tmp;
+
+    ENTER2;
+    DBG2("%s\n", name);
+    if (!(class_ht && (tmp = g_hash_table_lookup(class_ht, name)))) 
+        RET2();
+    tmp->count--;
+    if (tmp->count || !tmp->dynamic) 
+        RET2();
+    
+    s = g_strdup_printf(LIBDIR "/fbpanel/%s.so", name);
+    DBG2("loading module %s\n", s);
+    m = g_module_open(s, G_MODULE_BIND_LAZY);                
+    g_free(s);
+    if (m) {
+        /* Close it twise to undo initial open in class_get */
+        g_module_close(m); 
+        g_module_close(m);
+    }
+    RET2();
+}
+
+gpointer
+class_get(char *name)
+{
+    GModule *m;    
+    plugin_class *tmp;
+    gchar *s;
+
+    ENTER2;
+    DBG2("%s\n", name);
+    if (class_ht && (tmp = g_hash_table_lookup(class_ht, name))) {
+        DBG2("found\n");
+        tmp->count++;
+        RET2(tmp);
+    }
+    s = g_strdup_printf(LIBDIR "/fbpanel/%s.so", name);
+    DBG2("loading module %s\n", s);
+    m = g_module_open(s, G_MODULE_BIND_LAZY);                
+    g_free(s);
+    if (m) {
+        if (class_ht && (tmp = g_hash_table_lookup(class_ht, name))) {
+            DBG2("found\n");
+            tmp->count++;
+            RET2(tmp);
+        }
+    }
+    RET2(NULL);
+}
+
+
+
+/**************************************************************/
 
 plugin_instance *
 plugin_load(char *type)

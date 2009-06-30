@@ -234,7 +234,7 @@ wincmd_constructor(plugin_instance *p)
 }
 
 
-plugin_class class = {
+static plugin_class class = {
     .count       = 0,
     .type        = "wincmd",
     .name        = "Show desktop",
@@ -246,3 +246,4 @@ plugin_class class = {
     .constructor = wincmd_constructor,
     .destructor = wincmd_destructor,
 };
+static plugin_class *class_ptr = (plugin_class *) &class;

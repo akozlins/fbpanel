@@ -133,7 +133,7 @@ net_destructor(plugin_instance *p)
 }
 
 
-plugin_class class = {
+static plugin_class class = {
     .count       = 0,
     .type        = "net",
     .name        = "Net usage",
@@ -144,3 +144,4 @@ plugin_class class = {
     .constructor = net_constructor,
     .destructor  = net_destructor,
 };
+static plugin_class *class_ptr = (plugin_class *) &class;

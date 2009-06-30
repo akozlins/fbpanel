@@ -238,7 +238,7 @@ dclock_destructor(plugin_instance *p)
   RET();
 }
 
-plugin_class class = {
+static plugin_class class = {
     .fname       = NULL,
     .count       = 0,
     .type        = "dclock",
@@ -250,3 +250,4 @@ plugin_class class = {
     .constructor = dclock_constructor,
     .destructor  = dclock_destructor,
 };
+static plugin_class *class_ptr = (plugin_class *) &class;

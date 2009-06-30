@@ -884,7 +884,7 @@ pager_destructor(plugin_instance *p)
 }
 
 
-plugin_class class = {
+static plugin_class class = {
     .fname       = NULL,
     .count       = 0,
     .type        = "pager",
@@ -896,3 +896,4 @@ plugin_class class = {
     .constructor = pager_constructor,
     .destructor  = pager_destructor,
 };
+static plugin_class *class_ptr = (plugin_class *) &class;

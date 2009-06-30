@@ -506,7 +506,7 @@ icons_destructor(plugin_instance *p)
     RET();
 }
 
-plugin_class class = {
+static plugin_class class = {
     .count     = 0,
     .invisible = 1,
 
@@ -520,3 +520,4 @@ plugin_class class = {
     .constructor = icons_constructor,
     .destructor  = icons_destructor,
 };
+static plugin_class *class_ptr = (plugin_class *) &class;
