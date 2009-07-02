@@ -144,7 +144,8 @@ plugin_put(plugin_instance *this)
     RET();
 }
 
-gboolean panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p);
+gboolean panel_button_press_event(GtkWidget *widget, GdkEventButton *event,
+        panel *p);
 
 int
 plugin_start(plugin_instance *this)
@@ -155,14 +156,15 @@ plugin_start(plugin_instance *this)
     if (!this->class->invisible) {
         this->pwid = gtk_bgbox_new();
         gtk_widget_set_name(this->pwid, this->class->type);
-        gtk_box_pack_start(GTK_BOX(this->panel->box), this->pwid, this->expand, TRUE,
-              this->padding);
+        gtk_box_pack_start(GTK_BOX(this->panel->box), this->pwid, this->expand,
+                TRUE, this->padding);
         DBG("here\n");
         gtk_container_set_border_width(GTK_CONTAINER(this->pwid), this->border);
         DBG("here this->panel->transparent = %p\n", this->panel->transparent);
         if (this->panel->transparent) {
             DBG("here g\n");
-            gtk_bgbox_set_background(this->pwid, BG_INHERIT, this->panel->tintcolor, this->panel->alpha);
+            gtk_bgbox_set_background(this->pwid, BG_INHERIT,
+                    this->panel->tintcolor, this->panel->alpha);
         }
         DBG("here\n");
         g_signal_connect (G_OBJECT (this->pwid), "button-press-event",
@@ -170,11 +172,12 @@ plugin_start(plugin_instance *this)
         gtk_widget_show(this->pwid);
         DBG("here\n");
     } else {
-        /* create a no-window widget and do not show it
-         * it's usefull to have unmaped widget for invisible plugins so their indexes
-         * in plugin list are the same as in panel->box. required for children reordering */
+        /* create a no-window widget and do not show it it's usefull to have
+         * unmaped widget for invisible plugins so their indexes in plugin list
+         * are the same as in panel->box. required for children reordering */
         this->pwid = gtk_vbox_new(TRUE, 0);
-        gtk_box_pack_start(GTK_BOX(this->panel->box), this->pwid, FALSE, TRUE,0);
+        gtk_box_pack_start(GTK_BOX(this->panel->box), this->pwid, FALSE,
+                TRUE,0);
         gtk_widget_hide(this->pwid);
     }
     DBG("here\n");
@@ -208,11 +211,13 @@ default_plugin_edit_config(plugin_instance *pl)
 
     ENTER;
     vbox = gtk_vbox_new(FALSE, 0);
-    msg = g_strdup_printf("Graphical '%s' plugin configuration\n is not implemented yet.\n"
+    msg = g_strdup_printf("Graphical '%s' plugin configuration\n is not "
+          "implemented yet.\n"
           "Please edit manually\n\t~/.fbpanel/%s\n\n"
           "You can use as example files in \n\t%s/share/fbpanel/\n"
           "or visit\n"
-          "\thttp://fbpanel.sourceforge.net/docs.html", pl->class->name, cprofile, PREFIX);
+          "\thttp://fbpanel.sourceforge.net/docs.html", pl->class->name,
+          cprofile, PREFIX);
     label = gtk_label_new(msg);
     gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
     gtk_label_set_selectable(GTK_LABEL(label), TRUE);
