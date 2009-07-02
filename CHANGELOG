@@ -1,3 +1,9 @@
+5.5
+* adding static build option for debugin purposes e.g to use with valgrind
+* ability to set CFLAGS from command line was added. 
+  make CFLAGS=bla-bla works correctly
+* fixing memory leaks in taskbar, menu and icons plugin
+
 5.4
 * fb_image and icon loading code refactoring
 * chart: making frame around a chart more distinguishable
