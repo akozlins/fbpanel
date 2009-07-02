@@ -867,7 +867,7 @@ pager_destructor(plugin_instance *p)
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), pager_rebuild_all, pg);
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), do_net_client_list_stacking, pg);
     gdk_window_remove_filter(NULL, (GdkFilterFunc)pager_event_filter, pg);
-    while (--pg->desknum) {
+    while (pg->desknum--) {
         desk_free(pg, pg->desknum);
     }
     g_hash_table_foreach_remove(pg->htable, (GHRFunc) task_remove_all, (gpointer)pg);

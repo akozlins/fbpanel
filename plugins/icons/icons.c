@@ -64,6 +64,7 @@ static void ics_propertynotify(icons_priv *ics, XEvent *ev);
 static GdkFilterReturn ics_event_filter( XEvent *, GdkEvent *, icons_priv *);
 static void icons_destructor(plugin_instance *p);
 
+stat
 
 static void
 get_wmclass(task *tk)
@@ -96,6 +97,10 @@ del_task (icons_priv * ics, task *tk, int hdel)
     ics->num_tasks--; 
     if (hdel)
         g_hash_table_remove(ics->task_list, &tk->win);
+    if (tk->ch.res_class)
+        XFree(tk->ch.res_class);
+    if (tk->ch.res_name)
+        XFree(tk->ch.res_name);
     g_free(tk);
     RET();
 }
@@ -134,13 +139,15 @@ get_user_icon(icons_priv *ics, task *tk)
     ENTER;
     DBG("ch.res_class=%s ch.res_name=%s\n", tk->ch.res_class, tk->ch.res_name);
     if (tk->ch.res_class) {
-        for (tmp = ics->wmpix; tmp; tmp = tmp->next) {
-            if ((!tmp->ch.res_name || !strcmp(tmp->ch.res_name, tk->ch.res_name))
-                  && (!tmp->ch.res_class || !strcmp(tmp->ch.res_class, tk->ch.res_class))) {
-                
-                RET(tmp);
-	    }
-	}
+        for (tmp = ics->wmpix; tmp; tmp = tmp->next) { 
+            if ((!tmp->ch.res_name || !strcmp(tmp->ch.res_name,
+                tk->ch.res_name)) && (!tmp->ch.res_class ||
+                    !strcmp(tmp->ch.res_class, tk->ch.res_class))) 
+            {
+
+                RET(tmp); 
+            } 
+        } 
     }
     RET(NULL);
     //RET (ics->dicon);
@@ -222,7 +229,7 @@ set_icon_maybe (icons_priv *ics, task *tk)
 static gboolean
 task_remove_all(Window *win, task *tk, gpointer data)
 {
-    g_free(tk);
+    del_task(tk->ics, tk, 0);
     return TRUE;
 }
 
@@ -363,14 +370,17 @@ read_application(plugin_instance *p)
             wp->next = ics->wmpix;
             wp->data = data;
             wp->size = size;
-            wp->ch.res_name = appname;
-            wp->ch.res_class = classname;
+            wp->ch.res_name = g_strdup(appname);
+            wp->ch.res_class = g_strdup(classname);
             ics->wmpix = wp;
             ics->wmpixno++;
         }
         g_object_unref(gp);
     }
     g_free(fname);    
+    g_free(iname);    
+    g_free(classname);    
+    g_free(appname);    
     RET(1);
   
  error:
@@ -489,7 +499,8 @@ icons_destructor(plugin_instance *p)
     wmpix_t *wp;
     
     ENTER;
-    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), do_net_client_list, ics);
+    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), do_net_client_list,
+        ics);
     g_signal_handlers_disconnect_by_func(G_OBJECT(gtk_icon_theme_get_default()),
         ics_parse_config, p);
     gdk_window_remove_filter(NULL, (GdkFilterFunc)ics_event_filter, ics );
@@ -501,8 +512,14 @@ icons_destructor(plugin_instance *p)
         g_free(wp->data);
         g_free(wp);
     }
-    g_hash_table_foreach_remove(ics->task_list, (GHRFunc) task_remove_all, (gpointer)ics);
+    if (ics->dicon) {
+        g_free(ics->dicon->data);
+        g_free(ics->dicon);
+    }
+    g_hash_table_foreach_remove(ics->task_list, (GHRFunc) task_remove_all,
+        (gpointer)ics);
     g_hash_table_destroy(ics->task_list);
+    g_free(ics);
     RET();
 }
 
