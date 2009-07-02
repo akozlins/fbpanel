@@ -319,7 +319,7 @@ get_utf8_property(Window win, Atom atom)
     int format;
     gulong nitems;
     gulong bytes_after;
-    gchar *val, *retval;
+    gchar  *retval;
     int result;
     guchar *tmp = NULL;
 
@@ -328,13 +328,12 @@ get_utf8_property(Window win, Atom atom)
     result = XGetWindowProperty (GDK_DISPLAY(), win, atom, 0, G_MAXLONG, False,
           a_UTF8_STRING, &type, &format, &nitems,
           &bytes_after, &tmp);
-    if (result != Success || type == None)
+    if (result != Success)
         return NULL;
-    val = (gchar *) tmp;
-    if (val) {
+    if (tmp) {
         if (type == a_UTF8_STRING && format == 8 && nitems != 0)
-            retval = g_strndup (val, nitems);
-        XFree (val);
+            retval = g_strndup ((gchar *)tmp, nitems);
+        XFree (tmp);
     }
     return retval;
 
@@ -500,7 +499,8 @@ get_net_wm_desktop(Window win)
     if (data) {
         desk = *data;
         XFree (data);
-    }
+    } else 
+        DBG2("can't get desktop num for win 0x%lx", win);
     RET(desk);
 }
 
