@@ -239,6 +239,8 @@ do_app_dir(plugin_instance *p, const gchar *path)
     free_cats:
         g_strfreev(cats);
     }
+    g_key_file_free(file);
+    g_dir_close(dir);
     g_chdir(cwd);
     g_free(cwd);
     RET();
@@ -345,7 +347,7 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin_instance *p)
 
 
 static GtkWidget *
-make_button(plugin_instance *p, gchar *iname, gchar *fname, gchar *name, GtkWidget *menu)
+make_button(plugin_instance *p, gchar *iname, gchar *fname, gchar *name)
 {
     int w, h;
     menu_priv *m;
@@ -365,7 +367,6 @@ make_button(plugin_instance *p, gchar *iname, gchar *fname, gchar *name, GtkWidg
     gtk_box_pack_start(GTK_BOX(m->box), m->bg, FALSE, FALSE, 0);
     if (p->panel->transparent)
         gtk_bgbox_set_background(m->bg, BG_INHERIT, p->panel->tintcolor, p->panel->alpha);
-
 
     m->handler_id = g_signal_connect (G_OBJECT (m->bg), "button-press-event",
           G_CALLBACK (my_button_pressed), p);
@@ -414,13 +415,11 @@ read_item(plugin_instance *p)
     /* menu button */
     item = gtk_image_menu_item_new_with_label(name ? name : "");
     gtk_container_set_border_width(GTK_CONTAINER(item), 0);
-    if (name)
-        g_free(name);
-    if (fname || iname) {
+    if (fname || iname) 
         menu_item_set_image(item, iname, fname, 22, 22);
-        g_free(fname);
-        g_free(iname);
-    }
+    g_free(fname);
+    g_free(name);
+    g_free(iname);
     if (cmd) {
         g_signal_connect(G_OBJECT(item), "activate", (GCallback)run_command, cmd);
     } else if (action) {
@@ -563,20 +562,16 @@ read_submenu(plugin_instance *p, gboolean as_item)
     DBG("here\n");
     if (as_item) {
         mi = gtk_image_menu_item_new_with_label(name);
-        if (fname || iname) {
+        if (fname || iname) 
             menu_item_set_image(mi, iname, fname, 22, 22);
-            g_free(fname);
-            g_free(iname);
-        }
         gtk_menu_item_set_submenu (GTK_MENU_ITEM (mi), menu);
         m->menu = menu;
-        RET(mi);
     } else {
-        mi = make_button(p, iname, fname, name, menu);
-        if (fname)
-            g_free(fname);
-        RET(mi);
+        mi = make_button(p, iname, fname, name);
     }
+    g_free(fname);
+    g_free(iname);
+    RET(mi);
 
  error:
     // FIXME: we need to recursivly destroy all child menus and their items
