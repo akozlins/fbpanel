@@ -84,12 +84,12 @@ toggle_iconify(wincmd_priv *wc, guint32 action)
     net_wm_window_type nwwt;
     
     ENTER;
-    win = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST, XA_WINDOW, &num);
+    win = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST_STACKING,
+            XA_WINDOW, &num);
     if (!win)
 	RET();
     if (!num)
         goto end;
-    //tmp = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, XA_CARDINAL, 0);    
     dno = get_net_current_desktop();
     DBG("wincmd: #desk=%d\n", dno);
     //XFree(tmp);
