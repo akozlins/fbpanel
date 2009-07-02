@@ -82,7 +82,8 @@ typedef struct _taskbar{
     int desk_namesno;
     int desk_num;
     guint dnd_activate;
-    
+    int alloc_no;    
+
     unsigned int iconsize;
     unsigned int task_width_max;
     unsigned int accept_skip_pager : 1;
@@ -167,11 +168,16 @@ inline static void
 tk_free_names(task *tk)
 {    
     ENTER;
-    DBG("tk->name %s\n", tk->name);
-    DBG("tk->iname %s\n", tk->iname);
-    g_free(tk->name);
-    g_free(tk->iname);
-    tk->name = tk->iname = NULL;
+    if ((!tk->name) != (!tk->iname)) {
+        DBG("tk names partially allocated \ntk->name=%s\ntk->iname %s\n",
+                tk->name, tk->iname);
+    }
+    if (tk->name && tk->iname) {
+        g_free(tk->name);
+        g_free(tk->iname);
+        tk->name = tk->iname = NULL;
+        tk->tb->alloc_no--;
+    }
     RET();
 }
 
@@ -192,6 +198,7 @@ tk_get_names(task *tk)
 	tk->name = g_strdup_printf(" %s ", name);
 	tk->iname = g_strdup_printf("[%s]", name);
 	g_free(name);
+        tk->tb->alloc_no++;
     }
     RET();
 }
@@ -225,8 +232,8 @@ del_task (taskbar_priv * tb, task *tk, int hdel)
 {
     ENTER;
     DBG("deleting(%d)  %08x %s\n", hdel, tk->win, tk->name);
-    if( tk->flash_timeout )
-        g_source_remove( tk->flash_timeout );
+    if (tk->flash_timeout)
+        g_source_remove(tk->flash_timeout);
     gtk_widget_destroy(tk->button);
     tb->num_tasks--;
     tk_free_names(tk);	    
@@ -931,17 +938,17 @@ tk_build_gui(taskbar_priv *tb, task *tk)
     RET();
 }
 
-/* tell to remove element with zero refcount */
 static gboolean
-tb_remove_all_tasks(Window *win, task *t)
+task_remove_every(Window *win, task *tk)
 {
-    g_free(t);
-    return TRUE;
+    ENTER;
+    del_task(tk->tb, tk, 0);
+    RET(TRUE);
 }
 
 /* tell to remove element with zero refcount */
 static gboolean
-tb_remove_stale_tasks(Window *win, task *tk, gpointer data)
+task_remove_stale(Window *win, task *tk, gpointer data)
 {
     ENTER;
     if (tk->refcount-- == 0) {
@@ -1006,7 +1013,7 @@ tb_net_client_list(GtkWidget *widget, taskbar_priv *tb)
     }
     
     /* remove windows that arn't in the NET_CLIENT_LIST anymore */
-    g_hash_table_foreach_remove(tb->task_list, (GHRFunc) tb_remove_stale_tasks, NULL);
+    g_hash_table_foreach_remove(tb->task_list, (GHRFunc) task_remove_stale, NULL);
     tb_display(tb);
     RET();
 }
@@ -1414,11 +1421,12 @@ taskbar_destructor(plugin_instance *p)
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), tb_net_number_of_desktops, tb);
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), tb_net_client_list, tb);   
     gdk_window_remove_filter(NULL, (GdkFilterFunc)tb_event_filter, tb );
-    g_hash_table_foreach_remove(tb->task_list, (GHRFunc) tb_remove_all_tasks, NULL);
+    g_hash_table_foreach_remove(tb->task_list, (GHRFunc) task_remove_every, NULL);
     g_hash_table_destroy(tb->task_list);
     gtk_widget_destroy(tb->bar);
     gtk_widget_destroy(tb->menu);
-  
+    DBG("alloc_no=%d\n", tb->alloc_no);
+    g_free(tb); 
     RET();
 }
 
