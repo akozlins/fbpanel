@@ -21,12 +21,6 @@
 
 //#define DEBUGPRN
 #include "dbg.h"
-/*
- * TODO : icon_copied
- * 21/03/04 aanatoly
- * v   implement wm icon scaling ??
- *     implement net_wm_icon 
- */
 
 typedef struct wmpix_t {
     struct wmpix_t *next;
@@ -38,7 +32,6 @@ typedef struct wmpix_t {
 struct _icons;
 typedef struct _task{
     struct _icons *ics;
-    struct task *next;
     Window win;
     int refcount;
     XClassHint ch;    
@@ -54,7 +47,6 @@ typedef struct _icons{
     GHashTable  *task_list;
     int num_tasks;
     wmpix_t *wmpix; 
-    int wmpixno;
     wmpix_t *dicon;
 } icons_priv;
 
@@ -64,7 +56,59 @@ static void ics_propertynotify(icons_priv *ics, XEvent *ev);
 static GdkFilterReturn ics_event_filter( XEvent *, GdkEvent *, icons_priv *);
 static void icons_destructor(plugin_instance *p);
 
-stat
+/******************************************/
+/* Resource Release Code                  */
+/******************************************/
+static void free_task(icons_priv *ics, task *tk, int hdel)
+{
+    ENTER;
+    ics->num_tasks--; 
+    if (hdel)
+        g_hash_table_remove(ics->task_list, &tk->win);
+    if (tk->ch.res_class)
+        XFree(tk->ch.res_class);
+    if (tk->ch.res_name)
+        XFree(tk->ch.res_name);
+    g_free(tk);
+    RET();
+}
+
+static gboolean task_remove_every(Window *win, task *tk)
+{
+    free_task(tk->ics, tk, 0);
+    return TRUE;
+}
+
+
+static void drop_config(icons_priv *ics)
+{
+    wmpix_t *wp;
+
+    ENTER;
+    /* free application icons */
+    while (ics->wmpix) {
+        wp = ics->wmpix;
+        ics->wmpix = ics->wmpix->next;
+        g_free(wp->ch.res_name);
+        g_free(wp->ch.res_class);
+        g_free(wp->data);
+        g_free(wp);
+    }
+
+    /* free default icon */
+    if (ics->dicon) {
+        g_free(ics->dicon->data);
+        g_free(ics->dicon);
+        ics->dicon = NULL;
+    }
+
+    /* free task list */
+    g_hash_table_foreach_remove(ics->task_list, (GHRFunc) task_remove_every, (gpointer)ics);
+
+    if (ics->wins)
+        XFree(ics->wins);
+    RET();
+}
 
 static void
 get_wmclass(task *tk)
@@ -90,23 +134,7 @@ find_task (icons_priv * ics, Window win)
 }
 
 
-static void
-del_task (icons_priv * ics, task *tk, int hdel)
-{
-    ENTER;
-    ics->num_tasks--; 
-    if (hdel)
-        g_hash_table_remove(ics->task_list, &tk->win);
-    if (tk->ch.res_class)
-        XFree(tk->ch.res_class);
-    if (tk->ch.res_name)
-        XFree(tk->ch.res_name);
-    g_free(tk);
-    RET();
-}
-
-static wmpix_t *
-get_dicon_maybe(icons_priv *ics, task *tk)
+static int task_has_icon(task *tk)
 {
     XWMHints *hints;
     gulong *data;
@@ -116,20 +144,19 @@ get_dicon_maybe(icons_priv *ics, task *tk)
     data = get_xaproperty(tk->win, a_NET_WM_ICON, XA_CARDINAL, &n);
     if (data) {
         XFree(data);
-        RET(NULL);
+        RET(1);
     }
     
     hints = XGetWMHints(GDK_DISPLAY(), tk->win);
     if (hints) {
         if ((hints->flags & IconPixmapHint) || (hints->flags & IconMaskHint)) {
             XFree (hints);
-            RET(NULL);
+            RET(1);
         }
         XFree (hints);
     }
-    RET(ics->dicon);
+    RET(0);
 }
-
 
 static wmpix_t *
 get_user_icon(icons_priv *ics, task *tk)
@@ -150,7 +177,6 @@ get_user_icon(icons_priv *ics, task *tk)
         } 
     }
     RET(NULL);
-    //RET (ics->dicon);
 }
 
 
@@ -210,9 +236,11 @@ set_icon_maybe (icons_priv *ics, task *tk)
 
 
     pix = get_user_icon(ics, tk);
-    if (!pix) 
-        pix = get_dicon_maybe(ics, tk);
-    
+    if (!pix) {
+        if (task_has_icon(tk))
+            RET();
+        pix = ics->dicon;
+    } 
     if (!pix)
         RET();
 
@@ -227,20 +255,11 @@ set_icon_maybe (icons_priv *ics, task *tk)
 
 /* tell to remove element with zero refcount */
 static gboolean
-task_remove_all(Window *win, task *tk, gpointer data)
-{
-    del_task(tk->ics, tk, 0);
-    return TRUE;
-}
-
-
-/* tell to remove element with zero refcount */
-static gboolean
-remove_stale_tasks(Window *win, task *tk, gpointer data)
+task_remove_stale(Window *win, task *tk)
 {
     ENTER;
     if (tk->refcount-- == 0) {
-        del_task(tk->ics, tk, 0);
+        free_task(tk->ics, tk, 0);
         RET(TRUE);
     }
     RET(FALSE);
@@ -263,14 +282,12 @@ ics_event_filter( XEvent *xev, GdkEvent *event, icons_priv *ics)
 
 
 static void
-do_net_client_list(GtkWidget *widget, icons_priv *ics)
+do_net_client_list(icons_priv *ics)
 {
     int i;
     task *tk;
     
     ENTER;
-    if (ics->wins)
-        XFree(ics->wins);
     ics->wins = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST, XA_WINDOW, &ics->win_num);
     if (!ics->wins) 
 	RET();
@@ -294,7 +311,7 @@ do_net_client_list(GtkWidget *widget, icons_priv *ics)
     }
     
     /* remove windows that arn't in the NET_CLIENT_LIST anymore */
-    g_hash_table_foreach_remove(ics->task_list, (GHRFunc) remove_stale_tasks, NULL);
+    g_hash_table_foreach_remove(ics->task_list, (GHRFunc) task_remove_stale, NULL);
     RET();
 }
 
@@ -311,14 +328,15 @@ ics_propertynotify(icons_priv *ics, XEvent *ev)
     DBG("win=%lx at=%ld\n", win, at);
     if (win != GDK_ROOT_WINDOW()) {
 	task *tk = find_task(ics, win);
-        
-	if (!tk) RET();
+
+        if (!tk) 
+            RET();
         if (at == XA_WM_CLASS) {
-	    get_wmclass(tk);
+            get_wmclass(tk);
             set_icon_maybe(ics, tk);
-	} else if (at == XA_WM_HINTS) {
+        } else if (at == XA_WM_HINTS) {
             set_icon_maybe(ics, tk);
-	}  
+        }  
     }
     RET();
 }
@@ -373,7 +391,6 @@ read_application(plugin_instance *p)
             wp->ch.res_name = g_strdup(appname);
             wp->ch.res_class = g_strdup(classname);
             ics->wmpix = wp;
-            ics->wmpixno++;
         }
         g_object_unref(gp);
     }
@@ -417,24 +434,12 @@ read_dicon(icons_priv *ics, gchar *name)
 
 
 static int
-ics_parse_config(GtkIconTheme *icon_theme, plugin_instance *p)
+ics_parse_config(plugin_instance *p)
 {
     icons_priv *ics = (icons_priv *)p->priv;
-    wmpix_t *wp;
     line s;
     
     ENTER;
-    while (ics->wmpix) {
-        wp = ics->wmpix;
-        ics->wmpix = ics->wmpix->next;
-        g_free(wp->ch.res_name);
-        g_free(wp->ch.res_class);
-        g_free(wp->data);
-        g_free(wp);
-    }
-
-    ics->wmpixno = 0;
-    g_hash_table_foreach_remove(ics->task_list, (GHRFunc) task_remove_all, (gpointer)ics);
     fseek(p->fp, 0, SEEK_SET);
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {
@@ -464,10 +469,19 @@ ics_parse_config(GtkIconTheme *icon_theme, plugin_instance *p)
             goto error;
         }
     }
-    do_net_client_list(NULL, ics);
     RET(1);
 error:
     RET(0);
+}
+
+static void theme_changed(plugin_instance *p)
+{
+
+    ENTER;
+    drop_config(p->priv);
+    ics_parse_config(p);
+    do_net_client_list(p->priv);
+    RET();
 }
 
 static int
@@ -479,12 +493,11 @@ icons_constructor(plugin_instance *p)
     ics = g_new0(icons_priv, 1);
     ics->plug = p;
     p->priv = ics;
-    ics->wmpixno = 0;
     ics->task_list = g_hash_table_new(g_int_hash, g_int_equal);
-    ics_parse_config(NULL, p);
-    g_signal_connect (G_OBJECT(gtk_icon_theme_get_default()),
-           "changed", (GCallback) ics_parse_config, p);
-    g_signal_connect (G_OBJECT (fbev), "client_list",
+    theme_changed(p);
+    g_signal_connect_swapped(G_OBJECT(gtk_icon_theme_get_default()),
+           "changed", (GCallback) theme_changed, p);
+    g_signal_connect_swapped(G_OBJECT (fbev), "client_list",
           G_CALLBACK (do_net_client_list), (gpointer) ics);
     gdk_window_add_filter(NULL, (GdkFilterFunc)ics_event_filter, ics );
 
@@ -496,28 +509,14 @@ static void
 icons_destructor(plugin_instance *p)
 {
     icons_priv *ics = (icons_priv *)p->priv;
-    wmpix_t *wp;
     
     ENTER;
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), do_net_client_list,
-        ics);
+            ics);
     g_signal_handlers_disconnect_by_func(G_OBJECT(gtk_icon_theme_get_default()),
-        ics_parse_config, p);
+            theme_changed, p);
     gdk_window_remove_filter(NULL, (GdkFilterFunc)ics_event_filter, ics );
-    while (ics->wmpix) {
-        wp = ics->wmpix;
-        ics->wmpix = ics->wmpix->next;
-        g_free(wp->ch.res_name);
-        g_free(wp->ch.res_class);
-        g_free(wp->data);
-        g_free(wp);
-    }
-    if (ics->dicon) {
-        g_free(ics->dicon->data);
-        g_free(ics->dicon);
-    }
-    g_hash_table_foreach_remove(ics->task_list, (GHRFunc) task_remove_all,
-        (gpointer)ics);
+    drop_config(ics);
     g_hash_table_destroy(ics->task_list);
     g_free(ics);
     RET();
