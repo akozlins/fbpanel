@@ -18,6 +18,11 @@
 n=${NAME:-`basename $PWD`}-${VERSION:-`cat version`}
 t=$n.tbz2
 pwd=`pwd`
+if [ -d .svn -a -n "`svn st`" ]; then
+    echo "SVN repository is not clean. Exiting."
+    svn st
+    exit 1
+fi
 
 td=/tmp/$$
 mkdir $td || exit 1
