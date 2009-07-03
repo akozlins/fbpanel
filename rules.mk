@@ -33,15 +33,14 @@ endif
 ## Compilation flags
 
 ##
-# always recommended: warnings on, and path to #include <config.h>
+# if CFLAGS wasn't set by package builder set it to -O2
+ifeq ($(CFLAGS),)
+    override CFLAGS = -O2
+endif
+# warnings on, and path to #include <config.h>
 override CFLAGS += -Wall -I$(TOPDIR)
-# select between debug or release build
-# debug - debug symbols, no optimization, no striping
-# release - striped, -O2 optimized code
 ifeq ($(DEBUG),enabled)
     override CFLAGS += -g -Werror
-else
-    CFLAGS += -O2
 endif
 
  
