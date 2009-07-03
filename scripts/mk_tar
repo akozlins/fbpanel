@@ -1,9 +1,21 @@
 #!/bin/bash
 
-# for this script to work you have to have text file 'version'
-# with a version (as a string) inside 
+# This script creates brizpped tar archive of the project
+# with name NAME-VERSION.tbz2
+# NAME - environment variable NAME or TOPDIR's last component
+# VERSION - environment variable VERSION or content of TOPDIR/version file
 
-n=${NAME:-`basename $PWD`}-`cat version`
+# Examples 
+# $ pwd
+# /home/aanatoly/src/fbpanel/trunk
+# cat version
+# 5.6
+# $ make tar
+# -rw-rw-r-- 1 aanatoly users 198372 2009-07-03 21:51 ../trunk-5.6.tbz2
+# $ make tar NAME=fbpanel VERSION=9.9
+# -rw-rw-r-- 1 aanatoly users 198372 2009-07-03 21:51 ../fbpanel-9.9.tbz2
+
+n=${NAME:-`basename $PWD`}-${VERSION:-`cat version`}
 t=$n.tbz2
 pwd=`pwd`
 
