@@ -500,7 +500,7 @@ get_net_wm_desktop(Window win)
         desk = *data;
         XFree (data);
     } else 
-        DBG2("can't get desktop num for win 0x%lx", win);
+        DBG("can't get desktop num for win 0x%lx", win);
     RET(desk);
 }
 
