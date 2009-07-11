@@ -125,6 +125,7 @@ extern Atom a_NET_CLIENT_LIST_STACKING;
 extern Atom a_NET_NUMBER_OF_DESKTOPS;
 extern Atom a_NET_CURRENT_DESKTOP;
 extern Atom a_NET_DESKTOP_NAMES;
+extern Atom a_NET_DESKTOP_GEOMETRY;
 extern Atom a_NET_ACTIVE_WINDOW;
 extern Atom a_NET_CLOSE_WINDOW;
 extern Atom a_NET_SUPPORTED;

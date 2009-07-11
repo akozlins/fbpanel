@@ -200,6 +200,8 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
         } else if (at == a_XROOTPMAP_ID) {
             if (p->transparent) 
                 fb_bg_notify_changed_bg(p->bg);           
+        } else if (at == a_NET_DESKTOP_GEOMETRY) {
+            gtk_main_quit();
         } else
             RET(GDK_FILTER_CONTINUE);
         RET(GDK_FILTER_REMOVE);
@@ -295,7 +297,8 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
         RET(FALSE);
     }
 
-    dup = (e->width == p->cw && e->height == p->ch && e->x == p->cx && e->y == p->cy);
+    dup = (e->width == p->cw && e->height == p->ch && e->x == p->cx && e->y ==
+            p->cy);
     if (dup) {
         DBG("dup. exiting\n");
         RET(FALSE);
@@ -336,8 +339,8 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
  * coordinates and timer:
  * 1. VISIBLE - ensures that panel is visible. When/if mouse goes "far enough"
  *      switches to WAITING state
- * 2. WAITING - starts timer. If mouse comes "close enough", stops timer and switches to VISIBLE
- *      If timer expires, switches to HIDDEN
+ * 2. WAITING - starts timer. If mouse comes "close enough", stops timer and
+ *      switches to VISIBLE.  If timer expires, switches to HIDDEN
  * 3. HIDDEN - hides panel. When mouse comes "close enough" switches to VISIBLE
  *
  * Note 1
