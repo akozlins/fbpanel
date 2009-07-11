@@ -31,7 +31,6 @@
 struct _taskbar;
 typedef struct _task{
     struct _taskbar *tb;
-    struct task *next;
     Window win;
     char *name, *iname;
     GtkWidget *button, *label, *eb;
@@ -141,7 +140,7 @@ task_visible(taskbar_priv *tb, task *tk)
           && ((tk->iconified && tb->show_iconified) || (!tk->iconified && tb->show_mapped)) );
 }
 
-static int
+inline static int
 accept_net_wm_state(net_wm_state *nws, int accept_skip_pager)
 {
     ENTER;
@@ -153,7 +152,7 @@ accept_net_wm_state(net_wm_state *nws, int accept_skip_pager)
     RET(!(nws->skip_taskbar || (accept_skip_pager && nws->skip_pager)));
 }
 
-static int
+inline static int
 accept_net_wm_window_type(net_wm_window_type *nwwt)
 {
     ENTER;
@@ -164,7 +163,7 @@ accept_net_wm_window_type(net_wm_window_type *nwwt)
 
 
 
-inline static void
+static void
 tk_free_names(task *tk)
 {    
     ENTER;
