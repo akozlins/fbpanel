@@ -283,33 +283,34 @@ make_round_corners(panel *p)
 static  gboolean
 panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
 {
-    int dup,      /* duplicate event */
-        fn_pos,   /* final position  */
-        fn_size;  /* final size      */
-
     ENTER;
     DBG("cur geom: %dx%d+%d+%d\n", e->width, e->height, e->x, e->y);
     DBG("req geom: %dx%d+%d+%d\n", p->aw, p->ah, p->ax, p->ay);
-    fn_pos  = (e->x == p->ax && e->y == p->ay);
-    fn_size = (e->width == p->aw && e->height == p->ah);
-    if (!(fn_pos || fn_size)) {
-        DBG("not yet there. exiting\n");
-        RET(FALSE);
-    }
-
-    dup = (e->width == p->cw && e->height == p->ch && e->x == p->cx && e->y ==
-            p->cy);
-    if (dup) {
+    if (e->width == p->cw && e->height == p->ch && e->x == p->cx && e->y ==
+            p->cy) {
         DBG("dup. exiting\n");
         RET(FALSE);
     }
-
-    // panel was just placed to the required postion
+    /* save current geometry */
     p->cw = e->width;
     p->ch = e->height;
     p->cx = e->x;
     p->cy = e->y;
 
+    /* if panel size is not we have requested, just wait, it will */
+    if (e->width != p->aw || e->height != p->ah) {
+        DBG("size_req not yet ready. exiting\n");
+        RET(FALSE);
+    }
+
+    /* if panel wasn't at requested position, then send another request */
+    if (e->x != p->ax || e->y != p->ay) {
+        DBG("move %d,%d\n", p->ax, p->ay);
+        gtk_window_move(GTK_WINDOW(widget), p->ax, p->ay);
+        RET(FALSE);
+    }
+
+    /* panel is at right place, lets go on */
     if (p->transparent) {
         fb_bg_notify_changed_bg(p->bg);
         DBG("remake bg image\n");

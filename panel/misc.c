@@ -613,6 +613,9 @@ calculate_width(int scrw, int wtype, int allign, int margin,
             *panw = 1;
         *panw = ((gfloat) scrw * (gfloat) *panw) / 100.0;
     }
+    if (*panw > scrw)
+        *panw = scrw;
+
     if (allign != ALLIGN_CENTER) {
         if (margin > scrw) {
             ERR( "margin is bigger then edge size %d > %d. Ignoring margin\n",
@@ -677,6 +680,11 @@ calculate_position(panel *np)
         np->aw = MAX(PANEL_HEIGHT_MIN, np->aw);
         np->ax = minx + ((np->edge == EDGE_LEFT) ? 0 : (sswidth - np->aw));
     }
+    if (!np->aw)
+        np->aw = 1;
+    if (!np->ah)
+        np->ah = 1;
+
     /*
     if (!np->visible) {
         DBG("pushing of screen dx=%d dy=%d\n", np->ah_dx, np->ah_dy);
