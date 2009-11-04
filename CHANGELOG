@@ -1,7 +1,7 @@
 5.7
 * XRandR support (dynamic desktop geometry changes)
 * Fixed "2891558: widthtype=request does not work"
-
+* configurator redraws panel on global changes
 
 5.6
 * genmon plugin - displays command output in a panel
