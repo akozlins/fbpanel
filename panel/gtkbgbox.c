@@ -298,7 +298,8 @@ gtk_bgbox_size_allocate (GtkWidget *widget, GtkAllocation *wa)
     if (GTK_WIDGET_REALIZED (widget) && !GTK_WIDGET_NO_WINDOW (widget)
           && !same_alloc) {
         priv = GTK_BGBOX_GET_PRIVATE (widget);
-        DBG("move resize\n");
+        DBG("move resize pos=%d,%d geom=%dx%d\n", wa->x, wa->y, wa->width,
+                wa->height); 
         gdk_window_move_resize (widget->window, wa->x, wa->y, wa->width, wa->height);
         gtk_bgbox_set_background(widget, priv->bg_type, priv->tintcolor, priv->alpha);
     }
