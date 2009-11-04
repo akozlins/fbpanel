@@ -77,6 +77,24 @@ extern FILE *pconf;
 
 static void global_config_save(FILE *fp);
 static void plugin_config_save_all(FILE *fp);
+static void save_config();
+
+static guint id = 0;
+static gboolean delayed_quit()
+{
+    id = 0;
+    gtk_main_quit();
+    RET(FALSE);
+}
+
+static void panel_redraw()
+{
+    save_config();
+    //gtk_widget_queue_draw(dialog);
+    if (id) 
+        g_source_remove(id);
+    id = g_timeout_add(700, (GSourceFunc)delayed_quit, NULL);
+}
 
 static void
 add_hindent_box(GtkWidget *box)
@@ -130,7 +148,7 @@ save_config()
         RET();
     }
     sprintf(fname, "%s/.fbpanel/%s", getenv("HOME"), cprofile);
-    LOG(LOG_WARN, "saving profile %s as %s\n", cprofile, fname);
+    LOG(LOG_INFO, "saving profile %s as %s\n", cprofile, fname);
     if (!(fp = fopen(fname, "w"))) {
         ERR("can't open for write %s:", fname);
         perror(NULL);
@@ -165,9 +183,7 @@ set_edge(GtkComboBox *widget, gpointer bp)
     ENTER;    
     edge = gtk_combo_box_get_active(widget) + 1;
     the_panel->edge = edge;
-    save_config();
-    gtk_widget_queue_draw(dialog);
-    gtk_main_quit();
+    panel_redraw();
     RET();
 }
 
@@ -180,13 +196,12 @@ set_allign(GtkComboBox *widget, gpointer bp)
     
     ENTER;	
     allign = gtk_combo_box_get_active(widget) + 1;
-    DBG2("allign=%d\n", allign);
+    DBG("allign=%d\n", allign);
     t = (allign != ALLIGN_CENTER);
     gtk_widget_set_sensitive(margin_label, t);
     gtk_widget_set_sensitive(margin_spinb, t);
     the_panel->allign = allign;
-    calculate_position(the_panel);
-    gtk_window_move(GTK_WINDOW(the_panel->topgwin), the_panel->ax, the_panel->ay);
+    panel_redraw();
     RET();
 }
 
@@ -195,8 +210,7 @@ set_margin(GtkSpinButton* spin, gpointer user_data )
 {
     ENTER;
     the_panel->margin = (int)gtk_spin_button_get_value(spin);
-    calculate_position(the_panel);
-    gtk_window_move(GTK_WINDOW(the_panel->topgwin), the_panel->ax, the_panel->ay);
+    panel_redraw();
     RET();
 }
 
@@ -206,7 +220,7 @@ set_width( GtkSpinButton* spin, gpointer user_data )
 {
     ENTER;
     the_panel->width = (int)gtk_spin_button_get_value(spin);
-    gtk_widget_queue_resize(the_panel->topgwin);
+    panel_redraw();
     RET();
 }
 
@@ -215,7 +229,7 @@ set_height( GtkSpinButton* spin, gpointer user_data )
 {
     ENTER;
     the_panel->height = (int)gtk_spin_button_get_value(spin);
-    gtk_widget_queue_resize(the_panel->topgwin);
+    panel_redraw();
     RET();
 }
 
@@ -242,7 +256,7 @@ set_width_type(GtkWidget *item, gpointer bp)
     gtk_adjustment_changed(width_adj);
     gtk_adjustment_value_changed(width_adj);
     the_panel->widthtype = widthtype;
-    gtk_widget_queue_resize(the_panel->topgwin);
+    panel_redraw();
     RET();
 }
 
@@ -254,9 +268,7 @@ set_round_corners(GtkWidget *b, gpointer bp)
     ENTER;
     t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b));
     the_panel->round_corners = t;
-    save_config();
-    gtk_widget_queue_draw(dialog);
-    gtk_main_quit();
+    panel_redraw();
     RET();
 }
 
@@ -267,25 +279,20 @@ set_transparency(GtkWidget *b, gpointer bp)
 
     ENTER;
     t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b));
-    //gtk_widget_set_sensitive(tr_colorl, t);
     the_panel->transparent = t;
-    save_config();
-    gtk_widget_queue_draw(dialog);
-    gtk_main_quit();
+    panel_redraw();
     RET();
 }
 
 static void
 set_transparency_color(GtkWidget *b, gpointer bp)
 {
-    ENTER2;
+    ENTER;
     gtk_color_button_get_color(GTK_COLOR_BUTTON(b), &the_panel->gtintcolor);
     the_panel->tintcolor = gcolor2rgb24(&the_panel->gtintcolor);
     the_panel->alpha = gtk_color_button_get_alpha(GTK_COLOR_BUTTON(b)) * 0xff / 0xffff;
-    save_config();
-    gtk_widget_queue_draw(dialog);
-    gtk_main_quit();
-    RET2();
+    panel_redraw();
+    RET();
 }
 #if 0
 static void
