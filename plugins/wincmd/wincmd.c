@@ -73,16 +73,17 @@ toggle_shaded(wincmd_priv *wc, guint32 action)
     RET();
 }
 
-
-
+/* if all windows are iconified then open all, 
+ * if any are open then iconify 'em */
 static void
-toggle_iconify(wincmd_priv *wc, guint32 action)
+toggle_iconify(wincmd_priv *wc)
 {
-    Window *win = NULL;
-    int num, i;
-    guint32 tmp2, dno;
+    Window *win, *awin;
+    int num, i, j, dno, raise;
+    guint32 tmp;
     net_wm_window_type nwwt;
-    
+    net_wm_state nws;
+
     ENTER;
     win = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST_STACKING,
             XA_WINDOW, &num);
@@ -90,31 +91,32 @@ toggle_iconify(wincmd_priv *wc, guint32 action)
 	RET();
     if (!num)
         goto end;
+    awin = g_new(Window, num);
     dno = get_net_current_desktop();
-    DBG("wincmd: #desk=%d\n", dno);
-    //XFree(tmp);
-    for (i = 0; i < num; i++) {
-        int skip;
+    raise = 1;
+    for (j = 0, i = 0; i < num; i++) {
+        tmp = get_net_wm_desktop(win[i]);
+        DBG("wincmd: win=0x%x dno=%d...", win[i], tmp);
+        if ((tmp != -1) && (tmp != dno))
+            continue;
 
-        tmp2 = get_net_wm_desktop(win[i]);
-        DBG("wincmd: win=0x%x dno=%d...", win[i], tmp2);
-        if ((tmp2 != -1) && (tmp2 != dno)) {
-            DBG("skip - not cur desk\n");
-            continue;
-        }
         get_net_wm_window_type(win[i], &nwwt);
-        skip = (nwwt.dock || nwwt.desktop || nwwt.splash);
-        if (skip) {
-            DBG("skip - omnipresent window type\n");
+        tmp = (nwwt.dock || nwwt.desktop || nwwt.splash);
+        if (tmp) 
             continue;
-        }
-        if (action)
-            XIconifyWindow(GDK_DISPLAY(), win[i], DefaultScreen(GDK_DISPLAY()));
+
+        get_net_wm_state(win[i], &nws);
+        raise = raise && (nws.hidden || nws.shaded);; 
+        awin[j++] = win[i];
+    }
+    while (j-- > 0) {
+        if (raise) 
+            XMapWindow (GDK_DISPLAY(), awin[j]);
         else
-            XMapWindow (GDK_DISPLAY(), win[i]);
-        DBG("ok\n");
+            XIconifyWindow(GDK_DISPLAY(), awin[j], DefaultScreen(GDK_DISPLAY()));
     }
     
+    g_free(awin);
  end:
     XFree(win);
     RET();
@@ -130,9 +132,7 @@ clicked (GtkWidget *widget, GdkEventButton *event, gpointer data)
         RET(FALSE);
 
     if (event->button == 1) {
-        wc->action1 = 1 - wc->action1;
-        toggle_iconify(wc, wc->action1);
-        DBG("wincmd: iconify all\n");
+        toggle_iconify(wc);
     } else if (event->button == 2) {
         wc->action2 = 1 - wc->action2;
         toggle_shaded(wc, wc->action2);
