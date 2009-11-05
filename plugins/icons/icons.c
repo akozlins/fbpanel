@@ -120,6 +120,7 @@ get_wmclass(task *tk)
         XFree(tk->ch.res_class);
     if (!XGetClassHint (gdk_display, tk->win, &tk->ch)) 
         tk->ch.res_class = tk->ch.res_name = NULL;
+    DBG("name=%s class=%s\n", tk->ch.res_name, tk->ch.res_class);
     RET();
 }
 
@@ -162,19 +163,24 @@ static wmpix_t *
 get_user_icon(icons_priv *ics, task *tk)
 {
     wmpix_t *tmp;
+    int mc, mn;
 
     ENTER;
-    DBG("ch.res_class=%s ch.res_name=%s\n", tk->ch.res_class, tk->ch.res_name);
-    if (tk->ch.res_class) {
-        for (tmp = ics->wmpix; tmp; tmp = tmp->next) { 
-            if ((!tmp->ch.res_name || !strcmp(tmp->ch.res_name,
-                tk->ch.res_name)) && (!tmp->ch.res_class ||
-                    !strcmp(tmp->ch.res_class, tk->ch.res_class))) 
-            {
+    if (!(tk->ch.res_class || tk->ch.res_name))
+        RET(NULL);
+    DBG("\nch.res_class=[%s] ch.res_name=[%s]\n", tk->ch.res_class,
+        tk->ch.res_name);
 
-                RET(tmp); 
-            } 
-        } 
+    for (tmp = ics->wmpix; tmp; tmp = tmp->next) { 
+        DBG("tmp.res_class=[%s] tmp.res_name=[%s]\n", tmp->ch.res_class,
+            tmp->ch.res_name);
+        mc = !tmp->ch.res_class || !strcmp(tmp->ch.res_class, tk->ch.res_class);
+        mn = !tmp->ch.res_name  || !strcmp(tmp->ch.res_name, tk->ch.res_name);
+        DBG("mc=%d mn=%d\n", mc, mn);
+        if (mc && mn) {
+            DBG("match !!!!\n");
+            RET(tmp);
+        }
     }
     RET(NULL);
 }
@@ -390,6 +396,7 @@ read_application(plugin_instance *p)
             wp->size = size;
             wp->ch.res_name = g_strdup(appname);
             wp->ch.res_class = g_strdup(classname);
+            DBG("read name=[%s] class=[%s]\n", wp->ch.res_name, wp->ch.res_class);
             ics->wmpix = wp;
         }
         g_object_unref(gp);
