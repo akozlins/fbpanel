@@ -104,7 +104,7 @@ launchbar_destructor(plugin_instance *p)
 
 
 static void
-drag_data_received_cb (GtkWidget        *widget,
+drag_data_received_cb (GtkWidget *widget,
       GdkDragContext   *context,
       gint              x,
       gint              y,
@@ -113,42 +113,31 @@ drag_data_received_cb (GtkWidget        *widget,
       guint             time,
       btn              *b)
 {
-    gchar *s, *e, *end, *str, *tmp;
+    gchar *s, *str, *tmp, *tok, *tok2;
 
     ENTER;
     if (sd->length <= 0)
         RET();
-    
+    DBG("uri drag received: info=%d/%s len=%d data=%s\n",
+         info, target_table[info].target, sd->length, sd->data);
     if (info == TARGET_URILIST) {
-        DBG("uri drag received: info=%d len=%d data=%s\n", info, sd->length, sd->data);
-        s = (gchar *)sd->data;
-        end = s + sd->length;
+        /* white-space separated list of uri's */
+        s = g_strdup((gchar *)sd->data);
         str = g_strdup(b->action);
-        while (s < end) {
-            while (s < end && g_ascii_isspace(*s))
-                s++;
-            e = s;
-            while (e < end && !g_ascii_isspace(*e))
-                e++;
-            if (s != e) {
-                *e = 0;
-                s = g_filename_from_uri(s, NULL, NULL);
-                if (s) {
-                    //strlen(s);
-                    //strlen(str);
-                    tmp = g_strconcat(str, " '", s, "'", NULL);
-                    g_free(str);
-                    g_free(s);
-                    str = tmp;
-                }
-            }
-            s = e+1;
+        for (tok = strtok(s, "\n \t\r"); tok; tok = strtok(NULL, "\n \t\r"))
+        {
+            tok2 = g_filename_from_uri(tok, NULL, NULL);
+            /* if conversion to filename was ok, use it, otherwise
+             * lets append original uri */
+            tmp = g_strdup_printf("%s '%s'", str, tok2 ? tok2 : tok);
+            g_free(str);
+            g_free(tok2);
+            str = tmp;
         }
         DBG("cmd=<%s>\n", str);
         g_spawn_command_line_async(str, NULL);
         g_free(str);
-        
-        //gtk_drag_finish (context, TRUE, FALSE, time);
+        g_free(s);
     } else if (info == TARGET_MOZ_URL) {
         gchar *utf8, *tmp;
         
@@ -164,7 +153,7 @@ drag_data_received_cb (GtkWidget        *widget,
 	*tmp = '\0';
         tmp = g_strdup_printf("%s %s", b->action, utf8);
         g_spawn_command_line_async(tmp, NULL);
-        DBG("%s %s\n", b->action, utf8);
+        DBG2("%s %s\n", b->action, utf8);
         g_free(utf8);
         g_free(tmp);
     }
