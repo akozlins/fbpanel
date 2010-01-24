@@ -147,18 +147,15 @@ clicked (GtkWidget *widget, GdkEventButton *event, gpointer data)
 static void
 wincmd_destructor(plugin_instance *p)
 {
-    wincmd_priv *wc = (wincmd_priv *)p->priv;
+    wincmd_priv *wc = (wincmd_priv *)p;
 
     ENTER;
     if (wc->mask)
         g_object_unref(wc->mask);
     if (wc->pix)
         g_object_unref(wc->pix);
-    g_free(wc);
     RET();
 }
-
-
 
 static int
 wincmd_constructor(plugin_instance *p)
@@ -166,14 +163,11 @@ wincmd_constructor(plugin_instance *p)
     line s;
     gchar *tooltip, *fname, *iname;
     wincmd_priv *wc;
-    //GdkPixbuf *gp, *gps;
     GtkWidget *button;
     int w, h;
 
     ENTER;
-    wc = g_new0(wincmd_priv, 1);
-    g_return_val_if_fail(wc != NULL, 0);
-    p->priv = wc;
+    wc = (wincmd_priv *) p;
     tooltip = fname = iname = NULL;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {

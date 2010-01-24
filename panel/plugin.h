@@ -42,7 +42,7 @@ typedef struct _plugin_instance{
     int           expand;
     int           padding;
     int           border;
-    gpointer      priv;
+    //gpointer      priv;
 } plugin_instance;
 
 void class_put(char *name);

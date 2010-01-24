@@ -93,9 +93,9 @@ cpu_constructor(plugin_instance *p)
 
     if (!(k = class_get("chart")))
         RET(0);
-    c = p->priv = g_new0(cpu_priv, 1);
     if (!PLUGIN_CLASS(k)->constructor(p))
         RET(0);
+    c = (cpu_priv *) p;
     k->set_rows(&c->chart, 1, colors);
     gtk_widget_set_tooltip_markup(p->pwid, "Cpu usage");
     c->timer = g_timeout_add(1000, (GSourceFunc) cpu_get_load, (gpointer) c);
@@ -106,12 +106,11 @@ cpu_constructor(plugin_instance *p)
 static void
 cpu_destructor(plugin_instance *p)
 {
-    cpu_priv *c = (cpu_priv *) p->priv;
+    cpu_priv *c = (cpu_priv *) p;
 
     ENTER;
     g_source_remove(c->timer);
     PLUGIN_CLASS(k)->destructor(p);
-    g_free(p->priv);
     class_put("chart");
     RET();
 }

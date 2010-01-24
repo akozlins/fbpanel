@@ -789,15 +789,12 @@ pager_constructor(plugin_instance *plug)
     line s;
 
     ENTER;
-    pg = g_new0(pager_priv, 1);
+    pg = (pager_priv *) plug;
 
 #ifdef EXTRA_DEBUG
     cp = pg;
     signal(SIGUSR2, sig_usr);
 #endif
-
-    g_return_val_if_fail(pg != NULL, 0);
-    plug->priv = pg;
 
     pg->htable = g_hash_table_new (g_int_hash, g_int_equal);
     pg->box = plug->panel->my_box_new(TRUE, 1);
@@ -859,18 +856,23 @@ pager_constructor(plugin_instance *plug)
 static void
 pager_destructor(plugin_instance *p)
 {
-    pager_priv *pg = (pager_priv *)p->priv;
+    pager_priv *pg = (pager_priv *)p;
 
     ENTER;
-    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), do_net_current_desktop, pg);
-    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), do_net_active_window, pg);
-    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), pager_rebuild_all, pg);
-    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), do_net_client_list_stacking, pg);
+    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev),
+            do_net_current_desktop, pg);
+    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev),
+            do_net_active_window, pg);
+    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev),
+            pager_rebuild_all, pg);
+    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev),
+            do_net_client_list_stacking, pg);
     gdk_window_remove_filter(NULL, (GdkFilterFunc)pager_event_filter, pg);
     while (pg->desknum--) {
         desk_free(pg, pg->desknum);
     }
-    g_hash_table_foreach_remove(pg->htable, (GHRFunc) task_remove_all, (gpointer)pg);
+    g_hash_table_foreach_remove(pg->htable, (GHRFunc) task_remove_all,
+            (gpointer)pg);
     g_hash_table_destroy(pg->htable);
     gtk_widget_destroy(pg->box);
     if (pg->wallpaper) {
@@ -879,7 +881,6 @@ pager_destructor(plugin_instance *p)
         DBG("put fbbg %p\n", pg->fbbg);
         g_object_unref(pg->fbbg);
     }
-    g_free(pg);
     RET();
 }
 

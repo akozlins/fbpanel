@@ -58,7 +58,6 @@ typedef struct _task{
 
 typedef struct _taskbar{
     plugin_instance plugin;
-    plugin_instance *plug;
     Window *wins;
     Window topxwin;
     int win_num;
@@ -878,13 +877,15 @@ tk_build_gui(taskbar_priv *tb, task *tk)
      * Do not change event mask to gtk windows spwaned by this gtk client
      * this breaks gtk internals */
     if (!FBPANEL_WIN(tk->win))
-        XSelectInput (GDK_DISPLAY(), tk->win, PropertyChangeMask | StructureNotifyMask);
+        XSelectInput(GDK_DISPLAY(), tk->win,
+                PropertyChangeMask | StructureNotifyMask);
 
     /* button */
     tk->button = gtk_button_new();
     gtk_widget_show(tk->button);
     gtk_container_set_border_width(GTK_CONTAINER(tk->button), 0);
-    gtk_widget_add_events (tk->button, GDK_BUTTON_RELEASE_MASK | GDK_BUTTON_PRESS_MASK);
+    gtk_widget_add_events (tk->button, GDK_BUTTON_RELEASE_MASK
+            | GDK_BUTTON_PRESS_MASK);
     g_signal_connect(G_OBJECT(tk->button), "button_release_event",
           G_CALLBACK(tk_callback_button_release_event), (gpointer)tk);
     g_signal_connect(G_OBJECT(tk->button), "button_press_event",
@@ -902,8 +903,6 @@ tk_build_gui(taskbar_priv *tb, task *tk)
     	g_signal_connect_after(G_OBJECT(tk->button), "scroll-event",
               G_CALLBACK(tk_callback_scroll_event), (gpointer)tk);	  
 
-
-    
     /* pix */
     tk_update_icon(tb, tk, None);
     w1 = tk->image = gtk_image_new_from_pixbuf(tk->pixbuf);
@@ -1267,11 +1266,12 @@ taskbar_make_menu(taskbar_priv *tb)
 static void
 taskbar_build_gui(plugin_instance *p)
 {
-    taskbar_priv *tb = (taskbar_priv *)p->priv;
+    taskbar_priv *tb = (taskbar_priv *) p;
     GtkBarOrientation  bo;
     
     ENTER;
-    bo = (tb->plug->panel->orientation == ORIENT_HORIZ) ? GTK_BAR_HORIZ : GTK_BAR_VERTICAL;
+    bo = (tb->plugin.panel->orientation == ORIENT_HORIZ)
+        ? GTK_BAR_HORIZ : GTK_BAR_VERTICAL;
     tb->bar = gtk_bar_new(bo, tb->spacing);
     gtk_bar_set_max_child_size(GTK_BAR(tb->bar), tb->task_width_max);
     gtk_container_add (GTK_CONTAINER (p->pwid), tb->bar);
@@ -1325,17 +1325,12 @@ taskbar_constructor(plugin_instance *p)
     line s;
     GtkRequisition req;
  
-    
     ENTER;
+    tb = (taskbar_priv *) p;
     gtk_rc_parse_string(taskbar_rc);
     get_button_spacing(&req, GTK_CONTAINER(p->pwid), "");
-   
     net_active_detect();
-    
-    tb = g_new0(taskbar_priv, 1);
-    tb->plug = p;
-    p->priv = tb;
-    
+
     tb->topxwin           = p->panel->topxwin;
     tb->tooltips          = 1;
     tb->icons_only        = 0;
@@ -1387,7 +1382,8 @@ taskbar_constructor(plugin_instance *p)
         }
     }
     if (p->panel->orientation == ORIENT_HORIZ) {
-        tb->iconsize = GTK_WIDGET(p->panel->box)->allocation.height - req.height;
+        tb->iconsize = GTK_WIDGET(p->panel->box)->allocation.height -
+            req.height;
         DBG("pwid height = %d\n", GTK_WIDGET(p->panel->box)->allocation.height);
         DBG("req.height = %d\n", req.height);
         DBG("icnosize = %d\n", tb->iconsize);
@@ -1412,20 +1408,24 @@ taskbar_constructor(plugin_instance *p)
 static void
 taskbar_destructor(plugin_instance *p)
 {
-    taskbar_priv *tb = (taskbar_priv *)p->priv;
+    taskbar_priv *tb = (taskbar_priv *) p;
     
     ENTER;
-    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), tb_net_current_desktop, tb);
-    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), tb_net_active_window, tb);
-    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), tb_net_number_of_desktops, tb);
-    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), tb_net_client_list, tb);   
+    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev),
+            tb_net_current_desktop, tb);
+    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev),
+            tb_net_active_window, tb);
+    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev),
+            tb_net_number_of_desktops, tb);
+    g_signal_handlers_disconnect_by_func(G_OBJECT (fbev),
+            tb_net_client_list, tb);   
     gdk_window_remove_filter(NULL, (GdkFilterFunc)tb_event_filter, tb );
-    g_hash_table_foreach_remove(tb->task_list, (GHRFunc) task_remove_every, NULL);
+    g_hash_table_foreach_remove(tb->task_list, (GHRFunc) task_remove_every,
+            NULL);
     g_hash_table_destroy(tb->task_list);
     gtk_widget_destroy(tb->bar);
     gtk_widget_destroy(tb->menu);
     DBG("alloc_no=%d\n", tb->alloc_no);
-    g_free(tb); 
     RET();
 }
 

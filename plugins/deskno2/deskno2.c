@@ -22,8 +22,6 @@ typedef struct {
     char       *fmt;    
 } deskno_priv;
 
-
-
 static  void
 clicked(GtkWidget *widget, deskno_priv *dc)
 {
@@ -39,8 +37,6 @@ update_dno(GtkWidget *widget, deskno_priv *dc)
     
     RET();
 }
-
-
 
 static  void
 update_all(GtkWidget *widget, deskno_priv *dc)
@@ -87,10 +83,7 @@ deskno_constructor(plugin_instance *p)
 {
     deskno_priv *dc;
     ENTER;
-    dc = g_new0(deskno_priv, 1);
-    g_return_val_if_fail(dc != NULL, 0);
-    p->priv = dc;
-    
+    dc = (deskno_priv *) p;
     dc->main = gtk_button_new_with_label("w");
     gtk_button_set_relief(GTK_BUTTON(dc->main),GTK_RELIEF_NONE);
     gtk_container_set_border_width(GTK_CONTAINER(dc->main), 0);
@@ -114,13 +107,11 @@ deskno_constructor(plugin_instance *p)
 static void
 deskno_destructor(plugin_instance *p)
 {
-  deskno_priv *dc = (deskno_priv *)p->priv;
-
-  ENTER;
-  dc = (deskno_priv *) p->priv;
-  //g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), name_update, dc); 
-  g_free(dc);
-  RET();
+    deskno_priv *dc = (deskno_priv *) p;
+    
+    ENTER;
+    //g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), name_update, dc); 
+    RET();
 }
 
 static plugin_class class = {

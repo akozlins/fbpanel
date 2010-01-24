@@ -26,10 +26,10 @@
 #define DIGIT_PAD_H   1
 #define COLON_PAD_H   3
 
-typedef struct {
+typedef struct
+{
     plugin_instance plugin;
     GtkWidget *main;
-    GtkWidget *pwid;
     char *tfmt;
     char *cfmt;
     struct tm time;
@@ -42,14 +42,13 @@ typedef struct {
 
 //static dclock_priv me;
 
-
-
 static  gboolean
 clicked(GtkWidget *widget, GdkEventButton *event, dclock_priv *dc)
 {
     ENTER;
     if (event->type == GDK_BUTTON_PRESS && event->button == 3
-          && event->state & GDK_CONTROL_MASK) {
+            && event->state & GDK_CONTROL_MASK)
+    {
         RET(FALSE);
     }
     DBG("%s\n", dc->action);
@@ -57,10 +56,8 @@ clicked(GtkWidget *widget, GdkEventButton *event, dclock_priv *dc)
     RET(TRUE);
 }
 
-
-
 static gint
-clock_update(dclock_priv *dc )
+clock_update(dclock_priv *dc)
 {
     char output[64], *tmp, *utf8;
     time_t now;
@@ -71,37 +68,44 @@ clock_update(dclock_priv *dc )
     time(&now);
     detail = localtime(&now);
     if (detail->tm_min == dc->time.tm_min &&
-          detail->tm_hour == dc->time.tm_hour)
+            detail->tm_hour == dc->time.tm_hour)
         RET(TRUE);
     dc->time = *detail;
     if (!strftime(output, sizeof(output), dc->cfmt, detail))
         RET(TRUE);
     DBG("making new clock pixbuf ");
     gdk_pixbuf_fill(dc->clock, 0);
-    for (tmp = output, w = 0; *tmp; tmp++) {
+    for (tmp = output, w = 0; *tmp; tmp++)
+    {
         DBGE("%c", *tmp);
-        if (isdigit(*tmp)) {
+        if (isdigit(*tmp))
+        {
             i = *tmp - '0';
-            gdk_pixbuf_copy_area(dc->glyphs, i * 20, 0, DIGIT_WIDTH, DIGIT_HEIGHT,
-                  dc->clock, w, DIGIT_PAD_H);
+            gdk_pixbuf_copy_area(dc->glyphs, i * 20,
+                    0, DIGIT_WIDTH, DIGIT_HEIGHT,
+                    dc->clock, w, DIGIT_PAD_H);
             w += DIGIT_WIDTH;
-        } else if (*tmp == ':') {
-            gdk_pixbuf_copy_area(dc->glyphs, 10 * 20, 0, COLON_WIDTH, DIGIT_HEIGHT - 3,
-                  dc->clock, w, COLON_PAD_H + DIGIT_PAD_H);
+        }
+        else if (*tmp == ':')
+        {
+            gdk_pixbuf_copy_area(dc->glyphs, 10 * 20, 0, COLON_WIDTH,
+                    DIGIT_HEIGHT - 3,
+                    dc->clock, w, COLON_PAD_H + DIGIT_PAD_H);
             w += COLON_WIDTH;
-        } else {
+        }
+        else
+        {
             ERR("dclock: got %c while expecting for digit or ':'\n", *tmp);
         }
     }
     DBG("\n");
     gtk_widget_queue_draw(dc->main);
     strftime (output, sizeof(output), dc->tfmt, detail) ;
-    if ((utf8 = g_locale_to_utf8(output, -1, NULL, NULL, NULL))) {
-        gtk_widget_set_tooltip_markup(dc->pwid, utf8);
+    if ((utf8 = g_locale_to_utf8(output, -1, NULL, NULL, NULL)))
+    {
+        gtk_widget_set_tooltip_markup(dc->plugin.pwid, utf8);
         g_free(utf8);
     }
-  
-
     RET(TRUE);
 }
 
@@ -123,12 +127,15 @@ dclock_set_color(GdkPixbuf *glyphs, guint32 color)
     g = (color & 0x0000ff00) >> 8;
     b = (color & 0x000000ff);
     DBG("%dx%d: %02x %02x %02x\n",
-          gdk_pixbuf_get_width(glyphs), gdk_pixbuf_get_height(glyphs),
-          r, g, b);
-    while (h--) {
-        for (p2 = p1, w = gdk_pixbuf_get_width(glyphs); w; w--, p2 += 4) {
+            gdk_pixbuf_get_width(glyphs), gdk_pixbuf_get_height(glyphs),
+            r, g, b);
+    while (h--)
+    {
+        for (p2 = p1, w = gdk_pixbuf_get_width(glyphs); w; w--, p2 += 4)
+        {
             DBG("here %02x %02x %02x %02x\n", p2[0], p2[1], p2[2], p2[3]);
-            if (p2[3] == 0 || !(p2[0] || p2[1] || p2[2])) continue;
+            if (p2[3] == 0 || !(p2[0] || p2[1] || p2[2]))
+                continue;
             p2[0] = r;
             p2[1] = g;
             p2[2] = b;
@@ -136,6 +143,21 @@ dclock_set_color(GdkPixbuf *glyphs, guint32 color)
         p1 += gdk_pixbuf_get_rowstride(glyphs);
     }
     DBG("here\n");
+    RET();
+}
+
+static void
+dclock_destructor(plugin_instance *p)
+{
+    dclock_priv *dc = (dclock_priv *)p;
+
+    ENTER;
+    if (dc->timer)
+        g_source_remove(dc->timer);
+    gtk_widget_destroy(dc->main);
+    g_free(dc->cfmt);
+    g_free(dc->tfmt);
+    g_free(dc->action);
     RET();
 }
 
@@ -147,10 +169,7 @@ dclock_constructor(plugin_instance *p)
     
     ENTER;
     DBG("dclock: use 'tclock' plugin for text version of a time and date\n");
-    dc = g_new0(dclock_priv, 1);
-    g_return_val_if_fail(dc != NULL, 0);
-    p->priv = dc;
-    dc->pwid = p->pwid;
+    dc = (dclock_priv *) p;
     dc->glyphs = gdk_pixbuf_new_from_file(IMGPREFIX "/dclock_glyphs.png", NULL);
     if (!dc->glyphs)
         RET(0);
@@ -160,34 +179,46 @@ dclock_constructor(plugin_instance *p)
     gdk_pixbuf_fill(dc->clock, 0);
     dc->cfmt = dc->tfmt = dc->action = 0;
     dc->color = 0xff000000;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
+    while (get_line(p->fp, &s) != LINE_BLOCK_END)
+    {
+        if (s.type == LINE_NONE)
+        {
             ERR( "dclock: illegal token %s\n", s.str);
             goto error;
         }
-        if (s.type == LINE_VAR) {
+        if (s.type == LINE_VAR)
+        {
             if (!g_ascii_strcasecmp(s.t[0], "TooltipFmt"))
                 dc->tfmt = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "ClockFmt")) {
+            else if (!g_ascii_strcasecmp(s.t[0], "ClockFmt"))
+            {
                 if (strcmp(s.t[1], CLOCK_12H_FMT) &&
-                      strcmp(s.t[1], CLOCK_24H_FMT)) {
+                        strcmp(s.t[1], CLOCK_24H_FMT))
+                {
                     ERR("dclock: your ClockFmt \"%s\" is not supported.\n",
-		    	s.t[1]);
+                            s.t[1]);
 		    ERR("dclock: Please use \"%s\" or \"%s\"\n", 
-		    	CLOCK_12H_FMT, CLOCK_24H_FMT);
-                } else 
+                            CLOCK_12H_FMT, CLOCK_24H_FMT);
+                }
+                else 
                     dc->cfmt = g_strdup(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "Color")) {
+            }
+            else if (!g_ascii_strcasecmp(s.t[0], "Color"))
+            {
                 GdkColor color;
                 if (gdk_color_parse (s.t[1], &color)) 
                     dc->color = gcolor2rgb24(&color);
-            }  else if (!g_ascii_strcasecmp(s.t[0], "Action"))
+            }
+            else if (!g_ascii_strcasecmp(s.t[0], "Action"))
                 dc->action = g_strdup(s.t[1]);
-            else {
+            else
+            {
                 ERR( "dclock: unknown var %s\n", s.t[0]);
                 goto error;
             }
-        } else {
+        }
+        else
+        {
             ERR( "dclock: illegal in this context %s\n", s.str);
             goto error;
         }
@@ -204,39 +235,19 @@ dclock_constructor(plugin_instance *p)
     gtk_container_add(GTK_CONTAINER(p->pwid), dc->main);
     //gtk_widget_show(dc->clockw);
     if (dc->action)
-        g_signal_connect (G_OBJECT (dc->pwid), "button_press_event",
-              G_CALLBACK (clicked), (gpointer) dc);
+        g_signal_connect (G_OBJECT (p->pwid), "button_press_event",
+                G_CALLBACK (clicked), (gpointer) dc);
     gtk_widget_show_all(dc->main);
     dc->timer = g_timeout_add(1000, (GSourceFunc) clock_update, (gpointer)dc);
     clock_update(dc);
     
     RET(1);
 
- error:
-    g_free(dc->cfmt);
-    g_free(dc->tfmt);
-    g_free(dc->action);
-    g_free(dc);
+error:
+    dclock_destructor(p);
     RET(0);
 }
 
-
-static void
-dclock_destructor(plugin_instance *p)
-{
-  dclock_priv *dc = (dclock_priv *)p->priv;
-
-  ENTER;
-  dc = (dclock_priv *) p->priv;
-  if (dc->timer)
-      g_source_remove(dc->timer);
-  gtk_widget_destroy(dc->main);
-  g_free(dc->cfmt);
-  g_free(dc->tfmt);
-  g_free(dc->action);
-  g_free(dc);
-  RET();
-}
 
 static plugin_class class = {
     .fname       = NULL,

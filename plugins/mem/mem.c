@@ -108,7 +108,7 @@ mem_usage(gdouble *mu, gdouble *su)
 }
 #endif
 
-static void
+static gboolean
 mem_update(mem_priv *mem)
 {
     gdouble mu, su;
@@ -117,10 +117,12 @@ mem_update(mem_priv *mem)
     mem_usage(&mu, &su);
     g_snprintf(str, sizeof(str), "<b>Mem: %d%%</b>\n<b>Swap: %d%%</b>",
             (int)(mu * 100), (int) (su * 100));
+    DBG("%s\n", str);
     gtk_widget_set_tooltip_markup(mem->plugin.pwid, str);
     gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(mem->mem_pb), mu);
     if (mem->show_swap)
         gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(mem->swap_pb), su);
+    RET(TRUE);
 }
 
 

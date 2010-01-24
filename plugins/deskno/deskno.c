@@ -58,10 +58,7 @@ deskno_constructor(plugin_instance *p)
     GtkWidget *button;
     
     ENTER;
-    dc = g_new0(deskno_priv, 1);
-    g_return_val_if_fail(dc != NULL, 0);
-    p->priv = dc;
-    
+    dc = (deskno_priv *) p;
     dc->main = gtk_event_box_new();
     button = gtk_button_new();
     gtk_button_set_relief(GTK_BUTTON(button),GTK_RELIEF_NONE);
@@ -81,12 +78,11 @@ deskno_constructor(plugin_instance *p)
 static void
 deskno_destructor(plugin_instance *p)
 {
-  deskno_priv *dc = (deskno_priv *)p->priv;
+  deskno_priv *dc = (deskno_priv *) p;
 
   ENTER;
-  dc = (deskno_priv *) p->priv;
-  g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), name_update, dc); 
-  g_free(dc);
+  g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), name_update, dc);
+  g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), clicked, dc); 
   RET();
 }
 

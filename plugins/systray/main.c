@@ -22,9 +22,7 @@
 typedef struct {
     plugin_instance plugin;
     GtkWidget *mainw;
-    plugin_instance *plug;
     GtkWidget *box;
-    /////
     EggTrayManager *tray_manager;
     int icon_num;
 } tray_priv;
@@ -88,14 +86,13 @@ message_cancelled (EggTrayManager *manager, GtkWidget *icon, glong id,
 static void
 tray_destructor(plugin_instance *p)
 {
-    tray_priv *tr = (tray_priv *)p->priv;
+    tray_priv *tr = (tray_priv *) p;
 
     ENTER;
     /* Make sure we drop the manager selection */
     if (tr->tray_manager)
         g_object_unref (G_OBJECT (tr->tray_manager));
     fixed_tip_hide ();
-    g_free(tr);
     RET();
 }
 
@@ -127,17 +124,10 @@ tray_constructor(plugin_instance *p)
     //GtkWidget *frame;
     
     ENTER;
-    class_get("tray"); //create extra ref so the plugin could not be unloaded
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        ERR("tray: illegal in this context %s\n", s.str);
-        RET(0);
-    }
+    tr = (tray_priv *) p;
 
+    class_get("tray"); //create extra ref so the plugin could not be unloaded
     
-    tr = g_new0(tray_priv, 1);
-    g_return_val_if_fail(tr != NULL, 0);
-    p->priv = tr;
-    tr->plug = p;
     tr->icon_num = 0;
     tr->box = p->panel->my_box_new(FALSE, 1);
     g_signal_connect_after (p->pwid, "notify::style", G_CALLBACK (tray_notify_style_event), tr->box);

@@ -1,8 +1,9 @@
 include %%topdir%%/config.mk
 
-SUBDIRS = dclock deskno deskno2 icons image launchbar menu 
+SUBDIRS = dclock deskno icons image launchbar menu 
 SUBDIRS += pager separator space systray taskbar tclock test wincmd
 SUBDIRS += chart net cpu mem genmon
-
+# unstable
+#SUBDIRS += deskno2
 
 include %%topdir%%/rules.mk

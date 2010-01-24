@@ -90,7 +90,7 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, btn *b )
 static void
 launchbar_destructor(plugin_instance *p)
 {
-    launchbar_priv *lb = (launchbar_priv *)p->priv;
+    launchbar_priv *lb = (launchbar_priv *) p;
     int i;
 
     ENTER;
@@ -98,7 +98,6 @@ launchbar_destructor(plugin_instance *p)
     for (i = 0; i < lb->btn_num; i++) {
         g_free(lb->btns[i].action);     
     }
-    g_free(lb);
     RET();
 }
 
@@ -163,7 +162,7 @@ drag_data_received_cb (GtkWidget *widget,
 static int
 read_button(plugin_instance *p)
 {
-    launchbar_priv *lb = (launchbar_priv *)p->priv;
+    launchbar_priv *lb = (launchbar_priv *) p;
     gchar *iname, *fname, *tooltip, *action;
     //GdkPixbuf *gp, *gps;
     GtkWidget *button;
@@ -281,13 +280,11 @@ launchbar_constructor(plugin_instance *p)
         "widget '*' style 'launchbar-style'";
    
     ENTER;
+    lb = (launchbar_priv *) p;
     gtk_widget_set_name(p->pwid, "launchbar");
     gtk_rc_parse_string(launchbar_rc);
     //get_button_spacing(&req, GTK_CONTAINER(p->pwid), "");
     
-    lb = g_new0(launchbar_priv, 1);
-    g_return_val_if_fail(lb != NULL, 0);
-    p->priv = lb;
     lb->box = p->panel->my_box_new(FALSE, 0);
     gtk_container_add(GTK_CONTAINER(p->pwid), lb->box);
     gtk_container_set_border_width (GTK_CONTAINER (lb->box), 0);

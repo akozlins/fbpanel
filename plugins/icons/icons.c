@@ -41,7 +41,6 @@ typedef struct _task{
 
 typedef struct _icons{
     plugin_instance plugin;
-    plugin_instance *plug;
     Window *wins;
     int win_num;
     GHashTable  *task_list;
@@ -349,9 +348,8 @@ ics_propertynotify(icons_priv *ics, XEvent *ev)
 
 
 static int
-read_application(plugin_instance *p)
+read_application(icons_priv *ics)
 {
-    icons_priv *ics = (icons_priv *)p->priv;
     GdkPixbuf *gp = NULL;
     line s;
     gchar *fname, *iname, *appname, *classname;
@@ -361,7 +359,7 @@ read_application(plugin_instance *p)
     
     ENTER;
     iname = fname = appname = classname = NULL;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
+    while (get_line(ics->plugin.fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {
             ERR( "icons: illegal token %s\n", s.str);
             goto error;
@@ -441,14 +439,13 @@ read_dicon(icons_priv *ics, gchar *name)
 
 
 static int
-ics_parse_config(plugin_instance *p)
+ics_parse_config(icons_priv *ics)
 {
-    icons_priv *ics = (icons_priv *)p->priv;
     line s;
     
     ENTER;
-    fseek(p->fp, 0, SEEK_SET);
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
+    fseek(ics->plugin.fp, 0, SEEK_SET);
+    while (get_line(ics->plugin.fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {
             ERR( "icons: illegal token %s\n", s.str);
             goto error;
@@ -464,7 +461,7 @@ ics_parse_config(plugin_instance *p)
             }
         } else if (s.type == LINE_BLOCK_START) {
             if (!g_ascii_strcasecmp(s.t[0], "application")) {
-                if (!read_application(p)) {
+                if (!read_application(ics)) {
                     goto error;
                 }
             } else {
@@ -481,13 +478,14 @@ error:
     RET(0);
 }
 
-static void theme_changed(plugin_instance *p)
+static void
+theme_changed(icons_priv *ics)
 {
 
     ENTER;
-    drop_config(p->priv);
-    ics_parse_config(p);
-    do_net_client_list(p->priv);
+    drop_config(ics);
+    ics_parse_config(ics);
+    do_net_client_list(ics);
     RET();
 }
 
@@ -497,13 +495,11 @@ icons_constructor(plugin_instance *p)
     icons_priv *ics;
 
     ENTER;
-    ics = g_new0(icons_priv, 1);
-    ics->plug = p;
-    p->priv = ics;
+    ics = (icons_priv *) p;
     ics->task_list = g_hash_table_new(g_int_hash, g_int_equal);
-    theme_changed(p);
+    theme_changed(ics);
     g_signal_connect_swapped(G_OBJECT(gtk_icon_theme_get_default()),
-           "changed", (GCallback) theme_changed, p);
+           "changed", (GCallback) theme_changed, ics);
     g_signal_connect_swapped(G_OBJECT (fbev), "client_list",
           G_CALLBACK (do_net_client_list), (gpointer) ics);
     gdk_window_add_filter(NULL, (GdkFilterFunc)ics_event_filter, ics );
@@ -515,17 +511,16 @@ icons_constructor(plugin_instance *p)
 static void
 icons_destructor(plugin_instance *p)
 {
-    icons_priv *ics = (icons_priv *)p->priv;
+    icons_priv *ics = (icons_priv *) p;
     
     ENTER;
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), do_net_client_list,
             ics);
     g_signal_handlers_disconnect_by_func(G_OBJECT(gtk_icon_theme_get_default()),
-            theme_changed, p);
+            theme_changed, ics);
     gdk_window_remove_filter(NULL, (GdkFilterFunc)ics_event_filter, ics );
     drop_config(ics);
     g_hash_table_destroy(ics->task_list);
-    g_free(ics);
     RET();
 }
 

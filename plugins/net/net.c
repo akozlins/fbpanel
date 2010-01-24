@@ -106,9 +106,9 @@ net_constructor(plugin_instance *p)
 
     if (!(k = class_get("chart")))
         RET(0);
-    c = p->priv = g_new0(net_priv, 1);
     if (!PLUGIN_CLASS(k)->constructor(p))
         RET(0);
+    c = (net_priv *) p;
     k->set_rows(&c->chart, 2, colors);
     gtk_widget_set_tooltip_markup(p->pwid, "Net usage");
     c->timer = g_timeout_add(1000, (GSourceFunc) net_get_load, (gpointer) c);
@@ -122,12 +122,12 @@ net_constructor(plugin_instance *p)
 static void
 net_destructor(plugin_instance *p)
 {
-    net_priv *c = (net_priv *) p->priv;
+    net_priv *c = (net_priv *) p;
 
     ENTER;
-    g_source_remove(c->timer);
+    if (c->timer)
+        g_source_remove(c->timer);
     PLUGIN_CLASS(k)->destructor(p);
-    g_free(p->priv);
     class_put("chart");
     RET();
 }

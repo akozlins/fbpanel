@@ -79,7 +79,7 @@ static void menu_icon_theme_changed(GtkIconTheme *icon_theme, plugin_instance *p
 static void
 menu_destructor(plugin_instance *p)
 {
-    menu_priv *m = (menu_priv *)p->priv;
+    menu_priv *m = (menu_priv *) p;
 
     ENTER;
     if (m->tout)
@@ -93,8 +93,6 @@ menu_destructor(plugin_instance *p)
     }
     DBG("destroy(m->box)\n");
     gtk_widget_destroy(m->box);
-    DBG("here\n");
-    g_free(m);
     RET();
 }
 
@@ -159,7 +157,7 @@ do_app_dir(plugin_instance *p, const gchar *path)
     const gchar* name;
     gchar *cwd, **cats, **tmp, *exec, *title, *icon, *dot;
     GKeyFile*  file;
-    menu_priv *m = (menu_priv *)p->priv;
+    menu_priv *m = (menu_priv *) p;
 
     ENTER;
     DBG("path: %s\n", path);
@@ -214,7 +212,7 @@ do_app_dir(plugin_instance *p, const gchar *path)
             GtkWidget **menu, *mi;
 
             DBG("cat: %s\n", *tmp);
-            if (!(menu = g_hash_table_lookup( ((menu_priv *)p->priv)->ht, tmp[0])))
+            if (!(menu = g_hash_table_lookup(m->ht, tmp[0])))
                 continue;
 
             mi = gtk_image_menu_item_new_with_label(title);
@@ -256,7 +254,7 @@ make_fdo_menu(plugin_instance *p, GtkWidget *menu)
     const char** sys_dirs = (const char**)g_get_system_data_dirs();
     int i;
     gchar *path;
-    menu_priv *m = (menu_priv *)p->priv;
+    menu_priv *m = (menu_priv *) p;
 
     ENTER;
     m->ht = g_hash_table_new(g_str_hash, g_str_equal);
@@ -310,7 +308,7 @@ delayed_menu_creation(plugin_instance *p)
     menu_priv *m;
 
     ENTER;
-    m = (menu_priv *)p->priv;
+    m = (menu_priv *) p;
     if (!m->menu) {
         fseek(p->fp, 0, SEEK_SET);
         read_submenu(p, TRUE);
@@ -329,7 +327,7 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin_instance *p)
           && event->state & GDK_CONTROL_MASK) {
         RET(FALSE);
     }
-    m = (menu_priv *)p->priv;
+    m = (menu_priv *) p;
     if ((event->type == GDK_BUTTON_PRESS)
           && (event->x >=0 && event->x < widget->allocation.width)
           && (event->y >=0 && event->y < widget->allocation.height)) {
@@ -353,7 +351,7 @@ make_button(plugin_instance *p, gchar *iname, gchar *fname, gchar *name)
     menu_priv *m;
 
     ENTER;
-    m = (menu_priv *)p->priv;
+    m = (menu_priv *) p;
     if (p->panel->orientation == ORIENT_HORIZ) {
         w = -1;
         h = p->panel->ah;
@@ -381,7 +379,6 @@ read_item(plugin_instance *p)
     line s;
     gchar *name, *fname, *iname, *action;
     GtkWidget *item;
-    //menu_priv *m = (menu_priv *)p->priv;
     void (*cmd)(void);
 
     ENTER;
@@ -465,7 +462,7 @@ read_include(plugin_instance *p)
 {
     gchar *name;
     line s;
-    menu_priv *m = (menu_priv *)p->priv;
+    menu_priv *m = (menu_priv *) p;
     FILE *fp = NULL;
 
     ENTER;
@@ -497,7 +494,7 @@ read_submenu(plugin_instance *p, gboolean as_item)
     line s;
     GtkWidget *mi, *menu;
     gchar name[256], *fname, *iname;
-    menu_priv *m = (menu_priv *)p->priv;
+    menu_priv *m = (menu_priv *)p;
 
 
     ENTER;
@@ -589,7 +586,7 @@ menu_icon_theme_changed(GtkIconTheme *icon_theme, plugin_instance *p)
     menu_priv *m;
 
     ENTER;
-    m = (menu_priv *)p->priv;
+    m = (menu_priv *) p;
     if (m->menu) {
         DBG("destroy(m->menu)\n");
         gtk_widget_destroy(m->menu);
@@ -607,9 +604,7 @@ menu_constructor(plugin_instance *p)
     menu_priv *m;
 
     ENTER;
-    m = g_new0(menu_priv, 1);
-    g_return_val_if_fail(m != NULL, 0);
-    p->priv = m;
+    m = (menu_priv *) p;
     m->iconsize = 22;
     m->box = gtk_hbox_new(FALSE, 0);
     gtk_container_set_border_width(GTK_CONTAINER(m->box), 0);

@@ -86,10 +86,7 @@ tclock_constructor(plugin_instance *p)
     struct tm * detail ;
     
     ENTER;
-    dc = g_new0(tclock_priv, 1);
-    g_return_val_if_fail(dc != NULL, 0);
-    p->priv = dc;
-    
+    dc = (tclock_priv *) p;
     dc->cfmt = dc->tfmt = dc->action = 0;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {
@@ -148,17 +145,15 @@ tclock_constructor(plugin_instance *p)
 static void
 tclock_destructor(plugin_instance *p)
 {
-  tclock_priv *dc = (tclock_priv *)p->priv;
+  tclock_priv *dc = (tclock_priv *) p;
 
   ENTER;
-  dc = (tclock_priv *) p->priv;
   if (dc->timer)
       g_source_remove(dc->timer);
   gtk_widget_destroy(dc->main);
   g_free(dc->cfmt);
   g_free(dc->tfmt);
   g_free(dc->action);
-  g_free(dc);
   RET();
 }
 

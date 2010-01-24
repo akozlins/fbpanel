@@ -22,7 +22,7 @@ typedef struct {
 static void
 image_destructor(plugin_instance *p)
 {
-    image_priv *img = (image_priv *)p->priv;
+    image_priv *img = (image_priv *) p;
 
     ENTER;
     gtk_widget_destroy(img->mainw);
@@ -30,13 +30,8 @@ image_destructor(plugin_instance *p)
         g_object_unref(img->mask);
     if (img->pix)
         g_object_unref(img->pix);
-    //
-    g_free(img);
     RET();
 }
-
-
-
 
 static int
 image_constructor(plugin_instance *p)
@@ -50,9 +45,7 @@ image_constructor(plugin_instance *p)
     line s;
 
     ENTER;
-    img = g_new0(image_priv, 1);
-    g_return_val_if_fail(img != NULL, 0);
-    p->priv = img;
+    img = (image_priv *) p;
     tooltip = fname = 0;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {

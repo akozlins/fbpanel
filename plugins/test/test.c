@@ -36,14 +36,11 @@ typedef struct {
 
 //static dclock me;
 
-
-
-
 static gint
-clock_update(gpointer data )
+clock_update(gpointer data)
 {
     test_priv *dc = (test_priv *)data;
-     
+    
     ENTER;
     if (dc->count >= WID_NUM-1)
         dc->delta = -1;
@@ -67,9 +64,7 @@ test_constructor(plugin_instance *p)
     line s;
     
     ENTER;
-    dc = g_new0(test_priv, 1);
-    g_return_val_if_fail(dc != NULL, 0);
-    p->priv = dc;
+    dc = (test_priv *) p;
     dc->delta = 1;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         ERR( "test: illegal in this context %s\n", s.str);
@@ -77,9 +72,7 @@ test_constructor(plugin_instance *p)
     dc->main = p->panel->my_box_new(TRUE, 1);
     gtk_widget_show(dc->main);
     gtk_container_add(GTK_CONTAINER(p->pwid), dc->main);
-
     dc->timer = g_timeout_add(200, clock_update, (gpointer)dc);
-
     RET(1);
 }
 
@@ -87,14 +80,13 @@ test_constructor(plugin_instance *p)
 static void
 test_destructor(plugin_instance *p)
 {
-  test_priv *dc = (test_priv *)p->priv;
+    test_priv *dc = (test_priv *) p;
 
-  ENTER;
-  dc = (test_priv *) p->priv;
-  if (dc->timer)
-      g_source_remove(dc->timer);
-  gtk_widget_destroy(dc->main);
-  RET();
+    ENTER;
+    if (dc->timer)
+        g_source_remove(dc->timer);
+    gtk_widget_destroy(dc->main);
+    RET();
 }
 
 static plugin_class class = {

@@ -47,11 +47,6 @@ static void chart_free_ticks(chart_priv *c);
 static void chart_alloc_gcs(chart_priv *c, gchar *colors[]);
 static void chart_free_gcs(chart_priv *c);
 
-
-extern panel *the_panel;
-
-
-
 static void
 chart_add_tick(chart_priv *c, float *val)
 {
@@ -169,9 +164,11 @@ chart_alloc_gcs(chart_priv *c, gchar *colors[])
     c->gc_cpu = g_new0( typeof(*c->gc_cpu), c->rows);
     if (c->gc_cpu) {
         for (i = 0; i < c->rows; i++) {
-            c->gc_cpu[i] = gdk_gc_new(the_panel->topgwin->window);
+            c->gc_cpu[i] = gdk_gc_new(c->plugin.panel->topgwin->window);
             gdk_color_parse(colors[i], &color);
-            gdk_colormap_alloc_color(gdk_drawable_get_colormap(the_panel->topgwin->window),  &color, FALSE, TRUE);
+            gdk_colormap_alloc_color(
+                gdk_drawable_get_colormap(c->plugin.panel->topgwin->window),
+                &color, FALSE, TRUE);
             gdk_gc_set_foreground(c->gc_cpu[i],  &color);
         }
     }
@@ -216,7 +213,7 @@ chart_constructor(plugin_instance *p)
 
     ENTER;
     /* must be allocated by caller */
-    c = (chart_priv *)  p->priv;
+    c = (chart_priv *) p;
     c->rows = 0;
     c->ticks = NULL;
     c->gc_cpu = NULL;
@@ -235,7 +232,7 @@ chart_constructor(plugin_instance *p)
 static void
 chart_destructor(plugin_instance *p)
 {
-    chart_priv *c = (chart_priv *) p->priv;
+    chart_priv *c = (chart_priv *) p;
 
     ENTER;
     chart_free_ticks(c);

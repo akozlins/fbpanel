@@ -20,7 +20,7 @@ extern panel *the_panel;
 
 
 /**************************************************************/
-GHashTable *class_ht;
+static GHashTable *class_ht;
 
 
 void 

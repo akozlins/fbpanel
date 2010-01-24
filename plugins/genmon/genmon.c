@@ -25,6 +25,7 @@
 #include "dbg.h"
 
 typedef struct {
+    plugin_instance plugin;
     guint time;
     int timer;
     int max_text_len;
@@ -64,7 +65,7 @@ text_update(genmon_priv *gm)
 static void
 genmon_destructor(plugin_instance *p)
 {
-    genmon_priv *gm = p->priv;
+    genmon_priv *gm = (genmon_priv *) p;
 
     ENTER;
     if (gm->timer) {
@@ -73,7 +74,6 @@ genmon_destructor(plugin_instance *p)
     g_free(gm->command);
     g_free(gm->textsize);
     g_free(gm->textcolor);
-    g_free(gm);
     RET();
 }
 
@@ -85,8 +85,7 @@ genmon_constructor(plugin_instance *p)
     line s;
 
     ENTER;
-    gm = g_new0(genmon_priv, 1);
-    p->priv = gm;
+    gm = (genmon_priv *) p;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {
             ERR( "genmon-plugin: illegal token %s\n", s.str);

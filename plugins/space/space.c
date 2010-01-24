@@ -22,16 +22,12 @@ typedef struct {
 static void
 space_destructor(plugin_instance *p)
 {
-    space_priv *sp = (space_priv *)p->priv;
+    space_priv *sp = (space_priv *) p;
 
     ENTER;
     gtk_widget_destroy(sp->mainw);
-    g_free(sp);
     RET();
 }
-
-
-
 
 static int
 space_constructor(plugin_instance *p)
@@ -41,9 +37,7 @@ space_constructor(plugin_instance *p)
     int w, h;
 
     ENTER;
-    sp = g_new0(space_priv, 1);
-    g_return_val_if_fail(sp != NULL, 0);
-    p->priv = sp;
+    sp = (space_priv *) p;
     while (get_line(p->fp, &s) != LINE_BLOCK_END) {
         if (s.type == LINE_NONE) {
             ERR( "space: illegal token %s\n", s.str);
