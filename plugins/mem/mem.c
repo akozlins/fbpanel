@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 
 #include "panel.h"
@@ -27,10 +28,25 @@ typedef struct
 typedef struct
 {
     char *name;
-    gdouble val;
+    gulong val;
     int valid;
 } mem_type_t;
 
+typedef struct
+{
+    struct
+    {
+        gulong total;
+        gulong used;
+    } mem;
+    struct
+    {
+        gulong total;
+        gulong used;
+    } swap;
+} stats_t;
+
+static stats_t stats;
 
 #if defined __linux__
 #undef MT_ADD
@@ -58,20 +74,19 @@ mt_match(char *buf, mem_type_t *m)
         return FALSE;
     if (sscanf(buf + len + 1, "%lu", &val) != 1)
         return FALSE;
-    m->val = (gdouble) val;
+    m->val = val;
     m->valid = 1;
     DBG("%s: %lu\n", m->name, val);
     return TRUE;
 }
 
 static void
-mem_usage(gdouble *mu, gdouble *su)
+mem_usage()
 {
     FILE *fp;
     char buf[160];
     int i;
 
-    *mu = *su = 0;
     fp = fopen("/proc/meminfo", "r");
     if (!fp)
         return;
@@ -91,20 +106,17 @@ mem_usage(gdouble *mu, gdouble *su)
     }
     fclose(fp);
   
-    if (mt[MT_MemTotal].val == 0.0)
-    {
-        DBG("%s is zero\n", mt[MT_MemTotal].name);
-        return;
-    }
-    *mu = 1 - ((mt[MT_MemFree].val + mt[MT_Buffers].val + mt[MT_Cached].val +
-                    mt[MT_Slab].val) / mt[MT_MemTotal].val);
-    *su = 1 - (mt[MT_SwapFree].val / mt[MT_SwapTotal].val);
+    stats.mem.total = mt[MT_MemTotal].val;
+    stats.mem.used = mt[MT_MemTotal].val -(mt[MT_MemFree].val +
+        mt[MT_Buffers].val + mt[MT_Cached].val + mt[MT_Slab].val);
+    stats.swap.total = mt[MT_SwapTotal].val;
+    stats.swap.used = mt[MT_SwapTotal].val - mt[MT_SwapFree].val;
 }
 #else
 static void
-mem_usage(gdouble *mu, gdouble *su)
+mem_usage()
 {
-    *mu = *su = 0;
+   
 }
 #endif
 
@@ -112,11 +124,21 @@ static gboolean
 mem_update(mem_priv *mem)
 {
     gdouble mu, su;
-    char str[40];
+    char str[90];
+    
     ENTER;
-    mem_usage(&mu, &su);
-    g_snprintf(str, sizeof(str), "<b>Mem: %d%%</b>\n<b>Swap: %d%%</b>",
-            (int)(mu * 100), (int) (su * 100));
+    mu = su = 0;
+    bzero(&stats, sizeof(stats));
+    mem_usage();
+    if (stats.mem.total)
+        mu = (gdouble) stats.mem.used / (gdouble) stats.mem.total;
+    if (stats.swap.total)
+        su = (gdouble) stats.swap.used / (gdouble) stats.swap.total;
+    g_snprintf(str, sizeof(str),
+        "<b>Mem:</b> %d%%, %lu MB of %lu MB\n"
+        "<b>Swap:</b> %d%%, %lu MB of %lu MB",
+        (int)(mu * 100), stats.mem.used >> 10, stats.mem.total >> 10,
+        (int)(su * 100), stats.swap.used >> 10, stats.swap.total >> 10);
     DBG("%s\n", str);
     gtk_widget_set_tooltip_markup(mem->plugin.pwid, str);
     gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(mem->mem_pb), mu);

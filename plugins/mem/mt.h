@@ -1,5 +1,5 @@
 
-/* adds memory types to scan in /proc/meminfo */
+/* Memory types (MT) to scan in /proc/meminfo */
 MT_ADD(MemTotal)
 MT_ADD(MemFree)
 MT_ADD(MemShared)
