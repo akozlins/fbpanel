@@ -40,7 +40,7 @@ endif
 # warnings on, and path to #include <config.h>
 override CFLAGS += -Wall -I$(TOPDIR)
 ifeq ($(DEBUG),enabled)
-    override CFLAGS += -g
+    override CFLAGS += -g -Werror 
 endif
 
  

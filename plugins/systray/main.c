@@ -118,7 +118,6 @@ tray_notify_style_event(GtkWidget *w, GParamSpec *arg1, GtkWidget *widget)
 static int
 tray_constructor(plugin_instance *p)
 {
-    line s;
     tray_priv *tr;
     GdkScreen *screen;
     //GtkWidget *frame;
