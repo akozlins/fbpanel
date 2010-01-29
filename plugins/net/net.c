@@ -139,9 +139,9 @@ net_constructor(plugin_instance *p)
             } else if (!g_ascii_strcasecmp(s.t[0], "TxLimit")) {
                 c->max_tx = atoi(s.t[1]);
             } else if (!g_ascii_strcasecmp(s.t[0], "RxColor")) {
-                c->colors[0] = g_strdup(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "TxColor")) {
                 c->colors[1] = g_strdup(s.t[1]);
+            } else if (!g_ascii_strcasecmp(s.t[0], "TxColor")) {
+                c->colors[0] = g_strdup(s.t[1]);
             } else {
                 ERR("net: unknown var %s\n", s.t[0]);
                 goto error;
