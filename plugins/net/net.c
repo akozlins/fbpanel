@@ -23,11 +23,13 @@
 
 #include "misc.h"
 #include "../chart/chart.h"
+#include <stdlib.h>
 
 //#define DEBUGPRN
 #include "dbg.h"
 
 
+#define CHECK_PERIOD   2 /* second */
 
 /* net.c */
 struct net_stat {
@@ -41,9 +43,15 @@ typedef struct {
     char *iface;
     gulong max_tx;
     gulong max_rx;
+    gulong max;
+    gchar *colors[2];
 } net_priv;
 
 static chart_class *k;
+
+
+static void net_destructor(plugin_instance *p);
+
 
 #if defined __linux__
 static int
@@ -70,19 +78,23 @@ net_get_load(net_priv *c)
     if (!s)
         RET(0);
     s++;
-    if (sscanf(s, "%lu  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %lu", &net.tx, &net.rx)
-          != 2) {
+    if (sscanf(s,
+            "%lu  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %lu",
+            &net.rx, &net.tx)!= 2) {
         DBG("can't read %s statistics\n", c->iface);
         RET(0);
     }
-    net_diff.tx = (net.tx - c->net_prev.tx) >> 10;
-    net_diff.rx = (net.rx - c->net_prev.rx) >> 10;
+    net_diff.tx = ((net.tx - c->net_prev.tx) >> 10) / CHECK_PERIOD;
+    net_diff.rx = ((net.rx - c->net_prev.rx) >> 10) / CHECK_PERIOD;
     c->net_prev = net;
-    total[0] = (float)(net_diff.tx) / (float)(c->max_tx + c->max_rx);
-    total[1] = (float)(net_diff.rx) / (float)(c->max_tx + c->max_rx);
+    total[0] = (float)(net_diff.tx) / c->max;
+    total[1] = (float)(net_diff.rx) / c->max;
     DBG("%f %ul %ul\n", total, net_diff.tx, net_diff.rx);
     k->add_tick(&c->chart, total);
-    
+    g_snprintf(buf, sizeof(buf), "<b>%s:</b>\nD %lu Kbs, U %lu Kbs",
+        c->iface, net_diff.rx, net_diff.tx);
+    gtk_widget_set_tooltip_markup(
+        ((plugin_instance *)c)->pwid, buf);
     RET(TRUE);
 
 }
@@ -102,20 +114,54 @@ static int
 net_constructor(plugin_instance *p)
 {
     net_priv *c;
-    gchar *colors[] = { "blue", "violet" };
+    line s;
+    gchar *colors[] = { "violet", "blue" };
 
     if (!(k = class_get("chart")))
         RET(0);
     if (!PLUGIN_CLASS(k)->constructor(p))
         RET(0);
     c = (net_priv *) p;
-    k->set_rows(&c->chart, 2, colors);
-    gtk_widget_set_tooltip_markup(p->pwid, "Net usage");
-    c->timer = g_timeout_add(1000, (GSourceFunc) net_get_load, (gpointer) c);
-    c->iface = "eth0";
+ 
+    c->iface = "ppp0";
     c->max_rx = 120;
     c->max_tx = 12;
+    c->colors[0] = "violet";
+    c->colors[1] = "blue";
+    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
+        if (s.type == LINE_NONE) {
+            ERR("net: illegal token %s\n", s.str);
+            goto error;
+        }
+        if (s.type == LINE_VAR) {
+            if (!g_ascii_strcasecmp(s.t[0], "interface")) {
+                c->iface = g_strdup(s.t[1]);
+            } else if (!g_ascii_strcasecmp(s.t[0], "RxLimit")) {
+                c->max_rx = atoi(s.t[1]);
+            } else if (!g_ascii_strcasecmp(s.t[0], "TxLimit")) {
+                c->max_tx = atoi(s.t[1]);
+            } else if (!g_ascii_strcasecmp(s.t[0], "RxColor")) {
+                c->colors[0] = g_strdup(s.t[1]);
+            } else if (!g_ascii_strcasecmp(s.t[0], "TxColor")) {
+                c->colors[1] = g_strdup(s.t[1]);
+            } else {
+                ERR("net: unknown var %s\n", s.t[0]);
+                goto error;
+            }
+        } else {
+            ERR("net: illegal in this context %s\n", s.str);
+            goto error;
+        }
+    }
+    c->max = c->max_rx + c->max_tx;
+    k->set_rows(&c->chart, 2, colors);
+    c->timer = g_timeout_add(CHECK_PERIOD * 1000,
+        (GSourceFunc) net_get_load, (gpointer) c);
     RET(1);
+
+error:
+    net_destructor(p);
+    RET(0);
 }
 
 

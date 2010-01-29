@@ -193,7 +193,7 @@ Plugin {
     type = launchbar
     config {
         button {
-            icon = gnome-fs-home
+            icon = file-manager
             tooltip = ROX file manager
             action = rox
         }
@@ -276,11 +276,34 @@ Plugin {
 }
 
 Plugin {
+    type = mem
+    expand = false
+    padding = 2
+    config {
+        ShowSwap = false
+    }
+}
+
+Plugin {
     type = cpu
 }
+
 Plugin {
     type = net
+    expand = false
+    padding = 0
+    config {
+        #interface = ppp0
+        interface = eth0
+        # set connection limits to make traffic graph more accurate
+        TxLimit = 20
+        RxLimit = 190
+        TxColor = violet
+        RxColor = blue
+    }
 }
+
+
 Plugin {
     type = space
     config {
