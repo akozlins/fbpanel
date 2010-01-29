@@ -1,3 +1,12 @@
+5.8
+* net plugin got detailed tooltip and color configs
+* cpu plugin got detailed tooltip and color configs
+* mem plugin was made
+* allocating plugin's private section as part of instance malloc
+* drag and drop fix in launchbar
+* Fixed "2891558: widthtype=request does not work"
+
+
 5.7
 * XRandR support (dynamic desktop geometry changes)
 * Fixed "2891558: widthtype=request does not work"
