@@ -93,8 +93,7 @@ net_get_load(net_priv *c)
     k->add_tick(&c->chart, total);
     g_snprintf(buf, sizeof(buf), "<b>%s:</b>\nD %lu Kbs, U %lu Kbs",
         c->iface, net_diff.rx, net_diff.tx);
-    gtk_widget_set_tooltip_markup(
-        ((plugin_instance *)c)->pwid, buf);
+    gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, buf);
     RET(TRUE);
 
 }
@@ -115,7 +114,6 @@ net_constructor(plugin_instance *p)
 {
     net_priv *c;
     line s;
-    gchar *colors[] = { "violet", "blue" };
 
     if (!(k = class_get("chart")))
         RET(0);
@@ -154,7 +152,7 @@ net_constructor(plugin_instance *p)
         }
     }
     c->max = c->max_rx + c->max_tx;
-    k->set_rows(&c->chart, 2, colors);
+    k->set_rows(&c->chart, 2, c->colors);
     c->timer = g_timeout_add(CHECK_PERIOD * 1000,
         (GSourceFunc) net_get_load, (gpointer) c);
     RET(1);

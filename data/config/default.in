@@ -286,6 +286,9 @@ Plugin {
 
 Plugin {
     type = cpu
+    config {
+        Color = green
+    }
 }
 
 Plugin {

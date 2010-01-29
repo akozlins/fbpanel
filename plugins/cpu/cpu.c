@@ -28,8 +28,6 @@
 //#define DEBUGPRN
 #include "dbg.h"
 
-
-
 /* cpu.c */
 struct cpu_stat {
     gulong u, n, s, i, w; // user, nice, system, idle, wait
@@ -39,11 +37,14 @@ typedef struct {
     chart_priv chart;
     struct cpu_stat cpu_prev;
     int timer;
+    gchar *colors[1];
 } cpu_priv;
 
 
 
 static chart_class *k;
+
+static void cpu_destructor(plugin_instance *p);
 
 #if defined __linux__
 static int
@@ -53,6 +54,7 @@ cpu_get_load(cpu_priv *c)
     struct cpu_stat cpu, cpu_diff;
     FILE *stat;
     float total;
+    gchar buf[40];
 
     ENTER;
     stat = fopen("/proc/stat", "r");
@@ -72,6 +74,8 @@ cpu_get_load(cpu_priv *c)
     b = a + cpu_diff.i + cpu_diff.w;
     total = b ?  a / b : 1.0;
     DBG("total=%f a=%f b=%f\n", total, a, b);
+    g_snprintf(buf, sizeof(buf), "<b>Cpu:</b> %d%%", (int)(total * 100));
+    gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, buf);
     k->add_tick(&c->chart, &total);
     RET(TRUE);
 
@@ -89,17 +93,38 @@ static int
 cpu_constructor(plugin_instance *p)
 {
     cpu_priv *c;
-    char *colors[] = { "green" };
-
+    line s;
+    
     if (!(k = class_get("chart")))
         RET(0);
     if (!PLUGIN_CLASS(k)->constructor(p))
         RET(0);
     c = (cpu_priv *) p;
-    k->set_rows(&c->chart, 1, colors);
-    gtk_widget_set_tooltip_markup(p->pwid, "Cpu usage");
+    c->colors[0] = "green";
+    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
+        if (s.type == LINE_NONE) {
+            ERR("net: illegal token %s\n", s.str);
+            goto error;
+        }
+        if (s.type == LINE_VAR) {
+            if (!g_ascii_strcasecmp(s.t[0], "Color")) {
+                c->colors[0] = g_strdup(s.t[1]);
+            } else {
+                ERR("net: unknown var %s\n", s.t[0]);
+                goto error;
+            }
+        } else {
+            ERR("net: illegal in this context %s\n", s.str);
+            goto error;
+        }
+    }
+    k->set_rows(&c->chart, 1, c->colors);
     c->timer = g_timeout_add(1000, (GSourceFunc) cpu_get_load, (gpointer) c);
     RET(1);
+    
+error:
+    cpu_destructor(p);
+    RET(0);
 }
 
 
