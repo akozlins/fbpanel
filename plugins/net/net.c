@@ -153,6 +153,8 @@ net_constructor(plugin_instance *p)
     }
     c->max = c->max_rx + c->max_tx;
     k->set_rows(&c->chart, 2, c->colors);
+    gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, "unsupported");
+    net_get_load(c);
     c->timer = g_timeout_add(CHECK_PERIOD * 1000,
         (GSourceFunc) net_get_load, (gpointer) c);
     RET(1);

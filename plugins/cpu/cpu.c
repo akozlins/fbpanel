@@ -119,6 +119,8 @@ cpu_constructor(plugin_instance *p)
         }
     }
     k->set_rows(&c->chart, 1, c->colors);
+    gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, "unsupported");
+    cpu_get_load(c);
     c->timer = g_timeout_add(1000, (GSourceFunc) cpu_get_load, (gpointer) c);
     RET(1);
     
