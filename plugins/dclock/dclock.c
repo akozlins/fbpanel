@@ -30,6 +30,7 @@ typedef struct
 {
     plugin_instance plugin;
     GtkWidget *main;
+    GtkWidget *calendar_window;
     char *tfmt;
     char *cfmt;
     struct tm time;
@@ -42,7 +43,31 @@ typedef struct
 
 //static dclock_priv me;
 
-static  gboolean
+static GtkWidget *dclock_create_calendar()
+{
+    GtkWidget *calendar, *win;
+
+    win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_default_size(GTK_WINDOW(win), 180, 180);
+    gtk_window_set_decorated(GTK_WINDOW(win), FALSE);
+    gtk_window_set_resizable(GTK_WINDOW(win), FALSE);
+    gtk_container_set_border_width(GTK_CONTAINER(win), 5);
+    gtk_window_set_skip_taskbar_hint(GTK_WINDOW(win), TRUE);
+    gtk_window_set_skip_pager_hint(GTK_WINDOW(win), TRUE);
+    gtk_window_set_position(GTK_WINDOW(win), GTK_WIN_POS_MOUSE);
+    gtk_window_stick(GTK_WINDOW(win));
+          
+    calendar = gtk_calendar_new();
+    gtk_calendar_display_options(
+        GTK_CALENDAR(calendar),
+        GTK_CALENDAR_SHOW_WEEK_NUMBERS | GTK_CALENDAR_SHOW_DAY_NAMES
+        | GTK_CALENDAR_SHOW_HEADING);
+    gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(calendar));
+ 
+    return win;
+}  
+
+static gboolean
 clicked(GtkWidget *widget, GdkEventButton *event, dclock_priv *dc)
 {
     ENTER;
@@ -51,8 +76,21 @@ clicked(GtkWidget *widget, GdkEventButton *event, dclock_priv *dc)
     {
         RET(FALSE);
     }
-    DBG("%s\n", dc->action);
-    system (dc->action);
+    if (dc->action != NULL)
+        g_spawn_command_line_async(dc->action, NULL);
+    else
+    {
+        if (dc->calendar_window == NULL)
+        {
+            dc->calendar_window = dclock_create_calendar();
+            gtk_widget_show_all(dc->calendar_window);
+        }
+        else
+        {
+            gtk_widget_destroy(dc->calendar_window);
+            dc->calendar_window = NULL;
+        }
+    }
     RET(TRUE);
 }
 
@@ -234,9 +272,8 @@ dclock_constructor(plugin_instance *p)
     gtk_misc_set_padding(GTK_MISC(dc->main), 4, 0);
     gtk_container_add(GTK_CONTAINER(p->pwid), dc->main);
     //gtk_widget_show(dc->clockw);
-    if (dc->action)
-        g_signal_connect (G_OBJECT (p->pwid), "button_press_event",
-                G_CALLBACK (clicked), (gpointer) dc);
+    g_signal_connect (G_OBJECT (p->pwid), "button_press_event",
+            G_CALLBACK (clicked), (gpointer) dc);
     gtk_widget_show_all(dc->main);
     dc->timer = g_timeout_add(1000, (GSourceFunc) clock_update, (gpointer)dc);
     clock_update(dc);
