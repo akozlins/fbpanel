@@ -121,7 +121,7 @@ net_constructor(plugin_instance *p)
         RET(0);
     c = (net_priv *) p;
  
-    c->iface = "ppp0";
+    c->iface = "eth0";
     c->max_rx = 120;
     c->max_tx = 12;
     c->colors[0] = "violet";
