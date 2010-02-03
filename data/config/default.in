@@ -150,8 +150,8 @@ Plugin {
             
 	    item {
 		name = Terminal
-		icon = gnome-terminal
-		action = xterm
+		icon = terminal
+		action = x-terminal
 	    }
             item {
                 name = Lock Display
@@ -194,24 +194,20 @@ Plugin {
     config {
         button {
             icon = file-manager
-            tooltip = ROX file manager
-            action = rox
+            tooltip = File Manager
+            action = x-file-manager
         }
-
         button {
-            icon = gnome-terminal
+            icon = terminal
             tooltip = Terminal
-            action = xterm
+            action = x-terminal
         }
-
 	button {
-            icon = mozilla-firefox
-            tooltip = Firefox web browser
-            action =firefox
+            icon = web-browser
+            tooltip = Web Browser
+            action = x-www-browser
     	}
-
     }
-
 }
 
 Plugin {
