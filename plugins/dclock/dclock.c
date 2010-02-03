@@ -25,15 +25,15 @@
 #define DIGIT_HEIGHT  15
 #define DIGIT_PAD_H   1
 #define COLON_PAD_H   3
+#define STR_SIZE  64
 
 typedef struct
 {
     plugin_instance plugin;
     GtkWidget *main;
     GtkWidget *calendar_window;
-    char *tfmt;
-    char *cfmt;
-    struct tm time;
+    gchar *tfmt, tstr[STR_SIZE];
+    gchar *cfmt, cstr[STR_SIZE];
     char *action;
     int timer;
     GdkPixbuf *glyphs; //vert row of '0'-'9' and ':'
@@ -84,6 +84,7 @@ clicked(GtkWidget *widget, GdkEventButton *event, dclock_priv *dc)
         {
             dc->calendar_window = dclock_create_calendar();
             gtk_widget_show_all(dc->calendar_window);
+            gtk_widget_set_tooltip_markup(dc->plugin.pwid, NULL);
         }
         else
         {
@@ -97,7 +98,7 @@ clicked(GtkWidget *widget, GdkEventButton *event, dclock_priv *dc)
 static gint
 clock_update(dclock_priv *dc)
 {
-    char output[64], *tmp, *utf8;
+    char output[STR_SIZE], *tmp, *utf8;
     time_t now;
     struct tm * detail;
     int i, w;
@@ -105,44 +106,52 @@ clock_update(dclock_priv *dc)
     ENTER;
     time(&now);
     detail = localtime(&now);
-    if (detail->tm_min == dc->time.tm_min &&
-            detail->tm_hour == dc->time.tm_hour)
-        RET(TRUE);
-    dc->time = *detail;
+
     if (!strftime(output, sizeof(output), dc->cfmt, detail))
-        RET(TRUE);
-    DBG("making new clock pixbuf ");
-    gdk_pixbuf_fill(dc->clock, 0);
-    for (tmp = output, w = 0; *tmp; tmp++)
+        strcpy(output, "  :  ");
+    if (strcmp(dc->cstr, output))
     {
-        DBGE("%c", *tmp);
-        if (isdigit(*tmp))
+        strcpy(dc->cstr, output);
+        for (tmp = output, w = 0; *tmp; tmp++)
         {
-            i = *tmp - '0';
-            gdk_pixbuf_copy_area(dc->glyphs, i * 20,
-                    0, DIGIT_WIDTH, DIGIT_HEIGHT,
-                    dc->clock, w, DIGIT_PAD_H);
-            w += DIGIT_WIDTH;
+            DBGE("%c", *tmp);
+            if (isdigit(*tmp))
+            {
+                i = *tmp - '0';
+                gdk_pixbuf_copy_area(dc->glyphs, i * 20,
+                        0, DIGIT_WIDTH, DIGIT_HEIGHT,
+                        dc->clock, w, DIGIT_PAD_H);
+                w += DIGIT_WIDTH;
+            }
+            else if (*tmp == ':')
+            {
+                gdk_pixbuf_copy_area(dc->glyphs, 10 * 20, 0, COLON_WIDTH,
+                        DIGIT_HEIGHT - 3,
+                        dc->clock, w, COLON_PAD_H + DIGIT_PAD_H);
+                w += COLON_WIDTH;
+            }
+            else
+            {
+                ERR("dclock: got %c while expecting for digit or ':'\n", *tmp);
+            }
         }
-        else if (*tmp == ':')
+        DBG("\n");
+        gtk_widget_queue_draw(dc->main);
+    }
+    
+    if (dc->calendar_window || !strftime(output, sizeof(output), dc->tfmt, detail))
+        output[0] = 0;    
+    if (strcmp(dc->tstr, output))
+    {
+        strcpy(dc->tstr, output);
+        if (dc->tstr[0] && (utf8 = g_locale_to_utf8(output, -1,
+                                NULL, NULL, NULL)))
         {
-            gdk_pixbuf_copy_area(dc->glyphs, 10 * 20, 0, COLON_WIDTH,
-                    DIGIT_HEIGHT - 3,
-                    dc->clock, w, COLON_PAD_H + DIGIT_PAD_H);
-            w += COLON_WIDTH;
+            gtk_widget_set_tooltip_markup(dc->plugin.pwid, utf8);
+            g_free(utf8);
         }
         else
-        {
-            ERR("dclock: got %c while expecting for digit or ':'\n", *tmp);
-        }
-    }
-    DBG("\n");
-    gtk_widget_queue_draw(dc->main);
-    strftime (output, sizeof(output), dc->tfmt, detail) ;
-    if ((utf8 = g_locale_to_utf8(output, -1, NULL, NULL, NULL)))
-    {
-        gtk_widget_set_tooltip_markup(dc->plugin.pwid, utf8);
-        g_free(utf8);
+            gtk_widget_set_tooltip_markup(dc->plugin.pwid, NULL);        
     }
     RET(TRUE);
 }
