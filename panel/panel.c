@@ -864,7 +864,7 @@ open_profile(gchar *profile)
 
     ENTER;
     LOG(LOG_INFO, "loading %s profile\n", profile);
-    fname = g_strdup_printf("%s/.fbpanel/%s", getenv("HOME"), profile);
+    fname = g_build_filename(g_get_user_config_dir(), "fbpanel", profile, NULL);
     fp = fopen(fname, "r");
     LOG(LOG_INFO, "   %s %s\n", fname, fp ? "ok" : "no");
     if (fp) {

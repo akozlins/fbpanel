@@ -117,17 +117,18 @@ update_toggle_button(GtkWidget *w, gboolean val)
 static int
 mk_profile_dir()
 {
-    gchar fname[1024];
+    gchar *fname;
     struct stat buf;
     int ret;
 
     ENTER;
-    sprintf(fname, "%s/.fbpanel", getenv("HOME"));
+    fname = g_build_filename(g_get_user_config_dir(), "fbpanel", NULL);
     if ((ret = stat(fname, &buf))) {
         LOG(LOG_INFO, "creating %s\n", fname);
-        mkdir(fname, 0755);
+        g_mkdir_with_parents(fname, S_IRUSR | S_IWUSR | S_IXUSR);
         ret = stat(fname, &buf);
     }
+    g_free(fname);
     if (ret)
         RET(0);
     if (!(S_ISDIR(buf.st_mode) && (S_IWUSR & buf.st_mode) && (S_IXUSR & buf.st_mode)))
@@ -139,24 +140,27 @@ mk_profile_dir()
 static void
 save_config()
 {
-    gchar fname[1024];
+    gchar *fname;
     FILE *fp;
 
     ENTER;
+    fname = g_build_filename(g_get_user_config_dir(), "fbpanel", NULL);
     if (!mk_profile_dir()) {
-        ERR("can't make ~/.fbpanel direcory\n");
+        ERR("can't make %s directory\n", fname);
         RET();
     }
-    sprintf(fname, "%s/.fbpanel/%s", getenv("HOME"), cprofile);
+    fname = g_build_filename(fname, cprofile, NULL);
     LOG(LOG_INFO, "saving profile %s as %s\n", cprofile, fname);
     if (!(fp = fopen(fname, "w"))) {
         ERR("can't open for write %s:", fname);
+        g_free(fname);
         perror(NULL);
         RET();
     }
     global_config_save(fp);
     plugin_config_save_all(fp);
     fclose(fp);
+    g_free(fname);
     RET();
 }
 
