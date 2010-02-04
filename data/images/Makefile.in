@@ -3,6 +3,8 @@ include %%topdir%%/config.mk
 IMAGES =                     \
 dclock_glyphs.png            \
 default.xpm                  \
+gnome-session-halt.png       \
+gnome-session-reboot.png     \
 logo.png                     
 
 
