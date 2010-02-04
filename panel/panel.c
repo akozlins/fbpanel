@@ -861,30 +861,29 @@ open_profile(gchar *profile)
 {
     gchar *fname;
     FILE *fp;
-
+    int created = 0;
+    
     ENTER;
-    LOG(LOG_INFO, "loading %s profile\n", profile);
+    LOG(LOG_INFO, "Loading profile '%s'\n", profile);
     fname = g_build_filename(g_get_user_config_dir(), "fbpanel", profile, NULL);
+try:
     fp = fopen(fname, "r");
-    LOG(LOG_INFO, "   %s %s\n", fname, fp ? "ok" : "no");
+    LOG(LOG_INFO, "Trying %s: %s\n", fname, fp ? "ok" : "not found");
     if (fp) {
         cfgfile = fname;
         RET(fp);
     }
-    //ERR("Can't load %s\n", fname);
-    g_free(fname);
+    if (!created++)
+    {
+        gchar *cmd;
 
-    /* check private configuration directory */
-    fname = g_strdup_printf("%s/share/fbpanel/%s", PREFIX, profile);
-    fp = fopen(fname, "r");
-    LOG(LOG_INFO, "   %s %s\n", fname, fp ? "ok" : "no");
-    if (fp) {
-        cfgfile = fname;
-        RET(fp);
+        cmd = g_strdup_printf("%s %s", LIBEXECDIR "/fbpanel/make_profile", profile);
+        g_spawn_command_line_sync(cmd, NULL, NULL, NULL, NULL);
+        g_free(cmd);
+        goto try;
     }
-    //ERR("Can't load %s\n", fname);
+    ERR("Can't load %s\n", fname);
     g_free(fname);
-    LOG(LOG_ERR, "Can't open '%s' profile\n", profile);
     RET(NULL);
 }
 
