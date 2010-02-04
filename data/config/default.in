@@ -139,6 +139,7 @@ Plugin {
 Plugin {
     type = menu
     config {
+        #icon = start-here
         icon = logo
         systemmenu {
         }
@@ -146,7 +147,7 @@ Plugin {
         }
 	menu {  
 	    name = Computer
-	    icon = gnome-fs-home
+	    icon = computer
             
 	    item {
 		name = Terminal

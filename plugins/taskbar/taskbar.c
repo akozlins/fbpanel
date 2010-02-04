@@ -16,7 +16,7 @@
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
-#include "data/images/icon.xpm"
+#include "data/images/default.xpm"
 #include "gtkbar.h"
 
 /*
@@ -1277,7 +1277,7 @@ taskbar_build_gui(plugin_instance *p)
     gtk_container_add (GTK_CONTAINER (p->pwid), tb->bar);
     gtk_widget_show(tb->bar);
   
-    tb->gen_pixbuf =  gdk_pixbuf_new_from_xpm_data((const char **)icon_xpm);
+    tb->gen_pixbuf = gdk_pixbuf_new_from_xpm_data((const char **)icon_xpm);
 
     gdk_window_add_filter(NULL, (GdkFilterFunc)tb_event_filter, tb );
 
