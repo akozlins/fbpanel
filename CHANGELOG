@@ -1,4 +1,8 @@
 5.8
+* moving config dir ~/.config
+* automatic new profile creation
+* removing app categories default icons
+* dclock plugin pops up calendar if no action was set
 * net plugin got detailed tooltip and color configs
 * cpu plugin got detailed tooltip and color configs
 * mem plugin was made
