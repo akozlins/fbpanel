@@ -52,16 +52,17 @@ typedef struct {
 } cat_info;
 
 static cat_info main_cats[] = {
-    { "AudioVideo", "gnome-multimedia", "Audio & Video" },
-    { "Development","gnome-devel" },
-    { "Education",  "gnome-applications" },
-    { "Game",       "gnome-joystick" },
-    { "Graphics",   "gnome-graphics" },
-    { "Network",    "gnome-globe" },
-    { "Office",     "gnome-applications" },
-    { "Settings",   "gnome-settings" },
-    { "System",     "gnome-system" },
-    { "Utility",    "gnome-util" },
+    { "AudioVideo", "applications-multimedia", "Audio & Video" },
+    { "Development","applications-development" },
+    //{ "Education",  "applications-education" },
+    { "Education",  "applications-other" },
+    { "Game",       "applications-games" },
+    { "Graphics",   "applications-graphics" },
+    { "Network",    "applications-internet" },
+    { "Office",     "applications-office" },
+    { "Settings",   "preferences-system" },
+    { "System",     "applications-system" },
+    { "Utility",    "applications-utilities" },
 };
 typedef struct {
     plugin_instance plugin;
