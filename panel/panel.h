@@ -10,6 +10,7 @@
 
 #include "bg.h"
 #include "ev.h"
+#include "xconf.h"
 
 enum { ALLIGN_NONE, ALLIGN_LEFT, ALLIGN_CENTER, ALLIGN_RIGHT  };
 enum { EDGE_NONE, EDGE_LEFT, EDGE_RIGHT, EDGE_TOP, EDGE_BOTTOM };
@@ -26,8 +27,8 @@ enum { LAYER_NONE, LAYER_ABOVE, LAYER_BELOW };
 
 #define IMGPREFIX  DATADIR "/fbpanel/images"
 
-typedef struct _panel {
-
+typedef struct _panel
+{
     GtkWidget *topgwin;           /* main panel window */
     Window topxwin;               /* and it X window   */
     GtkWidget *lbox;              /* primary layout box */
@@ -41,7 +42,8 @@ typedef struct _panel {
     int alpha;
     guint32 tintcolor;
     GdkColor gtintcolor;
-
+    gchar *tintcolor_name;
+    
     int ax, ay, aw, ah;  /* prefferd allocation of a panel */
     int cx, cy, cw, ch;  /* current allocation (as reported by configure event) allocation */
     int allign, edge, margin;
@@ -50,14 +52,14 @@ typedef struct _panel {
     int heighttype, height;
     int round_corners_radius;
 
-    guint self_destroy  : 1;
-    guint setdocktype   : 1;
-    guint setstrut      : 1;
-    guint round_corners : 1;
-    guint transparent   : 1;
-    guint autohide      : 1;
-    guint ah_far        : 1;
-    guint layer         : 2;
+    gint self_destroy;
+    gint setdocktype ;
+    gint setstrut;
+    gint round_corners;
+    gint transparent;
+    gint autohide;
+    gint ah_far;
+    gint layer;
 
     int ah_dx, ah_dy; // autohide shift for x and y
     int height_when_hidden;
@@ -160,6 +162,14 @@ extern Atom a_NET_WM_STRUT_PARTIAL;
 extern Atom a_NET_WM_ICON;
 extern Atom a_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR;
 
+
+extern xconf_enum allign_enum[];
+extern xconf_enum edge_enum[];
+extern xconf_enum widthtype_enum[];
+extern xconf_enum heighttype_enum[];
+extern xconf_enum bool_enum[];
+extern xconf_enum pos_enum[];
+extern xconf_enum layer_enum[];
 
 extern int verbose;
 extern gint force_quit;

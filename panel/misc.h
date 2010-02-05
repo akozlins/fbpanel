@@ -9,33 +9,9 @@
 
 #include "panel.h"
 
-enum { LINE_NONE, LINE_BLOCK_START, LINE_BLOCK_END, LINE_VAR };
+int str2num(xconf_enum *p, gchar *str, int defval);
+gchar *num2str(xconf_enum *p, int num, gchar *defval);
 
-#define LINE_LENGTH 256
-typedef struct {
-    int num, type;
-    gchar str[LINE_LENGTH];
-    gchar *t[3];
-} line;
-
-
-typedef struct {
-    int num;
-    gchar *str;
-} pair;
-
-extern pair allign_pair[];
-extern pair edge_pair[];
-extern pair width_pair[];
-extern pair height_pair[];
-extern pair bool_pair[];
-extern pair pos_pair[];
-extern pair layer_pair[];
-
-int str2num(pair *p, gchar *str, int defval);
-gchar *num2str(pair *p, int num, gchar *defval);
-extern int get_line(FILE *fp, line *s);
-int get_line_as_is(FILE *fp, line *s);
 
 void Xclimsg(Window win, long type, long l0, long l1, long l2, long l3, long l4);
 void Xclimsgwm(Window win, Atom type, Atom arg);
@@ -71,5 +47,6 @@ void menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *wid
 void configure();
 gchar *indent(int level);
 
+FILE *get_profile_file(gchar *profile, char *perm);
 
 #endif

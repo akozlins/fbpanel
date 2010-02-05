@@ -82,17 +82,17 @@ typedef struct _taskbar{
     guint dnd_activate;
     int alloc_no;    
 
-    unsigned int iconsize;
-    unsigned int task_width_max;
-    unsigned int accept_skip_pager : 1;
-    unsigned int show_iconified : 1;
-    unsigned int show_mapped : 1;
-    unsigned int show_all_desks : 1;
-    unsigned int tooltips : 1;
-    unsigned int icons_only : 1;
-    unsigned int use_mouse_wheel : 1;
-    unsigned int use_urgency_hint : 1;
-    unsigned int discard_release_event : 1;
+    int iconsize;
+    int task_width_max;
+    int accept_skip_pager;
+    int show_iconified;
+    int show_mapped;
+    int show_all_desks;
+    int tooltips;
+    int icons_only;
+    int use_mouse_wheel;
+    int use_urgency_hint;
+    int discard_release_event;
 } taskbar_priv;
 
 
@@ -1322,9 +1322,9 @@ int
 taskbar_constructor(plugin_instance *p)
 {
     taskbar_priv *tb;
-    line s;
     GtkRequisition req;
- 
+    xconf *xc = p->xc;
+    
     ENTER;
     tb = (taskbar_priv *) p;
     gtk_rc_parse_string(taskbar_rc);
@@ -1345,42 +1345,28 @@ taskbar_constructor(plugin_instance *p)
     tb->spacing           = 1;
     tb->use_mouse_wheel   = 1;
     tb->use_urgency_hint  = 1;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR( "taskbar: illegal token %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "tooltips")) {
-                tb->tooltips = str2num(bool_pair, s.t[1], 1);
-            } else if (!g_ascii_strcasecmp(s.t[0], "IconsOnly")) {
-                tb->icons_only = str2num(bool_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "AcceptSkipPager")) {
-                tb->accept_skip_pager = str2num(bool_pair, s.t[1], 1);
-            } else if (!g_ascii_strcasecmp(s.t[0], "ShowIconified")) {
-                tb->show_iconified = str2num(bool_pair, s.t[1], 1);
-            } else if (!g_ascii_strcasecmp(s.t[0], "ShowMapped")) {
-                tb->show_mapped = str2num(bool_pair, s.t[1], 1);
-            } else if (!g_ascii_strcasecmp(s.t[0], "ShowAllDesks")) {
-                tb->show_all_desks = str2num(bool_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "MaxTaskWidth")) {
-                tb->task_width_max = atoi(s.t[1]);
-                DBG("task_width_max = %d\n", tb->task_width_max);
-            } else if (!g_ascii_strcasecmp(s.t[0], "spacing")) {
-                tb->spacing = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "UseMouseWheel")) {
-                tb->use_mouse_wheel = str2num(bool_pair, s.t[1], 1);
-            } else if (!g_ascii_strcasecmp(s.t[0], "UseUrgencyHint")) {
-                tb->use_urgency_hint = str2num(bool_pair, s.t[1], 1);
-            } else {
-                ERR( "taskbar: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        } else {
-            ERR( "taskbar: illegal in this context %s\n", s.str);
-            goto error;
-        }
-    }
+
+    xconf_get_enum(xconf_find(xc, "tooltips", 0),
+        &tb->tooltips, bool_enum);
+    xconf_get_enum(xconf_find(xc, "iconsonly", 0),
+        &tb->icons_only, bool_enum);
+    xconf_get_enum(xconf_find(xc, "acceptskippager", 0),
+        &tb->accept_skip_pager, bool_enum);
+    xconf_get_enum(xconf_find(xc, "showiconified", 0),
+        &tb->show_iconified, bool_enum);
+    xconf_get_enum(xconf_find(xc, "showalldesks", 0),
+        &tb->show_all_desks, bool_enum);
+    xconf_get_enum(xconf_find(xc, "showmapped", 0),
+        &tb->show_mapped, bool_enum);
+    xconf_get_enum(xconf_find(xc, "usemousewheel", 0),
+        &tb->use_mouse_wheel, bool_enum);
+    xconf_get_enum(xconf_find(xc, "useurgencyhint", 0),
+        &tb->use_urgency_hint, bool_enum);
+    
+    xconf_get_int(xconf_find(xc, "maxtaskwidth", 0),
+        // XXX: change name
+        &tb->task_width_max);
+    
     if (p->panel->orientation == ORIENT_HORIZ) {
         tb->iconsize = GTK_WIDGET(p->panel->box)->allocation.height -
             req.height;
@@ -1398,10 +1384,6 @@ taskbar_constructor(plugin_instance *p)
     tb_display(tb);
     tb_net_active_window(NULL, tb);   
     RET(1);
-    
- error:
-    taskbar_destructor(p);
-    RET(0);
 }
 
 

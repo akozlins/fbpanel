@@ -37,12 +37,11 @@ typedef struct {
 typedef struct _plugin_instance{
     plugin_class *class;
     panel        *panel;
-    FILE         *fp;
+    xconf        *xc;
     GtkWidget    *pwid;
     int           expand;
     int           padding;
     int           border;
-    //gpointer      priv;
 } plugin_instance;
 
 void class_put(char *name);

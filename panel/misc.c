@@ -12,7 +12,6 @@
 #include <stdio.h>
 
 #include "misc.h"
-#include "panel.h"
 #include "gtkbgbox.h"
 
 //#define DEBUGPRN
@@ -69,59 +68,54 @@ Atom a_NET_WM_STRUT_PARTIAL;
 Atom a_NET_WM_ICON;
 Atom a_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR;
 
-pair allign_pair[] = {
-    { ALLIGN_NONE, "none" },
-    { ALLIGN_LEFT, "left" },
-    { ALLIGN_RIGHT, "right" },
-    { ALLIGN_CENTER, "center"},
-    { 0, NULL },
+xconf_enum allign_enum[] = {
+    { .num = ALLIGN_NONE, .str = "none" },
+    { .num = ALLIGN_LEFT, .str = "left" },
+    { .num = ALLIGN_RIGHT, .str = "right" },
+    { .num = ALLIGN_CENTER, .str = "center"},
+    { .num = 0, .str = NULL },
 };
-
-pair edge_pair[] = {
-    { EDGE_NONE, "none" },
-    { EDGE_LEFT, "left" },
-    { EDGE_RIGHT, "right" },
-    { EDGE_TOP, "top" },
-    { EDGE_BOTTOM, "bottom" },
-    { 0, NULL },
+xconf_enum edge_enum[] = {
+    { .num = EDGE_NONE, .str = "none" },
+    { .num = EDGE_LEFT, .str = "left" },
+    { .num = EDGE_RIGHT, .str = "right" },
+    { .num = EDGE_TOP, .str = "top" },
+    { .num = EDGE_BOTTOM, .str = "bottom" },
+    { .num = 0, .str = NULL },
 };
-
-pair width_pair[] = {
-    { WIDTH_NONE, "none" },
-    { WIDTH_REQUEST, "request" },
-    { WIDTH_PIXEL, "pixel" },
-    { WIDTH_PERCENT, "percent" },
-    { 0, NULL },
+xconf_enum widthtype_enum[] = {
+    { .num = WIDTH_NONE, .str = "none" },
+    { .num = WIDTH_REQUEST, .str = "request" },
+    { .num = WIDTH_PIXEL, .str = "pixel" },
+    { .num = WIDTH_PERCENT, .str = "percent" },
+    { .num = 0, .str = NULL },
 };
-
-pair height_pair[] = {
-    { HEIGHT_NONE, "none" },
-    { HEIGHT_PIXEL, "pixel" },
-    { 0, NULL },
+xconf_enum heighttype_enum[] = {
+    { .num = HEIGHT_NONE, .str = "none" },
+    { .num = HEIGHT_PIXEL, .str = "pixel" },
+    { .num = 0, .str = NULL },
 };
-
-pair bool_pair[] = {
-    { 0, "false" },
-    { 1, "true" },
-    { 0, NULL },
+xconf_enum bool_enum[] = {
+    { .num = 0, .str = "false" },
+    { .num = 1, .str = "true" },
+    { .num = 0, .str = NULL },
 };
-pair pos_pair[] = {
-    { POS_NONE, "none" },
-    { POS_START, "start" },
-    { POS_END,  "end" },
-    { 0, NULL},
+xconf_enum pos_enum[] = {
+    { .num = POS_NONE, .str = "none" },
+    { .num = POS_START, .str = "start" },
+    { .num = POS_END,  .str = "end" },
+    { .num = 0, .str = NULL},
 };
-
-pair layer_pair[] = {
-    { LAYER_NONE, "none" },
-    { LAYER_ABOVE, "above" },
-    { LAYER_BELOW, "below" },
-    { 0, NULL},
+xconf_enum layer_enum[] = {
+    { .num = LAYER_NONE, .str = "none" },
+    { .num = LAYER_ABOVE, .str = "above" },
+    { .num = LAYER_BELOW, .str = "below" },
+    { .num = 0, .str = NULL},
 };
 
 
 int
-str2num(pair *p, gchar *str, int defval)
+str2num(xconf_enum *p, gchar *str, int defval)
 {
     ENTER;
     for (;p && p->str; p++) {
@@ -132,7 +126,7 @@ str2num(pair *p, gchar *str, int defval)
 }
 
 gchar *
-num2str(pair *p, int num, gchar *defval)
+num2str(xconf_enum *p, int num, gchar *defval)
 {
     ENTER;
     for (;p && p->str; p++) {
@@ -142,82 +136,6 @@ num2str(pair *p, int num, gchar *defval)
     RET(defval);
 }
 
-extern  int
-get_line(FILE *fp, line *s)
-{
-    gchar *tmp, *tmp2;
-
-    ENTER;
-    s->type = LINE_NONE;
-    if (!fp)
-        RET(s->type);
-    while (fgets(s->str, LINE_LENGTH, fp)) {
-        g_strstrip(s->str);
-
-        if (s->str[0] == '#' || s->str[0] == 0) {
-            continue;
-        }
-        DBG( ">> %s\n", s->str);
-        if (!g_ascii_strcasecmp(s->str, "}")) {
-            s->type = LINE_BLOCK_END;
-            break;
-        }
-
-        s->t[0] = s->str;
-        for (tmp = s->str; isalnum(*tmp); tmp++);
-        for (tmp2 = tmp; isspace(*tmp2); tmp2++);
-        if (*tmp2 == '=') {
-            for (++tmp2; isspace(*tmp2); tmp2++);
-            s->t[1] = tmp2;
-            *tmp = 0;
-            s->type = LINE_VAR;
-        } else if  (*tmp2 == '{') {
-            *tmp = 0;
-            s->type = LINE_BLOCK_START;
-        } else {
-            ERR( "parser: unknown token: '%c'\n", *tmp2);
-        }
-        break;
-    }
-    RET(s->type);
-
-}
-
-int
-get_line_as_is(FILE *fp, line *s)
-{
-    gchar *tmp, *tmp2;
-
-    ENTER;
-    if (!fp) {
-        s->type = LINE_NONE;
-        RET(s->type);
-    }
-    s->type = LINE_NONE;
-    while (fgets(s->str, LINE_LENGTH, fp)) {
-        g_strstrip(s->str);
-        if (s->str[0] == '#' || s->str[0] == 0)
-        continue;
-        DBG( ">> %s\n", s->str);
-        if (!g_ascii_strcasecmp(s->str, "}")) {
-            s->type = LINE_BLOCK_END;
-            DBG( "        : line_block_end\n");
-            break;
-        }
-        for (tmp = s->str; isalnum(*tmp); tmp++);
-        for (tmp2 = tmp; isspace(*tmp2); tmp2++);
-        if (*tmp2 == '=') {
-            s->type = LINE_VAR;
-        } else if  (*tmp2 == '{') {
-            s->type = LINE_BLOCK_START;
-        } else {
-            DBG( "        : ? <%c>\n", *tmp2);
-        }
-        break;
-    }
-    RET(s->type);
-
-}
 
 void resolve_atoms()
 {

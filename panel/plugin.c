@@ -195,7 +195,6 @@ plugin_stop(plugin_instance *this)
 {
     ENTER;
     DBG("%s\n", this->class->type);
-    fclose(this->fp);
     this->class->destructor(this);
     this->panel->plug_num--;
     gtk_widget_destroy(this->pwid);

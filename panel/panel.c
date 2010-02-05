@@ -1,23 +1,3 @@
-/*! \file panel.c
- *  \brief main code is here
- *
- *             No details
- *
- */
-
-/*! \mainpage My Personal Index Page
- *
- * \section intro_sec Introduction
- *
- * This is the introduction.
- *
- * \section install_sec Installation
- *
- * \subsection step1 Step 1: Opening the box
- *
- * etc...
- */
-
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -35,16 +15,16 @@
 #include "misc.h"
 #include "bg.h"
 #include "gtkbgbox.h"
+#include "profile.h"
 
-/// config file
-static gchar *cfgfile = NULL;
+
 static gchar version[] = VERSION;
 gchar *cprofile = "default";
-
+static xconf *xc;
 guint mwid; // mouse watcher thread id
 guint hpid; // hide panel thread id
 
-int config = 0;
+
 FbEv *fbev;
 gint force_quit = 0;
 
@@ -55,32 +35,9 @@ gint force_quit = 0;
 /** verbosity level of dbg and log functions */
 int log_level = LOG_WARN;
 
-FILE *pconf; // plugin part of profile file
 
 panel *p;
 panel *the_panel;
-
-/****************************************************
- *         panel's handlers for WM events           *
- ****************************************************/
-/*
-  static void
-  panel_del_wm_strut(panel *p)
-  {
-  XDeleteProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT);
-  XDeleteProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT_PARTIAL);
-  }
-*/
-
-/** realy brie
- * cont. detailed follow
- * sdfsdfdsf
- * \param p panel yanni
- * \return nothing or
- * nothing
- * \retval 0 tipa nol
- * \retval !0 - ok
- */
 
 void
 panel_set_wm_strut(panel *p)
@@ -445,6 +402,7 @@ ah_stop(panel *p)
  ****************************************************/
 
 
+
 gboolean
 panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p)
 {
@@ -452,13 +410,13 @@ panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p)
     if (event->type == GDK_BUTTON_PRESS && event->button == 3
           && event->state & GDK_CONTROL_MASK) {
         DBG("ctrl-btn3\n");
-        configure();
+        //configure();
         RET(TRUE);
     }
     RET(FALSE);
 }
 
-void
+static void
 panel_start_gui(panel *p)
 {
     ENTER;
@@ -541,65 +499,74 @@ panel_start_gui(panel *p)
 }
 
 static int
-panel_parse_global(panel *p, FILE *fp)
+panel_parse_global(xconf *xc)
 {
-    line s;
-
     ENTER;
-    while (get_line(fp, &s) != LINE_NONE) {
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "edge")) {
-                p->edge = str2num(edge_pair, s.t[1], EDGE_NONE);
-            } else if (!g_ascii_strcasecmp(s.t[0], "allign")) {
-                p->allign = str2num(allign_pair, s.t[1], ALLIGN_NONE);
-            } else if (!g_ascii_strcasecmp(s.t[0], "margin")) {
-                p->margin = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "widthtype")) {
-                p->widthtype = str2num(width_pair, s.t[1], WIDTH_NONE);
-            } else if (!g_ascii_strcasecmp(s.t[0], "width")) {
-                p->width = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "heighttype")) {
-                p->heighttype = str2num(height_pair, s.t[1], HEIGHT_NONE);
-            } else if (!g_ascii_strcasecmp(s.t[0], "height")) {
-                p->height = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "spacing")) {
-                p->spacing = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "SetDockType")) {
-                p->setdocktype = str2num(bool_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "SetPartialStrut")) {
-                p->setstrut = str2num(bool_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "RoundCorners")) {
-                p->round_corners = str2num(bool_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "RoundCornersRadius")) {
-                p->round_corners_radius = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "autohide")) {
-                p->autohide = str2num(bool_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "heightWhenHidden")) {
-                p->height_when_hidden = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "Transparent")) {
-                p->transparent = str2num(bool_pair, s.t[1], 0);
-            } else if (!g_ascii_strcasecmp(s.t[0], "Alpha")) {
-                p->alpha = atoi(s.t[1]);
-                if (p->alpha > 255)
-                    p->alpha = 255;
-            } else if (!g_ascii_strcasecmp(s.t[0], "TintColor")) {
-                if (!gdk_color_parse (s.t[1], &p->gtintcolor))
-                    gdk_color_parse ("white", &p->gtintcolor);
-                p->tintcolor = gcolor2rgb24(&p->gtintcolor);
-                DBG("tintcolor=%x\n", p->tintcolor);
-            } else if (!g_ascii_strcasecmp(s.t[0], "Layer")) {
-                p->layer = str2num(layer_pair, s.t[1], 0);
-            } else {
-                ERR( "fbpanel: %s - unknown var in Global section\n", s.t[0]);
-                RET(0);
-            }
-        } else if (s.type == LINE_BLOCK_END) {
-            break;
-        } else {
-            ERR( "fbpanel: illegal in this context %s\n", s.str);
-            RET(0);
-        }
-    }
+    /* Set default values */
+    p->allign = ALLIGN_CENTER;
+    p->edge = EDGE_BOTTOM;
+    p->widthtype = WIDTH_PERCENT;
+    p->width = 100;
+    p->heighttype = HEIGHT_PIXEL;
+    p->height = PANEL_HEIGHT_DEFAULT;
+    p->setdocktype = 1;
+    p->setstrut = 1;
+    p->round_corners = 1;
+    p->round_corners_radius = 7;
+    p->autohide = 0;
+    p->height_when_hidden = 2;
+    p->transparent = 0;
+    p->alpha = 127;
+    p->tintcolor_name = "white";
+    p->spacing = 0;
+    p->layer = LAYER_NONE;
+  
+    /* Read config */
+    /* geometry */
+    xconf_get_enum(xconf_find(xc, "edge", 0),
+        &p->edge, edge_enum);
+    xconf_get_enum(xconf_find(xc, "allign", 0),
+        &p->allign, allign_enum);
+    xconf_get_enum(xconf_find(xc, "widthtype", 0),
+        &p->widthtype, widthtype_enum);
+    xconf_get_int(xconf_find(xc, "width", 0),
+        &p->width);
+    xconf_get_int(xconf_find(xc, "margin", 0),
+        &p->margin);
+    xconf_get_enum(xconf_find(xc, "heighttype", 0),
+        &p->heighttype,heighttype_enum);
+    xconf_get_int(xconf_find(xc, "height", 0),
+        &p->height);
+    /* properties */
+    xconf_get_enum(xconf_find(xc, "setdocktype", 0),
+        &p->setdocktype, bool_enum);
+    xconf_get_enum(xconf_find(xc, "setpartialstrut", 0),
+        &p->setstrut, bool_enum);
+    xconf_get_enum(xconf_find(xc, "autohide", 0),
+        &p->autohide, bool_enum);
+    xconf_get_int(xconf_find(xc, "heightwhenhidden", 0),
+        &p->height_when_hidden);
+    xconf_get_enum(xconf_find(xc, "layer", 0),
+        &p->layer, layer_enum);
+    /* effects */
+    xconf_get_enum(xconf_find(xc, "roundcorners", 0),
+        &p->round_corners, bool_enum);
+    xconf_get_int(xconf_find(xc, "roundcornersradius", 0),
+        &p->round_corners_radius);
+    xconf_get_enum(xconf_find(xc, "transparent", 0),
+        &p->transparent, bool_enum);
+    xconf_get_int(xconf_find(xc, "alpha", 0),
+         &p->alpha);
+    xconf_get_str(xconf_find(xc, "tintcolor", 0),
+        &p->tintcolor_name);
+    
+    /* Sanity checks */
+    if (!gdk_color_parse (p->tintcolor_name, &p->gtintcolor))
+        gdk_color_parse ("white", &p->gtintcolor);
+    p->tintcolor = gcolor2rgb24(&p->gtintcolor);
+    DBG("tintcolor=%x\n", p->tintcolor);
+    if (p->alpha > 255)
+        p->alpha = 255;
     p->orientation = (p->edge == EDGE_TOP || p->edge == EDGE_BOTTOM)
         ? ORIENT_HORIZ : ORIENT_VERT;
     if (p->orientation == ORIENT_HORIZ) {
@@ -623,183 +590,50 @@ panel_parse_global(panel *p, FILE *fp)
     p->curdesk = get_net_current_desktop();
     p->desknum = get_net_number_of_desktops();
     p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA,
-          XA_CARDINAL, &p->wa_len);
+        XA_CARDINAL, &p->wa_len);
     print_wmdata(p);
+    panel_start_gui(p);
     RET(1);
 }
 
-static int
-panel_parse_plugin(panel *p, FILE *fp)
+static void
+panel_parse_plugin(xconf *xc)
 {
-    line s;
     plugin_instance *plug = NULL;
     gchar *type = NULL;
-    FILE *tmpfp;
-    int expand , padding, border, pno = 0;
-
+    
     ENTER;
-    if (!(tmpfp = tmpfile())) {
-        ERR( "can't open temporary file with tmpfile()\n");
-        RET(0);
-    }
-    border = expand = padding = 0;
-    while (get_line(fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR( "fbpanel: bad line %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "type")) {
-                type = g_strdup(s.t[1]);
-                DBG("plug %s\n", type);
-            } else if (!g_ascii_strcasecmp(s.t[0], "expand"))
-                expand = str2num(bool_pair,  s.t[1], 0);
-            else if (!g_ascii_strcasecmp(s.t[0], "padding"))
-                padding = atoi(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "border"))
-                border = atoi(s.t[1]);
-            else {
-                ERR( "fbpanel: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        } else if (s.type == LINE_BLOCK_START) {
-            if (!g_ascii_strcasecmp(s.t[0], "Config")) {
-                pno = 2;
-                while (pno > 1) {
-                    get_line_as_is(fp, &s);
-                    if (s.type == LINE_NONE) {
-                        ERR( "fbpanel: unexpected eof\n");
-                        goto error;
-                    } else if (s.type != LINE_BLOCK_END) {
-                        fprintf(tmpfp, "%s%s\n", indent(pno), s.str);
-                        //fprintf(stdout, "%s%s\n", indent(pno), s.str);
-                        if (s.type == LINE_BLOCK_START)
-                            pno++;
-                    } else {
-                        pno--;
-                        fprintf(tmpfp, "%s%s\n", indent(pno), s.str);
-                        //fprintf(stdout, "%s%s\n", indent(pno), s.str);
-                    }
-                }
-            } else {
-                ERR( "fbpanel: unknown block %s\n", s.t[0]);
-                goto error;
-            }
-        } else {
-            ERR( "fbpanel: illegal in this context %s\n", s.str);
-            goto error;
-        }
-    }
-    if (!pno) {
-        //there is no config section, lets pretend one
-        fprintf(tmpfp, "%s}\n", indent(1));
-        //fprintf(stdout, "%s}\n", indent(1), s.str);
-    }
+    xconf_get_str(xconf_find(xc, "type", 0), &type);
     if (!type || !(plug = plugin_load(type))) {
         ERR( "fbpanel: can't load %s plugin\n", type);
-        goto error;
+        exit(1);
     }
     plug->panel = p;
-    plug->fp = tmpfp;
-    plug->expand = expand;
-    plug->padding = padding;
-    plug->border = border;
-    //fprintf(tmpfp, "}\n");
-    fseek(tmpfp, 0, SEEK_SET);
-    DBG("starting\n");
+    xconf_get_int(xconf_find(xc, "expand", 0), &plug->expand);
+    xconf_get_int(xconf_find(xc, "padding", 0), &plug->padding);
+    xconf_get_int(xconf_find(xc, "border", 0), &plug->border);
+    plug->xc = xconf_find(xc, "config", 0);
+
     if (!plugin_start(plug)) {
         ERR( "fbpanel: can't start plugin %s\n", type);
-        goto error;
+        exit(1);
     }
-    DBG("plug %s\n", type);
     p->plugins = g_list_append(p->plugins, plug);
-    g_free(type);
-    RET(1);
-
-error:
-    fclose(tmpfp);
-    g_free(type);
-    if (plug)
-        plugin_put(plug);
-    RET(0);
-
 }
 
-
-static gboolean
-panel_parse_plugins(panel *p)
+static void
+panel_start(xconf *xc)
 {
-    line s;
-
+    int i;
+    xconf *pxc;
+    
     ENTER;
-    fseek(pconf, 0, SEEK_SET);
-    while (get_line(pconf, &s) != LINE_NONE) {
-        if ((s.type  != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0], "plugin")) {
-            ERR( "fbpanel: expecting plugin section\n");
-            goto error;
-        }
-        if (!panel_parse_plugin(p, pconf)) {
-            ERR( "fbpanel: can;t parse plugin\n");
-            goto error;
-        }
-    }
-    RET(FALSE);
-error:
-    exit(1);
-}
-
-static int
-panel_start(panel *p, FILE *fp)
-{
-    line s;
-    long pos;
-
-    /* parse global section */
-    ENTER;
-    memset(p, 0, sizeof(panel));
-    p->allign = ALLIGN_CENTER;
-    p->edge = EDGE_BOTTOM;
-    p->widthtype = WIDTH_PERCENT;
-    p->width = 100;
-    p->heighttype = HEIGHT_PIXEL;
-    p->height = PANEL_HEIGHT_DEFAULT;
-    p->setdocktype = 1;
-    p->setstrut = 1;
-    p->round_corners = 1;
-    p->round_corners_radius = 7;
-    p->autohide = 0;
-    p->height_when_hidden = 2;
-    p->transparent = 0;
-    p->alpha = 127;
-    p->tintcolor = 0xFFFFFFFF;
-    p->spacing = 0;
-    p->layer = LAYER_NONE;
     fbev = fb_ev_new();
-    if ((get_line(fp, &s) != LINE_BLOCK_START) || g_ascii_strcasecmp(s.t[0],
-                "Global")) {
-        ERR( "fbpanel: config file must start from Global section\n");
-        RET(0);
-    }
-    if (!panel_parse_global(p, fp))
-        RET(0);
-    panel_start_gui(p);
 
-    if (!(pconf = tmpfile())) {
-        ERR("can't open temporary file\n");
-        RET(0);
-    }
-    pos = ftell(fp);
-    while (get_line_as_is(fp, &s) != LINE_NONE) {
-        fprintf(pconf, "%s\n", s.str);
-        //fprintf(stdout, "%s\n", s.str);
-    }
-    fseek(fp, pos, SEEK_SET);
-    fflush(pconf);
-    panel_parse_plugins(p);
-
-    //gtk_widget_show_all(p->topgwin);
-    //gdk_flush();
-    RET(1);
+    panel_parse_global(xconf_find(xc, "global", 0));
+    for (i = 0; (pxc = xconf_find(xc, "plugin", i)); i++)
+        panel_parse_plugin(pxc);
+    RET();
 }
 
 static void
@@ -809,7 +643,6 @@ delete_plugin(gpointer data, gpointer udata)
     plugin_stop((plugin_instance *)data);
     plugin_put((plugin_instance *)data);
     RET();
-
 }
 
 static void
@@ -829,7 +662,6 @@ panel_stop(panel *p)
     gtk_widget_destroy(p->topgwin);
     g_object_unref(fbev);
     g_free(p->workarea);
-    fclose(pconf);
     gdk_flush();
     XFlush(GDK_DISPLAY());
     XSync(GDK_DISPLAY(), True);
@@ -854,49 +686,6 @@ usage()
     printf(" -v  -- same as --version\n");
     printf(" -C  -- same as --configure\n");
     printf("\nVisit http://fbpanel.sourceforge.net/ for detailed documentation,\n\n");
-}
-
-FILE *
-open_profile(gchar *profile)
-{
-    gchar *fname;
-    FILE *fp;
-    int created = 0;
-    
-    ENTER;
-    LOG(LOG_INFO, "Loading profile '%s'\n", profile);
-    fname = g_build_filename(g_get_user_config_dir(), "fbpanel", profile, NULL);
-try:
-    fp = fopen(fname, "r");
-    LOG(LOG_INFO, "Trying %s: %s\n", fname, fp ? "ok" : "not found");
-    if (fp) {
-        cfgfile = fname;
-        RET(fp);
-    }
-    if (!created++)
-    {
-        gchar *cmd;
-
-        cmd = g_strdup_printf("%s %s", LIBEXECDIR "/fbpanel/make_profile", profile);
-        g_spawn_command_line_sync(cmd, NULL, NULL, NULL, NULL);
-        g_free(cmd);
-        goto try;
-    }
-    ERR("Can't load %s\n", fname);
-    g_free(fname);
-    RET(NULL);
-}
-
-void 
-close_profile(FILE *file)
-{
-    ENTER;
-    fclose(file);
-    if (cfgfile) {
-        g_free(cfgfile);
-        cfgfile = NULL;
-    }
-    RET();
 }
 
 void
@@ -928,41 +717,12 @@ sig_usr2(int signum)
     force_quit = 1;
 }
 
-#ifdef TEST    
-static gboolean
-panel_exit(void *p)
-{
-    static int count = 0;
 
-    count++;
-    DBG2("count=%d\n", count);
-    gtk_main_quit();
-    if (count == 1) {
-        g_timeout_add(20 * 1000, (GSourceFunc) panel_exit, p);
-        RET(FALSE);
-    }
-    if (count > 2) {
-        force_quit = 1;    
-        DBG2("force_quit=%d\n", force_quit);
-        RET(FALSE);
-    }
-    RET(TRUE);
-}
-#endif
-
-int
-main(int argc, char *argv[], char *env[])
+static void
+do_argv(int argc, char *argv[])
 {
     int i;
-    FILE *pfp; /* current profile FP */
-
-    ENTER;
-    setlocale(LC_CTYPE, "");
-    gtk_set_locale();
-    gtk_init(&argc, &argv);
-    XSetLocaleModifiers("");
-    XSetErrorHandler((XErrorHandler) handle_error);
-    fb_init();
+    
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
             usage();
@@ -980,7 +740,7 @@ main(int argc, char *argv[], char *env[])
                 log_level = atoi(argv[i]);
             }
         } else if (!strcmp(argv[i], "--configure") || !strcmp(argv[i], "-C")) {
-            config = 1;
+            //config = 1;
         } else if (!strcmp(argv[i], "--profile") || !strcmp(argv[i], "-p")) {
             i++;
             if (i == argc) {
@@ -996,31 +756,36 @@ main(int argc, char *argv[], char *env[])
             exit(1);
         }
     }
+}
+
+int
+main(int argc, char *argv[])
+{
+    setlocale(LC_CTYPE, "");
+    gtk_set_locale();
+    gtk_init(&argc, &argv);
+    XSetLocaleModifiers("");
+    XSetErrorHandler((XErrorHandler) handle_error);
+    fb_init();
+    do_argv(argc, argv);
 
     gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), IMGPREFIX);
     signal(SIGUSR1, sig_usr1);
     signal(SIGUSR2, sig_usr2);
-#ifdef TEST    
-    g_timeout_add(25 * 1000, (GSourceFunc) panel_exit, p);
-#endif
+
     do {
-        if (!(pfp = open_profile(cprofile)))
+        xc = xconf_new_from_profile(cprofile);
+        if (!xc)
             exit(1);
         the_panel = p = g_new0(panel, 1);
-        g_return_val_if_fail (p != NULL, 1);
-        if (!panel_start(p, pfp)) {
-            ERR( "fbpanel: can't start panel\n");
-            exit(1);
-        }
-        if (config)
-            configure();
+        panel_start(xc);
         gtk_main();
         panel_stop(p);
-        close_profile(pfp);
+        xconf_save_to_profile(cprofile, xc);
+        xconf_del(xc, FALSE);
         g_free(p);
         DBG("force_quit=%d\n", force_quit);
     } while (force_quit == 0);
-
     exit(0);
 }
 
