@@ -606,7 +606,7 @@ panel_parse_plugin(xconf *xc)
     xconf_get_str(xconf_find(xc, "type", 0), &type);
     if (!type || !(plug = plugin_load(type))) {
         ERR( "fbpanel: can't load %s plugin\n", type);
-        exit(1);
+        return;
     }
     plug->panel = p;
     xconf_get_int(xconf_find(xc, "expand", 0), &plug->expand);
