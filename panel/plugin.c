@@ -210,13 +210,14 @@ default_plugin_edit_config(plugin_instance *pl)
 
     ENTER;
     vbox = gtk_vbox_new(FALSE, 0);
+    /* XXX: harcoded default profile name */
     msg = g_strdup_printf("Graphical '%s' plugin configuration\n is not "
           "implemented yet.\n"
-          "Please edit manually\n\t~/.fbpanel/%s\n\n"
+          "Please edit manually\n\t~/.config/fbpanel/default\n\n"
           "You can use as example files in \n\t%s/share/fbpanel/\n"
           "or visit\n"
           "\thttp://fbpanel.sourceforge.net/docs.html", pl->class->name,
-          cprofile, PREFIX);
+          PREFIX);
     label = gtk_label_new(msg);
     gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
     gtk_label_set_selectable(GTK_LABEL(label), TRUE);

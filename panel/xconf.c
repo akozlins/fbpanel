@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <strings.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #include "xconf.h"
-#include "profile.h"
 #include "dbg.h"
 
 

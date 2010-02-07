@@ -26,9 +26,8 @@ void xconf_prn(FILE *fp, xconf *x, int n, gboolean sons_only);
 xconf *xconf_find(xconf *x, gchar *name, int no);
 
 
-xconf *xconf_new_from_file(gchar *name);
-xconf *xconf_new_from_profile(gchar *profile);
-void xconf_save_to_profile(gchar *profile, xconf *xc);
+xconf *xconf_new_from_file(gchar *fname, gchar *name);
+void xconf_save_to_file(gchar *fname, xconf *xc);
     
 void xconf_get_int(xconf *x, int *val);
 void xconf_get_enum(xconf *x, int *val, xconf_enum *e);

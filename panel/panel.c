@@ -15,7 +15,6 @@
 #include "misc.h"
 #include "bg.h"
 #include "gtkbgbox.h"
-#include "profile.h"
 
 
 static gchar version[] = VERSION;
@@ -760,6 +759,7 @@ do_argv(int argc, char *argv[])
   
 }
 
+static void
 ensure_profile()
 {
     gchar *cmd;
@@ -800,7 +800,7 @@ main(int argc, char *argv[])
     signal(SIGUSR2, sig_usr2);
 
     do {
-        xc = xconf_new_from_file(profile_file);
+        xc = xconf_new_from_file(profile_file, profile);
         if (!xc)
             exit(1);
         the_panel = p = g_new0(panel, 1);
