@@ -620,6 +620,8 @@ gchar *
 expand_tilda(gchar *file)
 {
     ENTER;
+    if (!file)
+        RET(NULL);
     RET((file[0] == '~') ?
         g_strdup_printf("%s%s", getenv("HOME"), file+1)
         : g_strdup(file));

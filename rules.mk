@@ -38,7 +38,7 @@ endif
 ifeq ($(DEBUG),enabled)
 	override CFLAGS = -Wall -I$(TOPDIR) -g -Werror 
 else
-	CFLAGS += -O2  
+	CFLAGS += -O2 -Wall -I$(TOPDIR) 
 endif
 
  
