@@ -7,6 +7,16 @@
 #include "dbg.h"
 
 
+enum { LINE_NONE, LINE_BLOCK_START, LINE_BLOCK_END, LINE_VAR };
+
+#define LINE_LENGTH 256
+typedef struct {
+    int type;
+    gchar str[LINE_LENGTH];
+    gchar *t[2];
+} line;
+
+
 /* Creates new xconf node */
 xconf *xconf_new(gchar *name, gchar *value)
 {
@@ -167,15 +177,56 @@ void xconf_get_enum(xconf *x, int *val, xconf_enum *p)
 }
 
 
+static int
+read_line(FILE *fp, line *s)
+{
+    gchar *tmp, *tmp2;
+
+    ENTER;
+    s->type = LINE_NONE;
+    if (!fp)
+        RET(s->type);
+    while (fgets(s->str, LINE_LENGTH, fp)) {
+        g_strstrip(s->str);
+
+        if (s->str[0] == '#' || s->str[0] == 0) {
+            continue;
+        }
+        DBG( ">> %s\n", s->str);
+        if (!g_ascii_strcasecmp(s->str, "}")) {
+            s->type = LINE_BLOCK_END;
+            break;
+        }
+
+        s->t[0] = s->str;
+        for (tmp = s->str; isalnum(*tmp); tmp++);
+        for (tmp2 = tmp; isspace(*tmp2); tmp2++);
+        if (*tmp2 == '=') {
+            for (++tmp2; isspace(*tmp2); tmp2++);
+            s->t[1] = tmp2;
+            *tmp = 0;
+            s->type = LINE_VAR;
+        } else if  (*tmp2 == '{') {
+            *tmp = 0;
+            s->type = LINE_BLOCK_START;
+        } else {
+            ERR( "parser: unknown token: '%c'\n", *tmp2);
+        }
+        break;
+    }
+    RET(s->type);
+
+}
 
 
-xconf *read_block(FILE *fp, gchar *name)
+static xconf *
+read_block(FILE *fp, gchar *name)
 {
     line s;
     xconf *x, *xs;
 
     x = xconf_new(name, NULL);
-    while (get_line(fp, &s) != LINE_NONE)
+    while (read_line(fp, &s) != LINE_NONE)
     {
         if (s.type == LINE_BLOCK_START)
         {
@@ -198,22 +249,21 @@ xconf *read_block(FILE *fp, gchar *name)
     return x;
 }
 
-xconf *xconf_new_from_profile(gchar *profile)
+xconf *xconf_new_from_file(gchar *fname, gchar *name)
 {
-    FILE *fp = get_profile_file(profile, "r");
+    FILE *fp = fopen(fname, "r");
     xconf *ret = NULL;
-    
     if (fp)
     {
-        ret = read_block(fp, profile);
+        ret = read_block(fp, name);
         fclose(fp);
     }
     return ret;
 }
 
-void xconf_save_to_profile(gchar *profile, xconf *xc)
+void xconf_save_to_file(gchar *fname, xconf *xc)
 {
-    FILE *fp = get_profile_file(profile, "w");
+    FILE *fp = fopen(fname, "w");
 
     if (fp)
     {
@@ -221,3 +271,4 @@ void xconf_save_to_profile(gchar *profile, xconf *xc)
         fclose(fp);
     }
 }
+ 

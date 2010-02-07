@@ -17,67 +17,32 @@ typedef struct {
 
 } space_priv;
 
-
-
 static void
 space_destructor(plugin_instance *p)
 {
-    space_priv *sp = (space_priv *) p;
-
     ENTER;
-    gtk_widget_destroy(sp->mainw);
     RET();
 }
 
 static int
 space_constructor(plugin_instance *p)
 {
-    space_priv *sp;
-    line s;
-    int w, h;
+    int w, h, size;
 
     ENTER;
-    sp = (space_priv *) p;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR( "space: illegal token %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "size")) 
-                sp->size = atoi(s.t[1]);
-            else {
-                ERR( "space: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        } else {
-            ERR( "space: illegal in this context %s\n", s.str);
-            goto error;
-        }
-    }
-    if (!sp->size)
-        sp->size = 1;
-    sp->mainw = gtk_vbox_new(TRUE, 0);
-    gtk_widget_show(sp->mainw);
+    size = 1;
+    xconf_get_int(xconf_find(p->xc, "size", 0), &size);
+    
     if (p->panel->orientation == ORIENT_HORIZ) {
         h = 2;
-        w = sp->size;
+        w = size;
     } else {
         w = 2;
-        h = sp->size;
+        h = size;
     } 
-    gtk_widget_set_size_request(sp->mainw, w, h);
-    gtk_container_set_border_width(GTK_CONTAINER(sp->mainw), 0);
-    //gtk_container_add(GTK_CONTAINER(p->pwid), sp->mainw);
     gtk_widget_set_size_request(p->pwid, w, h);
-
     RET(1);
-
- error:
-    space_destructor(p);
-    RET(0);
 }
-
 
 static plugin_class class = {
     .fname       = NULL,

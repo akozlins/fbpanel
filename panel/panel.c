@@ -19,7 +19,8 @@
 
 
 static gchar version[] = VERSION;
-gchar *cprofile = "default";
+static gchar *profile = "default";
+static gchar *profile_file;
 static xconf *xc;
 guint mwid; // mouse watcher thread id
 guint hpid; // hide panel thread id
@@ -748,7 +749,7 @@ do_argv(int argc, char *argv[])
                 usage();
                 exit(1);
             } else {
-                cprofile = g_strdup(argv[i]);
+                profile = g_strdup(argv[i]);
             }
         } else {
             printf("fbpanel: unknown option - %s\n", argv[i]);
@@ -756,6 +757,29 @@ do_argv(int argc, char *argv[])
             exit(1);
         }
     }
+  
+}
+
+ensure_profile()
+{
+    gchar *cmd;
+
+    if (g_file_test(profile_file,
+            G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
+    {
+        return;
+    }
+    cmd = g_strdup_printf("%s %s", LIBEXECDIR "/fbpanel/make_profile",
+        profile);
+    g_spawn_command_line_sync(cmd, NULL, NULL, NULL, NULL);
+    g_free(cmd);
+    if (g_file_test(profile_file,
+            G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
+    {
+        return;
+    }
+    ERR("Can't open profile %s - %s\n", profile, profile_file);
+    exit(1);
 }
 
 int
@@ -768,24 +792,27 @@ main(int argc, char *argv[])
     XSetErrorHandler((XErrorHandler) handle_error);
     fb_init();
     do_argv(argc, argv);
-
+    profile_file = g_build_filename(g_get_user_config_dir(),
+        "fbpanel", profile, NULL);
+    ensure_profile();
     gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), IMGPREFIX);
     signal(SIGUSR1, sig_usr1);
     signal(SIGUSR2, sig_usr2);
 
     do {
-        xc = xconf_new_from_profile(cprofile);
+        xc = xconf_new_from_file(profile_file);
         if (!xc)
             exit(1);
         the_panel = p = g_new0(panel, 1);
         panel_start(xc);
         gtk_main();
         panel_stop(p);
-        xconf_save_to_profile(cprofile, xc);
+        //xconf_save_to_profile(cprofile, xc);
         xconf_del(xc, FALSE);
         g_free(p);
         DBG("force_quit=%d\n", force_quit);
     } while (force_quit == 0);
+    g_free(profile_file);
     exit(0);
 }
 

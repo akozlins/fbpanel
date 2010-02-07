@@ -104,13 +104,13 @@ launchbar_destructor(plugin_instance *p)
 
 static void
 drag_data_received_cb (GtkWidget *widget,
-      GdkDragContext   *context,
-      gint              x,
-      gint              y,
-      GtkSelectionData *sd,
-      guint             info,
-      guint             time,
-      btn              *b)
+    GdkDragContext *context,
+    gint x,
+    gint y,
+    GtkSelectionData *sd,
+    guint info,
+    guint time,
+    btn *b)
 {
     gchar *s, *str, *tmp, *tok, *tok2;
 
@@ -160,116 +160,71 @@ drag_data_received_cb (GtkWidget *widget,
 }
 
 static int
-read_button(plugin_instance *p)
+read_button(plugin_instance *p, xconf *xc)
 {
     launchbar_priv *lb = (launchbar_priv *) p;
     gchar *iname, *fname, *tooltip, *action;
-    //GdkPixbuf *gp, *gps;
     GtkWidget *button;
-    line s;
-    //GError *err = NULL;
-    int w, h;
     
     ENTER;
     if (lb->btn_num >= MAXBUTTONS) {
-        ERR("launchbar: max number of buttons (%d) was reached. skipping the rest\n",
-              lb->btn_num );
+        ERR("launchbar: max number of buttons (%d) was reached."
+            "skipping the rest\n", lb->btn_num );
         RET(0);
     }
+    iname = tooltip = fname = action = NULL;
+    xconf_get_str(xconf_find(xc, "image", 0), &fname);
+    xconf_get_str(xconf_find(xc, "icon", 0), &iname);
+    xconf_get_str(xconf_find(xc, "action", 0), &action);
+    xconf_get_str(xconf_find(xc, "tooltip", 0), &tooltip);
 
-    iname = tooltip = fname = action = 0;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR( "launchbar: illegal token %s\n", s.str);
-            RET(0);
-        }
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "image")) 
-                fname = expand_tilda(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "tooltip"))
-                tooltip = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "icon"))
-                iname = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "action"))
-                action = expand_tilda(s.t[1]);
-            else {
-                ERR( "launchbar: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        } else {
-            ERR( "launchbar: illegal in this context %s\n", s.str);
-            goto error;
-        }
-    }
-    DBG("action=%s\n", action);
-    //gtk_icon_theme_lookup_icon(lb->it, in->data, 40, GTK_ICON_LOOKUP_FORCE_SVG)));
-    // button
-    if (p->panel->orientation == ORIENT_HORIZ) {
-        w = -1;
-        //h = GTK_WIDGET(p->panel->box)->allocation.height;
-        h = p->panel->ah;
-    } else {
-        //w = GTK_WIDGET(p->panel->box)->allocation.width;
-        w = p->panel->aw;
-        h = -1;
-    }
-    w = h = lb->iconsize;
-    //button = fb_button_new_from_file(iname, fname, w, h, 0x202020, TRUE);
-    button = fb_button_new(iname, fname, w, h, 0x202020, NULL);
-    //gtk_container_set_border_width(GTK_CONTAINER(button), 0);
+    action = expand_tilda(action);
+    fname = expand_tilda(fname);
+
+    button = fb_button_new(iname, fname, lb->iconsize,
+        lb->iconsize, 0x202020, NULL);
+
     g_signal_connect (G_OBJECT (button), "button-release-event",
           G_CALLBACK (my_button_pressed), (gpointer) &lb->btns[lb->btn_num]);
     g_signal_connect (G_OBJECT (button), "button-press-event",
           G_CALLBACK (my_button_pressed), (gpointer) &lb->btns[lb->btn_num]);
 
-    DBG("here\n");
-    
     GTK_WIDGET_UNSET_FLAGS (button, GTK_CAN_FOCUS);
     // DnD support
     gtk_drag_dest_set (GTK_WIDGET(button),
-          GTK_DEST_DEFAULT_ALL, //GTK_DEST_DEFAULT_HIGHLIGHT,
-          target_table, G_N_ELEMENTS (target_table),
-          GDK_ACTION_COPY);    
+        GTK_DEST_DEFAULT_ALL, //GTK_DEST_DEFAULT_HIGHLIGHT,
+        target_table, G_N_ELEMENTS (target_table),
+        GDK_ACTION_COPY);    
     g_signal_connect (G_OBJECT(button), "drag_data_received",
-          G_CALLBACK (drag_data_received_cb),  (gpointer) &lb->btns[lb->btn_num]);
-
-    DBG("here\n");
+        G_CALLBACK (drag_data_received_cb),
+        (gpointer) &lb->btns[lb->btn_num]);
 
     gtk_box_pack_start(GTK_BOX(lb->box), button, FALSE, FALSE, 0);
     gtk_widget_show(button);
 
     if (p->panel->transparent) 
-        gtk_bgbox_set_background(button, BG_INHERIT, p->panel->tintcolor, p->panel->alpha);
-
+        gtk_bgbox_set_background(button, BG_INHERIT,
+            p->panel->tintcolor, p->panel->alpha);
+    gtk_widget_set_tooltip_markup(button, tooltip);
+    
     g_free(fname);
     g_free(iname);
     DBG("here\n");
-    // tooltip
-    if (tooltip) {
-	    gtk_widget_set_tooltip_markup(button, tooltip);
-        g_free(tooltip);
-    }
- 
-    //gtk_container_add(GTK_CONTAINER(eb), button);
+
     lb->btns[lb->btn_num].action = action;
     lb->btns[lb->btn_num].lb     = lb;
     lb->btn_num++;
     
     RET(1);
-
- error:
-    g_free(fname);
-    g_free(tooltip);
-    g_free(action);
-    RET(0);
 }
 
 static int
 launchbar_constructor(plugin_instance *p)
 {
     launchbar_priv *lb; 
-    line s;
-    //GtkRequisition req;
+    int i;
+    xconf *pxc;
+    
     static gchar *launchbar_rc = "style 'launchbar-style'\n"
         "{\n"
         "GtkWidget::focus-line-width = 0\n"
@@ -294,57 +249,12 @@ launchbar_constructor(plugin_instance *p)
         lb->iconsize = GTK_WIDGET(p->panel->box)->allocation.height;
     else
         lb->iconsize = GTK_WIDGET(p->panel->box)->allocation.width;
-    //DBG("button: req width=%d height=%d\n", req.width, req.height);            
+
     DBG("iconsize=%d\n", lb->iconsize);
-
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR( "launchbar: illegal token %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_BLOCK_START) {
-            if (!g_ascii_strcasecmp(s.t[0], "button")) {
-                if (!read_button(p)) {
-                    ERR( "launchbar: can't init button\n");
-                    goto error;
-                }
-            } else {
-                ERR( "launchbar: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        } else {
-            ERR( "launchbar: illegal in this context %s\n", s.str);
-            goto error;
-        }
-    }
-
-    if (0) {
-        GtkIconTheme* it = gtk_icon_theme_get_default();
-        GList* in = gtk_icon_theme_list_icons(it, NULL);
-        GList *tmp;
-        while ((tmp = in)) {
-            printf("%s %s\n", (char *)in->data, gtk_icon_info_get_filename(
-                       gtk_icon_theme_lookup_icon(it, in->data, 40, GTK_ICON_LOOKUP_FORCE_SVG)));
-         
-            in = g_list_next(in);
-            //g_free(tmp->data);
-            //g_list_free(tmp);
-        }
-        fflush(stdout);
-    }
-
-
-    
-    
+    for (i = 0; (pxc = xconf_find(p->xc, "button", i)); i++)
+        read_button(p, pxc);
     RET(1);
-
- error:
-    launchbar_destructor(p);
-    RET(0);
-    
 }
-
-
 
 static plugin_class class = {
     .count       = 0,

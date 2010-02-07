@@ -4,7 +4,7 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib.h>
 #include <glib/gstdio.h>
-
+full_
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
@@ -13,90 +13,6 @@
 
 //#define DEBUGPRN
 #include "dbg.h"
-
-/* Menu plugin creates menu from description found in config file or/and from
- * application files (aka system nenu).
- *
- * System menu note
- * Every directory is processed only once though it may be mentioned many times
- * in application directory list. This is to prevent duplicate entries.
- * For example, on my system '/usr/share' usually mentioned twise
- *    $ echo $XDG_DATA_DIRS
- *    /usr/share:/usr/share:/usr/local/share
- *
- * Icon Theme change note
- * When icon theme changes, entire menu is destroyed and scheduled for delayed
- * rebuild. Thus at any time menu uses small, fast and lightweight icons.
- * As opposite to approach where every icon wasts code and data to keep
- * track of icon them change and then reloads itself
- * FIXME: panel button that pops up the menu remains as is.
- *
- * Engine
- * The engine consists of 3 function and driver that calls them
- * make_button - creates a menu button with icon and text. Click on it will
- *   launch some application
- * make_separator - creates a visual separator between buttons
- * make_menu - creates a button with icon and text that will pop up another menu
- *   on a click
- */
-
-static const char desktop_ent[] = "Desktop Entry";
-static const gchar app_dir_name[] = "applications";
-static GtkWidget *read_submenu(plugin_instance *p, gboolean as_item);
-
-typedef struct {
-    gchar *name;
-    gchar *icon;
-    gchar *local_name;
-    GtkWidget *menu;
-} cat_info;
-
-static cat_info main_cats[] = {
-    { "AudioVideo", "applications-multimedia", "Audio & Video" },
-    { "Development","applications-development" },
-    //{ "Education",  "applications-education" },
-    { "Education",  "applications-other" },
-    { "Game",       "applications-games" },
-    { "Graphics",   "applications-graphics" },
-    { "Network",    "applications-internet" },
-    { "Office",     "applications-office" },
-    { "Settings",   "preferences-system" },
-    { "System",     "applications-system" },
-    { "Utility",    "applications-utilities" },
-};
-typedef struct {
-    plugin_instance plugin;
-    GtkWidget *menu, *box, *bg, *label;
-    gulong handler_id;
-    int iconsize, paneliconsize;
-    GSList *files;
-    GHashTable *ht;
-    guint tout;
-} menu_priv;
-
-
-static void menu_icon_theme_changed(GtkIconTheme *icon_theme, plugin_instance *p);
-
-static void
-menu_destructor(plugin_instance *p)
-{
-    menu_priv *m = (menu_priv *) p;
-
-    ENTER;
-    if (m->tout)
-        g_source_remove(m->tout);
-    g_signal_handler_disconnect(G_OBJECT(m->bg), m->handler_id);
-    g_signal_handlers_disconnect_by_func (G_OBJECT(gtk_icon_theme_get_default()),
-        menu_icon_theme_changed, p);
-    if (m->menu) {
-        DBG("destroy(m->menu)\n");
-        gtk_widget_destroy(m->menu);
-    }
-    DBG("destroy(m->box)\n");
-    gtk_widget_destroy(m->box);
-    RET();
-}
-
 static void
 spawn_app(GtkWidget *widget, gpointer data)
 {
@@ -127,195 +43,12 @@ menu_item_set_image(GtkWidget *mi, gchar *iname, gchar *fname, int width, int he
 }
 
 
-/* Inserts menu item into menu sorted by name */
-static gint
-_menu_shell_insert_sorted(GtkMenuShell *menu_shell, GtkWidget *mi, const gchar *name)
-{
-    GList *items;
-    gint i;
-    gchar *cmpname;
-
-    //TRACE("dummy");
-
-    items = gtk_container_get_children(GTK_CONTAINER(menu_shell));
-    for(i=0; items; items=items->next, i++)  {
-        cmpname = (gchar *)g_object_get_data(G_OBJECT(items->data), "item-name");
-        if(cmpname && g_ascii_strcasecmp(name, cmpname) < 0)
-            break;
-    }
-    gtk_menu_shell_insert(menu_shell, mi, i);
-    return i;
-}
-
-/* Scans directory 'path' for application files and builds corresponding entries
- * in category menus. If application belongs to several categories, first one
- * is used.
- */
-static void
-do_app_dir(plugin_instance *p, const gchar *path)
-{
-    GDir* dir;
-    const gchar* name;
-    gchar *cwd, **cats, **tmp, *exec, *title, *icon, *dot;
-    GKeyFile*  file;
-    menu_priv *m = (menu_priv *) p;
-
-    ENTER;
-    DBG("path: %s\n", path);
-    // skip already proceeded dirs to prevent duplicate entries
-    if (g_hash_table_lookup(m->ht, path))
-        RET();
-    g_hash_table_insert(m->ht, (void *)path, p);
-    dir = g_dir_open(path, 0, NULL);
-    if (!dir)
-        RET();
-    cwd = g_get_current_dir();
-    g_chdir(path);
-    file = g_key_file_new();
-    while ((name = g_dir_read_name(dir))) {
-        DBG("name: %s\n", name);
-        if (g_file_test(name, G_FILE_TEST_IS_DIR)) {
-            do_app_dir(p, name);
-            continue;
-        }
-        if (!g_str_has_suffix(name, ".desktop"))
-            continue;
-        if (!g_key_file_load_from_file(file, name, 0, NULL))
-            continue;
-        if (g_key_file_get_boolean(file, desktop_ent, "NoDisplay", NULL))
-            continue;
-        if (g_key_file_has_key(file, desktop_ent, "OnlyShowIn", NULL))
-            continue;
-        if (!(cats = g_key_file_get_string_list(file, desktop_ent, "Categories", NULL, NULL)))
-            continue;
-        if (!(exec = g_key_file_get_string(file, desktop_ent, "Exec", NULL)))
-            goto free_cats;
-
-        /* ignore program arguments */
-        while ((dot = strchr(exec, '%'))) {
-            if (dot[1] != '\0')
-                dot[0] = dot[1] = ' ';
-        }
-        DBG("exec: %s\n", exec);
-        if (!(title = g_key_file_get_locale_string(file, desktop_ent, "Name", NULL, NULL)))
-            goto free_exec;
-        DBG("title: %s\n", title);
-        icon = g_key_file_get_string(file, desktop_ent, "Icon", NULL);
-        if (icon) {
-            /* if icon is not a absolute path, drop an extenstion (if any)
-             * to allow to load it as themable icon */
-            dot = strchr( icon, '.' ); // FIXME: get last dot not first
-            if(icon[0] !='/' && dot )
-                *dot = '\0';
-        }
-        DBG("icon: %s\n", icon);
-        for (tmp = cats; *tmp; tmp++) {
-            GtkWidget **menu, *mi;
-
-            DBG("cat: %s\n", *tmp);
-            if (!(menu = g_hash_table_lookup(m->ht, tmp[0])))
-                continue;
-
-            mi = gtk_image_menu_item_new_with_label(title);
-            menu_item_set_image(mi, icon, icon, 22, 22);
-
-            /* exec str is referenced as mi's object data and will be automatically fried 
-             * upon mi's destruction. it was allocated by g_key_get_string */
-            g_signal_connect(G_OBJECT(mi), "activate", (GCallback)spawn_app, exec);
-            g_object_set_data_full(G_OBJECT(mi), "exec", exec, g_free);
-
-            if (!(*menu))
-                *menu = gtk_menu_new();
-            g_object_set_data_full(G_OBJECT(mi), "item-name", title, g_free);
-            _menu_shell_insert_sorted(GTK_MENU_SHELL(*menu), mi, title);
-            //gtk_menu_shell_prepend(GTK_MENU_SHELL(*menu), mi);
-            gtk_widget_show_all(mi);
-            DBG("added =======================================\n");
-            break;
-        }
-        g_free(icon);
-    free_exec:
-    free_cats:
-        g_strfreev(cats);
-    }
-    g_key_file_free(file);
-    g_dir_close(dir);
-    g_chdir(cwd);
-    g_free(cwd);
-    RET();
-}
-
-/* Builds Free Desktop Org (fdo) menu. First, all application directories are
- * scanned to populate category menus. After that, all non-empty category menus
- * are connected as sub-menus to main (system) menu
- */
-void
-make_fdo_menu(plugin_instance *p, GtkWidget *menu)
-{
-    const char** sys_dirs = (const char**)g_get_system_data_dirs();
-    int i;
-    gchar *path;
-    menu_priv *m = (menu_priv *) p;
-
-    ENTER;
-    m->ht = g_hash_table_new(g_str_hash, g_str_equal);
-    for (i = 0; i < G_N_ELEMENTS(main_cats); i++) {
-        g_hash_table_insert(m->ht, main_cats[i].name, &main_cats[i].menu);
-        main_cats[i].menu = NULL;
-        if (g_hash_table_lookup(m->ht, &main_cats[i].name))
-            DBG("%s not found\n", main_cats[i].name);
-    }
-
-    for (i = 0; i < g_strv_length((gchar **)sys_dirs); ++i)    {
-        path = g_build_filename(sys_dirs[i], app_dir_name, NULL );
-        do_app_dir(p, path);
-        g_free(path);
-    }
-    path = g_build_filename(g_get_user_data_dir(), app_dir_name, NULL);
-    do_app_dir(p, path);
-    g_free(path);
-    //build menu
-    for (i = 0; i < G_N_ELEMENTS(main_cats); i++) {
-        GtkWidget *mi;
-        gchar *name;
-
-        if (main_cats[i].menu) {
-            name = main_cats[i].local_name ? main_cats[i].local_name : main_cats[i].name;
-            mi = gtk_image_menu_item_new_with_label(name);
-            menu_item_set_image(mi, main_cats[i].icon, NULL, 22, 22);
-
-            gtk_menu_item_set_submenu (GTK_MENU_ITEM (mi), main_cats[i].menu);
-            gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
-            gtk_widget_show_all(mi);
-            gtk_widget_show_all(main_cats[i].menu);
-        }
-    }
-    g_hash_table_destroy(m->ht);
-    RET();
-}
-
-
 static void
 run_command(GtkWidget *widget, void (*cmd)(void))
 {
     ENTER;
     cmd();
     RET();
-}
-
-static gboolean
-delayed_menu_creation(plugin_instance *p)
-{
-    menu_priv *m;
-
-    ENTER;
-    m = (menu_priv *) p;
-    if (!m->menu) {
-        fseek(p->fp, 0, SEEK_SET);
-        read_submenu(p, TRUE);
-    }
-    m->tout = 0;
-    RET(FALSE); /* run once */
 }
 
 static gboolean
@@ -334,8 +67,9 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin_instance *p)
           && (event->y >=0 && event->y < widget->allocation.height)) {
         if (!m->menu) {
             DBG("building menu\n");
-            fseek(p->fp, 0, SEEK_SET);
+            m->xc = menu_expand_xc(p->xc);
             read_submenu(p, TRUE);
+            gtk_widget_show_all(m->menu);
         }
         gtk_menu_popup(GTK_MENU(m->menu),
               NULL, NULL, (GtkMenuPositionFunc)menu_pos, widget,
@@ -353,6 +87,8 @@ make_button(plugin_instance *p, gchar *iname, gchar *fname, gchar *name)
 
     ENTER;
     m = (menu_priv *) p;
+    /* XXX: this code is duplicated in every plugin.
+     * Lets run it once in a panel */
     if (p->panel->orientation == ORIENT_HORIZ) {
         w = -1;
         h = p->panel->ah;
@@ -365,7 +101,8 @@ make_button(plugin_instance *p, gchar *iname, gchar *fname, gchar *name)
     gtk_widget_show(m->bg);
     gtk_box_pack_start(GTK_BOX(m->box), m->bg, FALSE, FALSE, 0);
     if (p->panel->transparent)
-        gtk_bgbox_set_background(m->bg, BG_INHERIT, p->panel->tintcolor, p->panel->alpha);
+        gtk_bgbox_set_background(m->bg, BG_INHERIT, p->panel->tintcolor,
+            p->panel->alpha);
 
     m->handler_id = g_signal_connect (G_OBJECT (m->bg), "button-press-event",
           G_CALLBACK (my_button_pressed), p);
@@ -385,64 +122,43 @@ read_item(plugin_instance *p)
     ENTER;
     name = fname = action = iname = NULL;
     cmd = NULL;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "image"))
-                fname = expand_tilda(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "name"))
-                name = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "icon"))
-                iname = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "action"))
-                action = expand_tilda(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "command")) {
-                command *tmp;
-
-                for (tmp = commands; tmp->name; tmp++) {
-                    if (!g_ascii_strcasecmp(s.t[1], tmp->name)) {
-                        cmd = tmp->cmd;
-                        break;
-                    }
-                }
-            } else {
-                ERR( "menu/item: unknown var %s\n", s.t[0]);
-                goto error;
-            }
+    XCG(xc, "image", &fname, str);
+    XCG(xc, "icon", &iname, str);
+    XCG(xc, "name", &name, str);
+    XCG(xc, "action", &action, str);
+    XCG(xc, "command", &command, str);
+    fname = expand_tilda(fname);
+    action = expand_tilda(action);
+    for (tmp = commands; tmp->name; tmp++)
+        if (!g_ascii_strcasecmp(s.t[1], tmp->name))
+        {
+            cmd = tmp->cmd;
+            break;
         }
-    }
+
     /* menu button */
     item = gtk_image_menu_item_new_with_label(name ? name : "");
     gtk_container_set_border_width(GTK_CONTAINER(item), 0);
     if (fname || iname) 
         menu_item_set_image(item, iname, fname, 22, 22);
     g_free(fname);
-    g_free(name);
-    g_free(iname);
     if (cmd) {
-        g_signal_connect(G_OBJECT(item), "activate", (GCallback)run_command, cmd);
-    } else if (action) {
-        g_signal_connect(G_OBJECT(item), "activate", (GCallback)spawn_app, action);
+        g_signal_connect(G_OBJECT(item), "activate",
+            (GCallback)run_command, cmd);
+    }
+    else if (action)
+    {
+        g_signal_connect(G_OBJECT(item), "activate",
+            (GCallback)spawn_app, action);
         g_object_set_data_full(G_OBJECT(item), "activate", action, g_free);
     }
     RET(item);
-
- error:
-    g_free(fname);
-    g_free(name);
-    g_free(action);
-    RET(NULL);
 }
 
 static GtkWidget *
-read_separator(plugin_instance *p)
+read_separator()
 {
-    line s;
-
     ENTER;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        ERR("menu: error - separator can not have paramteres\n");
-        RET(NULL);
-    }
     RET(gtk_separator_menu_item_new());
 }
 
@@ -450,42 +166,18 @@ read_separator(plugin_instance *p)
 static void
 read_system_menu(plugin_instance *p, GtkWidget *menu)
 {
-    line s;
-
     ENTER;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) ;
     make_fdo_menu(p, menu);
     RET();
 }
 
 static void
-read_include(plugin_instance *p)
+read_include()
 {
-    gchar *name;
-    line s;
-    menu_priv *m = (menu_priv *) p;
-    FILE *fp = NULL;
-
     ENTER;
-    name = NULL;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "name")) {
-                g_free(name);
-                name = expand_tilda(s.t[1]);
-            } else {
-                ERR( "menu/include: unknown var %s\n", s.t[0]);
-            }
-        }
-    }
-    fp = fopen(name, "r");
-    g_free(name);
-    if (fp) {
-        m->files = g_slist_prepend(m->files, p->fp);
-        p->fp = fp;
-    } else {
-        ERR("Can't include '%s'\n", name);
-    }
+    /* XXX: implement global #include directive */
+    ERR("Include block in menu is obsolete.\n"
+        "Use #include directive instead\n.");
     RET();
 }
 
@@ -580,22 +272,118 @@ read_submenu(plugin_instance *p, gboolean as_item)
     RET(NULL);
 }
 
+static GtkWidget *
+menu_create_separator()
+{
+    return gtk_separator_menu_item_new();
+}
+
+/* Ccreates menu item. Text and image are read from xconf. Action
+ * depends on @menu. If @menu is NULL, action is to execute external
+ * command. Otherwise it is to pop up @menu menu */
+static GtkWidget *
+menu_create_item(xconf *xc, GtkWidget *menu)
+{
+   name = fname = action = iname = NULL;
+   cmd = NULL;
+  
+   XCG(xc, "name", &name, str);
+   mi = gtk_image_menu_item_new_with_label(name ? name : "");
+   gtk_container_set_border_width(GTK_CONTAINER(item), 0);
+   XCG(xc, "image", &fname, str);
+   fname = expand_tilda(fname);
+   XCG(xc, "icon", &iname, str);
+   if (fname || iname) 
+       menu_item_set_image(item, iname, fname, 22, 22);
+   g_free(fname);
+
+   if (menu)
+   {
+       gtk_menu_item_set_submenu(GTK_MENU_ITEM(mi), menu);
+       goto done;
+   }
+   XCG(xc, "action", &action, str);
+   if (action)
+   {
+       action = expand_tilda(action);
+       g_signal_connect(G_OBJECT(mi), "activate",
+           (GCallback)spawn_app, action);
+       g_object_set_data_full(G_OBJECT(mi), "activate",
+           action, g_free);
+       goto done;
+   }
+   XCG(xc, "command", &command, str);
+   if (command)
+   {
+       for (tmp = commands; tmp->name; tmp++)
+           if (!g_ascii_strcasecmp(command, tmp->name))
+           {
+               g_signal_connect(G_OBJECT(mi), "activate",
+                   (GCallback)run_command, tmp->cmd);
+               goto done;
+           }
+   }
+
+done:
+   return mi;
+}
+
+/* Creates menu and optionally button to pop it up.
+ * If @ret_menu is TRUE, then a menu is returned. Otherwise,
+ * button is created, linked to a menu and returned instead. */
+static GtkWidget *
+menu_create_menu(xconf *xc, gboolean ret_menu)
+{
+    GtkWidget *mi, *menu;
+
+    if (!xc)
+        return NULL;
+    menu = gtk_menu_new ();
+    gtk_container_set_border_width(GTK_CONTAINER(menu), 0);
+    for (w = xc->sons; w ; w = g_slist_next(w))
+    {
+        nxc = w->data;
+        if (!strcmp(nxc->name, "separator"))
+            mi = menu_create_separator();
+        else if (!strcmp(nxc->name, "item"))
+            mi = menu_create_item(nxc, NULL);
+        else if (!strcmp(nxc->name, "menu"))
+            mi = menu_create_menu(nxc, FALSE);
+        else
+            continue;
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    }
+    gtk_widget_show_all(menu);
+    return (ret_menu) ? menu : menu_create_item(xc, menu);
+}
 
 static void
-menu_icon_theme_changed(GtkIconTheme *icon_theme, plugin_instance *p)
+menu_create(plugin_instance *p)
+{
+    menu_priv *m = (menu_priv *) p;
+
+    m->xc = menu_expand_xc(p->xc, NULL);
+    m->menu = menu_create_menu(m->xc, TRUE);
+}
+
+static void
+menu_destroy(GtkIconTheme *icon_theme, plugin_instance *p)
 {
     menu_priv *m;
 
     ENTER;
     m = (menu_priv *) p;
-    if (m->menu) {
+    if (m->menu)
+    {
         DBG("destroy(m->menu)\n");
         gtk_widget_destroy(m->menu);
         m->menu = NULL;
     }
-
-    if (!m->tout)
-        m->tout = g_timeout_add(3000, (GSourceFunc) delayed_menu_creation, p);
+    if (m->xc)
+    {
+        xconf_del(m->xc);
+        m->xc = NULL;
+    }
 }
 
 
@@ -611,18 +399,31 @@ menu_constructor(plugin_instance *p)
     gtk_container_set_border_width(GTK_CONTAINER(m->box), 0);
     gtk_container_add(GTK_CONTAINER(p->pwid), m->box);
 
-    if (!read_submenu(p, FALSE)) {
-        ERR("menu: plugin init failed\n");
-        goto error;
-    }
-    m->tout = g_timeout_add(1000, (GSourceFunc) delayed_menu_creation, p);
+    menu_init(p);
     g_signal_connect (G_OBJECT(gtk_icon_theme_get_default()),
-        "changed", (GCallback) menu_icon_theme_changed, p);
+        "changed", (GCallback) menu_destroy, p);
     RET(1);
+}
 
- error:
-    menu_destructor(p);
-    RET(0);
+
+static void
+menu_destructor(plugin_instance *p)
+{
+    menu_priv *m = (menu_priv *) p;
+
+    ENTER;
+    if (m->tout)
+        g_source_remove(m->tout);
+    g_signal_handler_disconnect(G_OBJECT(m->bg), m->handler_id);
+    g_signal_handlers_disconnect_by_func(G_OBJECT(gtk_icon_theme_get_default()),
+        destroy_menu, p);
+    if (m->menu) {
+        DBG("destroy(m->menu)\n");
+        gtk_widget_destroy(m->menu);
+    }
+    DBG("destroy(m->box)\n");
+    gtk_widget_destroy(m->box);
+    RET();
 }
 
 
