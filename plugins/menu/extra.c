@@ -1,4 +1,13 @@
 
+
+
+
+
+
+
+#if 0
+
+
 /* Menu plugin creates menu from description found in config file or/and from
  * application files (aka system nenu).
  *
@@ -49,17 +58,6 @@ static cat_info main_cats[] = {
     { "System",     "applications-system" },
     { "Utility",    "applications-utilities" },
 };
-typedef struct {
-    plugin_instance plugin;
-    GtkWidget *menu, *box, *bg, *label;
-    gulong handler_id;
-    int iconsize, paneliconsize;
-    GSList *files;
-    GHashTable *ht;
-    guint tout;
-} menu_priv;
-
-
 static void destroy_menu(GtkIconTheme *icon_theme, plugin_instance *p);
 
 /* Inserts menu item into menu sorted by name */
@@ -229,3 +227,4 @@ make_fdo_menu(plugin_instance *p, GtkWidget *menu)
     RET();
 }
 
+#endif 

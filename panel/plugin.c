@@ -14,7 +14,7 @@
 #include "gtkbgbox.h"
 
 
-//#define DEBUGPRN
+#define DEBUGPRN
 #include "dbg.h"
 extern panel *the_panel;
 
@@ -160,7 +160,7 @@ plugin_start(plugin_instance *this)
                 TRUE, this->padding);
         DBG("here\n");
         gtk_container_set_border_width(GTK_CONTAINER(this->pwid), this->border);
-        DBG("here this->panel->transparent = %p\n", this->panel->transparent);
+        DBG("here this->panel->transparent = %d\n", this->panel->transparent);
         if (this->panel->transparent) {
             DBG("here g\n");
             gtk_bgbox_set_background(this->pwid, BG_INHERIT,

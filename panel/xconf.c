@@ -31,6 +31,8 @@ xconf *xconf_new(gchar *name, gchar *value)
 /* Adss new son node */
 void xconf_link(xconf *parent, xconf *son)
 {
+    if (!parent || !son)
+        return;
     son->parent = parent;
     /* appending requires traversing all list to the end, which is not
      * efficient, but for v 1.0 it's ok*/
