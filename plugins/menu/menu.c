@@ -14,21 +14,17 @@
 //#define DEBUGPRN
 #include "dbg.h"
 
-#define XCG(xc, name, var, type)                \
-    xconf_get_ ## type(xconf_find(xc, name, 0), var)
-
+/* XXX: should be global define in xconf.h */
 
 typedef struct {
     plugin_instance plugin;
-    GtkWidget *menu, *box, *bg, *label;
+    GtkWidget *menu, *bg;
     int iconsize, paneliconsize;
-    GSList *files;
-    GHashTable *ht;
     guint tout;
     xconf *xc;
 } menu_priv;
 
-
+xconf *xconf_new_from_applications();
 static void menu_create(plugin_instance *p); 
 
 /* Copies original config while replacing specific entries
@@ -36,24 +32,45 @@ static void menu_create(plugin_instance *p);
 xconf *
 menu_expand_xc(xconf *xc)
 {
-    xconf *nxc, *cxc;
+    xconf *nxc, *cxc, *smenu_xc;
     GSList *w;
-    
+
+    ENTER;
     if (!xc)
-        return NULL;
+        RET(NULL);
     nxc = xconf_new(xc->name, xc->value);
+    DBG("new node:%s\n", nxc->name);
     for (w = xc->sons; w; w = g_slist_next(w))
     {
         cxc = w->data;
         /* XXX: write handlers for these types */
         if (!strcmp(cxc->name, "systemmenu"))
+        {
+            smenu_xc = xconf_new_from_applications();
+            xconf_append_sons(nxc, smenu_xc);
+            xconf_del(smenu_xc, FALSE);
             continue;
+        }
         if (!strcmp(cxc->name, "include"))
             continue;
-        xconf_link(nxc, menu_expand_xc(cxc));
+        xconf_append(nxc, menu_expand_xc(cxc));
     }
     return nxc;
 }
+
+#if 0
+/* XXX: should be global service with following API
+ * register_command, unregister_command, run_command
+ */
+static void
+run_command(GtkWidget *widget, void (*cmd)(void))
+{
+    ENTER;
+    cmd();
+    RET();
+}
+#endif
+
 
 /* XXX: should be global service with dialog on error */
 static void
@@ -71,74 +88,7 @@ spawn_app(GtkWidget *widget, gpointer data)
     RET();
 }
 
-/* XXX: should be global service with following API
- * register_command, unregister_command, run_command
- */
-static void
-run_command(GtkWidget *widget, void (*cmd)(void))
-{
-    ENTER;
-    cmd();
-    RET();
-}
 
-static gboolean
-my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin_instance *p)
-{
-    menu_priv *m = (menu_priv *) p;
-
-    ENTER;
-    /* propagate Control-Button3 to the panel */
-    if (event->type == GDK_BUTTON_PRESS && event->button == 3
-          && event->state & GDK_CONTROL_MASK) {
-        RET(FALSE);
-    }
-
-    if ((event->type == GDK_BUTTON_PRESS)
-          && (event->x >=0 && event->x < widget->allocation.width)
-          && (event->y >=0 && event->y < widget->allocation.height)) {
-        if (!m->menu)
-            menu_create(p);
-        gtk_menu_popup(GTK_MENU(m->menu),
-              NULL, NULL, (GtkMenuPositionFunc)menu_pos, widget,
-              event->button, event->time);
-    }
-    RET(TRUE);
-}
-
-
-static void
-make_button(plugin_instance *p, xconf *xc)
-{
-    int w, h;
-    menu_priv *m;
-    gchar *fname, *iname;
-    
-    ENTER;
-    m = (menu_priv *) p;
-    /* XXX: this code is duplicated in every plugin.
-     * Lets run it once in a panel */
-    if (p->panel->orientation == ORIENT_HORIZ) {
-        w = -1;
-        h = p->panel->ah;
-    } else {
-        w = p->panel->aw;
-        h = -1;
-    }
-    XCG(xc, "image", &fname, str);
-    fname = expand_tilda(fname);
-    XCG(xc, "icon", &iname, str);
-    if (fname || iname)
-    {
-        m->bg = fb_button_new(iname, fname, w, h, 0x702020, NULL);
-        gtk_box_pack_start(GTK_BOX(p->pwid), m->bg, FALSE, FALSE, 0);
-        if (p->panel->transparent)
-            gtk_bgbox_set_background(m->bg, BG_INHERIT, 0, 0);
-        g_signal_connect (G_OBJECT (m->bg), "button-press-event",
-            G_CALLBACK (my_button_pressed), p);
-    }
-    g_free(fname);
-}
 
 static GtkWidget *
 menu_create_separator()
@@ -182,16 +132,20 @@ menu_create_item(xconf *xc, GtkWidget *menu)
     XCG(xc, "action", &action, str);
     if (action)
     {
+#if 1        
         action = expand_tilda(action);
+
         g_signal_connect(G_OBJECT(mi), "activate",
                 (GCallback)spawn_app, action);
         g_object_set_data_full(G_OBJECT(mi), "activate",
-                action, g_free);
+            action, g_free);
+#endif        
         goto done;
     }
     XCG(xc, "command", &cmd, str);
     if (cmd)
     {
+#if 0
         command *tmp;
         
         for (tmp = commands; tmp->name; tmp++)
@@ -201,6 +155,7 @@ menu_create_item(xconf *xc, GtkWidget *menu)
                         (GCallback)run_command, tmp->cmd);
                 goto done;
             }
+#endif        
     }
    
 done:
@@ -238,23 +193,23 @@ menu_create_menu(xconf *xc, gboolean ret_menu)
     return (ret_menu) ? menu : menu_create_item(xc, menu);
 }
 
+
 static void
 menu_create(plugin_instance *p)
 {
     menu_priv *m = (menu_priv *) p;
-
+    
+    ENTER;
     m->xc = menu_expand_xc(p->xc);
-    xconf_prn(stdout, m->xc, 0, TRUE);
+    //xconf_prn(stdout, m->xc, 0, TRUE);
     m->menu = menu_create_menu(m->xc, TRUE);
+    RET();
 }
 
 static void
-menu_destroy(plugin_instance *p)
+menu_destroy(menu_priv *m)
 {
-    menu_priv *m;
-
-    ENTER2;
-    m = (menu_priv *) p;
+    ENTER;
     if (m->menu)
     {
         DBG("destroy(m->menu)\n");
@@ -269,6 +224,67 @@ menu_destroy(plugin_instance *p)
 }
 
 
+
+static gboolean
+my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin_instance *p)
+{
+    menu_priv *m = (menu_priv *) p;
+
+    ENTER;
+    /* propagate Control-Button3 to the panel */
+    if (event->type == GDK_BUTTON_PRESS && event->button == 3
+        && event->state & GDK_CONTROL_MASK)
+    {
+        RET(FALSE);
+    }
+
+    if ((event->type == GDK_BUTTON_PRESS)
+        && (event->x >=0 && event->x < widget->allocation.width)
+        && (event->y >=0 && event->y < widget->allocation.height))
+    {
+        if (!m->menu)
+            menu_create(p);
+        gtk_menu_popup(GTK_MENU(m->menu),
+            NULL, NULL, (GtkMenuPositionFunc)menu_pos, widget,
+            event->button, event->time);
+    }
+    RET(TRUE);
+}
+
+
+static void
+make_button(plugin_instance *p, xconf *xc)
+{
+    int w, h;
+    menu_priv *m;
+    gchar *fname, *iname;
+    
+    ENTER;
+    m = (menu_priv *) p;
+    /* XXX: this code is duplicated in every plugin.
+     * Lets run it once in a panel */
+    if (p->panel->orientation == ORIENT_HORIZ) {
+        w = -1;
+        h = p->panel->ah;
+    } else {
+        w = p->panel->aw;
+        h = -1;
+    }
+    XCG(xc, "image", &fname, str);
+    fname = expand_tilda(fname);
+    XCG(xc, "icon", &iname, str);
+    if (fname || iname)
+    {
+        m->bg = fb_button_new(iname, fname, w, h, 0x702020, NULL);
+        gtk_container_add(GTK_CONTAINER(p->pwid), m->bg);
+        if (p->panel->transparent)
+            gtk_bgbox_set_background(m->bg, BG_INHERIT, 0, 0);
+        g_signal_connect (G_OBJECT (m->bg), "button-press-event",
+            G_CALLBACK (my_button_pressed), p);
+    }
+    g_free(fname);
+}
+
 static int
 menu_constructor(plugin_instance *p)
 {
@@ -279,7 +295,8 @@ menu_constructor(plugin_instance *p)
     m->iconsize = 22;
     make_button(p, p->xc);
     g_signal_connect_swapped(G_OBJECT(gtk_icon_theme_get_default()),
-            "changed", (GCallback) menu_destroy, p);
+        "changed", (GCallback) menu_destroy, m);
+
     RET(1);
 }
 
@@ -287,17 +304,19 @@ menu_constructor(plugin_instance *p)
 static void
 menu_destructor(plugin_instance *p)
 {
-    menu_priv *m = (menu_priv *) p;
+    //menu_priv *m = (menu_priv *) p;
 
     ENTER;
+#if 0    
     if (m->tout)
         g_source_remove(m->tout);
     g_signal_handlers_disconnect_by_func(G_OBJECT(p->pwid),
             my_button_pressed, p);
     g_signal_handlers_disconnect_by_func(G_OBJECT(gtk_icon_theme_get_default()),
-            menu_destroy, p);
+            menu_destroy, m);
     menu_destroy(p);
-    gtk_widget_destroy(m->box);
+#endif    
+
     RET();
 }
 
