@@ -12,16 +12,12 @@
 static int
 separator_constructor(plugin_instance *p)
 {
-    GtkWidget *sep, *eb;
+    GtkWidget *sep;
       
     ENTER;
-    eb = gtk_event_box_new();
-    gtk_container_set_border_width(GTK_CONTAINER(eb), 1);
-    gtk_widget_show(eb);
     sep = p->panel->my_separator_new();
-    gtk_widget_show(sep);
-    gtk_container_add (GTK_CONTAINER (eb), sep);
-    gtk_container_add(GTK_CONTAINER(p->pwid), eb);
+    gtk_container_add(GTK_CONTAINER(p->pwid), sep);
+    gtk_widget_show_all(p->pwid);
     RET(1);
 }
 
