@@ -4,6 +4,8 @@
 #include <ctype.h>
 
 #include "xconf.h"
+
+//#define DEBUGPRN
 #include "dbg.h"
 
 
@@ -28,8 +30,25 @@ xconf *xconf_new(gchar *name, gchar *value)
     return x;
 }
 
+/* Append @src's sons to @dst node */
+void xconf_append_sons(xconf *dst, xconf *src)
+{
+    GSList *e;
+    xconf *tmp;
+    
+    if (!dst || !src)
+        return;
+    for (e = src->sons; e; e = g_slist_next(e))
+    {
+        tmp = e->data;
+        tmp->parent = dst;
+    }
+    dst->sons = g_slist_concat(dst->sons, src->sons);
+    src->sons = NULL;
+}
+
 /* Adss new son node */
-void xconf_link(xconf *parent, xconf *son)
+void xconf_append(xconf *parent, xconf *son)
 {
     if (!parent || !son)
         return;
@@ -233,14 +252,14 @@ read_block(FILE *fp, gchar *name)
         if (s.type == LINE_BLOCK_START)
         {
             xs = read_block(fp, s.t[0]);
-            xconf_link(x, xs);
+            xconf_append(x, xs);
         }
         else if (s.type == LINE_BLOCK_END)
             break;
         else if (s.type == LINE_VAR)
         {
             xs = xconf_new(s.t[0], s.t[1]);
-            xconf_link(x, xs);
+            xconf_append(x, xs);
         }
         else
         {

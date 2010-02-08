@@ -14,7 +14,7 @@
 #include "gtkbgbox.h"
 
 
-#define DEBUGPRN
+//#define DEBUGPRN
 #include "dbg.h"
 extern panel *the_panel;
 

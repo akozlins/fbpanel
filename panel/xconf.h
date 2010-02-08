@@ -2,6 +2,7 @@
 #define _XCONF_H_
 
 #include <glib.h>
+#include <stdio.h>
 
 typedef struct _xconf
 {
@@ -17,7 +18,8 @@ typedef struct {
 } xconf_enum;
 
 xconf *xconf_new(gchar *name, gchar *value);
-void xconf_link(xconf *parent, xconf *son);
+void xconf_append(xconf *parent, xconf *son);
+void xconf_append_sons(xconf *parent, xconf *son);
 void xconf_unlink(xconf *x);
 void xconf_del(xconf *x, gboolean sons_only);
 void xconf_set_value(xconf *x, gchar *value);
@@ -35,5 +37,9 @@ void xconf_get_str(xconf *x, gchar **val);
 
 void xconf_set_int(xconf *x, int val);
 void xconf_set_enum(xconf *x, int val, xconf_enum *e);
+
+#define XCG(xc, name, var, type)                \
+    xconf_get_ ## type(xconf_find(xc, name, 0), var)
+
 
 #endif
