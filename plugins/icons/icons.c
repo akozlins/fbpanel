@@ -293,7 +293,8 @@ do_net_client_list(icons_priv *ics)
     task *tk;
     
     ENTER;
-    ics->wins = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST, XA_WINDOW, &ics->win_num);
+    ics->wins = get_xaproperty (GDK_ROOT_WINDOW(),
+        a_NET_CLIENT_LIST, XA_WINDOW, &ics->win_num);
     if (!ics->wins) 
 	RET();
 
@@ -308,7 +309,8 @@ do_net_client_list(icons_priv *ics)
             tk->ics = ics;
             
             if (!FBPANEL_WIN(tk->win))
-                XSelectInput (GDK_DISPLAY(), tk->win, PropertyChangeMask | StructureNotifyMask); 
+                XSelectInput(GDK_DISPLAY(), tk->win,
+                    PropertyChangeMask | StructureNotifyMask); 
             get_wmclass(tk);
             set_icon_maybe(ics, tk);
             g_hash_table_insert(ics->task_list, &tk->win, tk);
@@ -316,7 +318,8 @@ do_net_client_list(icons_priv *ics)
     }
     
     /* remove windows that arn't in the NET_CLIENT_LIST anymore */
-    g_hash_table_foreach_remove(ics->task_list, (GHRFunc) task_remove_stale, NULL);
+    g_hash_table_foreach_remove(ics->task_list,
+        (GHRFunc) task_remove_stale, NULL);
     RET();
 }
 
@@ -348,10 +351,10 @@ ics_propertynotify(icons_priv *ics, XEvent *ev)
 
 
 static int
-read_application(icons_priv *ics)
+read_application(icons_priv *ics, xconf *xc)
 {
     GdkPixbuf *gp = NULL;
-    line s;
+
     gchar *fname, *iname, *appname, *classname;
     wmpix_t *wp = NULL;
     gulong *data;
@@ -359,29 +362,12 @@ read_application(icons_priv *ics)
     
     ENTER;
     iname = fname = appname = classname = NULL;
-    while (get_line(ics->plugin.fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR( "icons: illegal token %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "image")) 
-                fname = expand_tilda(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "icon"))
-                iname = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "appname"))
-                appname = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "classname"))
-                classname = g_strdup(s.t[1]);
-            else {
-                ERR( "icons: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        } else {
-            ERR( "icons: illegal in this context %s\n", s.str);
-            goto error;
-        }
-    }
+    XCG(xc, "image", &fname, str);
+    XCG(xc, "icon", &iname, str);
+    XCG(xc, "appname", &appname, str);
+    XCG(xc, "classname", &classname, str);
+    fname = expand_tilda(fname);
+
     DBG("appname=%s classname=%s\n", appname, classname);
     if (!(fname || iname))
         goto error;
@@ -394,21 +380,16 @@ read_application(icons_priv *ics)
             wp->size = size;
             wp->ch.res_name = g_strdup(appname);
             wp->ch.res_class = g_strdup(classname);
-            DBG("read name=[%s] class=[%s]\n", wp->ch.res_name, wp->ch.res_class);
+            DBG("read name=[%s] class=[%s]\n",
+                wp->ch.res_name, wp->ch.res_class);
             ics->wmpix = wp;
         }
         g_object_unref(gp);
     }
-    g_free(fname);    
-    g_free(iname);    
-    g_free(classname);    
-    g_free(appname);    
     RET(1);
   
- error:
+error:
     g_free(fname);
-    g_free(appname);
-    g_free(classname);
     RET(0);
 }
 
@@ -441,39 +422,22 @@ read_dicon(icons_priv *ics, gchar *name)
 static int
 ics_parse_config(icons_priv *ics)
 {
-    line s;
+    gchar *def_icon;
+    plugin_instance *p = (plugin_instance *) ics;
+    int i;
+    xconf *pxc;
     
     ENTER;
-    fseek(ics->plugin.fp, 0, SEEK_SET);
-    while (get_line(ics->plugin.fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR( "icons: illegal token %s\n", s.str);
+    def_icon = NULL;
+    XCG(p->xc, "defaulticon", &def_icon, str);
+    if (def_icon && !read_dicon(ics, def_icon)) 
+        goto error;
+
+    for (i = 0; (pxc = xconf_find(p->xc, "application", i)); i++)
+        if (!read_application(ics, pxc))
             goto error;
-        }
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "DefaultIcon")) {
-                if (!read_dicon(ics, s.t[1])) {
-                    goto error;
-                }
-            } else {
-                ERR( "icons: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        } else if (s.type == LINE_BLOCK_START) {
-            if (!g_ascii_strcasecmp(s.t[0], "application")) {
-                if (!read_application(ics)) {
-                    goto error;
-                }
-            } else {
-                ERR( "icons: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        } else {
-            ERR( "icons: illegal in this context %s\n", s.str);
-            goto error;
-        }
-    }
     RET(1);
+    
 error:
     RET(0);
 }
@@ -481,7 +445,6 @@ error:
 static void
 theme_changed(icons_priv *ics)
 {
-
     ENTER;
     drop_config(ics);
     ics_parse_config(ics);
