@@ -21,7 +21,7 @@
 /*A little bug fixed by Mykola <mykola@2ka.mipt.ru>:) */
 
 
-#include "misc.h"
+
 #include "../chart/chart.h"
 #include <stdlib.h>
 
@@ -41,8 +41,8 @@ typedef struct {
     struct net_stat net_prev;
     int timer;
     char *iface;
-    gulong max_tx;
-    gulong max_rx;
+    gint max_tx;
+    gint max_rx;
     gulong max;
     gchar *colors[2];
 } net_priv;
@@ -113,7 +113,6 @@ static int
 net_constructor(plugin_instance *p)
 {
     net_priv *c;
-    line s;
 
     if (!(k = class_get("chart")))
         RET(0);
@@ -126,31 +125,12 @@ net_constructor(plugin_instance *p)
     c->max_tx = 12;
     c->colors[0] = "violet";
     c->colors[1] = "blue";
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR("net: illegal token %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "interface")) {
-                c->iface = g_strdup(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "RxLimit")) {
-                c->max_rx = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "TxLimit")) {
-                c->max_tx = atoi(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "RxColor")) {
-                c->colors[1] = g_strdup(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "TxColor")) {
-                c->colors[0] = g_strdup(s.t[1]);
-            } else {
-                ERR("net: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        } else {
-            ERR("net: illegal in this context %s\n", s.str);
-            goto error;
-        }
-    }
+    XCG(p->xc, "interface", &c->iface, str);
+    XCG(p->xc, "RxLimit", &c->max_rx, int);
+    XCG(p->xc, "TxLimit", &c->max_tx, int);
+    XCG(p->xc, "TxColor", &c->colors[0], str);
+    XCG(p->xc, "RxColor", &c->colors[1], str);
+
     c->max = c->max_rx + c->max_tx;
     k->set_rows(&c->chart, 2, c->colors);
     gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, "<b>Net</b>");
@@ -158,10 +138,6 @@ net_constructor(plugin_instance *p)
     c->timer = g_timeout_add(CHECK_PERIOD * 1000,
         (GSourceFunc) net_get_load, (gpointer) c);
     RET(1);
-
-error:
-    net_destructor(p);
-    RET(0);
 }
 
 

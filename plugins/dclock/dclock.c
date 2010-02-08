@@ -17,7 +17,7 @@
 #include "dbg.h"
 
 
-#define DEFAULT_TIP_FORMAT    "%A %x"
+#define TOOLTIP_FMT    "%A %x"
 #define CLOCK_24H_FMT  "%R"
 #define CLOCK_12H_FMT  "%I:%M"
 #define COLON_WIDTH   7
@@ -211,7 +211,7 @@ dclock_destructor(plugin_instance *p)
 static int
 dclock_constructor(plugin_instance *p)
 {
-    line s;
+    gchar *color_str;
     dclock_priv *dc;
     
     ENTER;
@@ -224,56 +224,31 @@ dclock_constructor(plugin_instance *p)
     dc->clock = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8,
           COLON_WIDTH + 4 * DIGIT_WIDTH, DIGIT_HEIGHT + DIGIT_PAD_H);
     gdk_pixbuf_fill(dc->clock, 0);
-    dc->cfmt = dc->tfmt = dc->action = 0;
+    dc->cfmt = CLOCK_24H_FMT;
+    dc->tfmt = TOOLTIP_FMT;
+    dc->action = NULL;
     dc->color = 0xff000000;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END)
+    color_str = NULL;
+    XCG(p->xc, "TooltipFmt", &dc->tfmt, str);
+    XCG(p->xc, "ClockFmt", &dc->cfmt, str);
+    XCG(p->xc, "Action", &dc->action, str);
+    XCG(p->xc, "Color", &color_str, str);
+    if (color_str)
     {
-        if (s.type == LINE_NONE)
-        {
-            ERR( "dclock: illegal token %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_VAR)
-        {
-            if (!g_ascii_strcasecmp(s.t[0], "TooltipFmt"))
-                dc->tfmt = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "ClockFmt"))
-            {
-                if (strcmp(s.t[1], CLOCK_12H_FMT) &&
-                        strcmp(s.t[1], CLOCK_24H_FMT))
-                {
-                    ERR("dclock: your ClockFmt \"%s\" is not supported.\n",
-                            s.t[1]);
-		    ERR("dclock: Please use \"%s\" or \"%s\"\n", 
-                            CLOCK_12H_FMT, CLOCK_24H_FMT);
-                }
-                else 
-                    dc->cfmt = g_strdup(s.t[1]);
-            }
-            else if (!g_ascii_strcasecmp(s.t[0], "Color"))
-            {
-                GdkColor color;
-                if (gdk_color_parse (s.t[1], &color)) 
-                    dc->color = gcolor2rgb24(&color);
-            }
-            else if (!g_ascii_strcasecmp(s.t[0], "Action"))
-                dc->action = g_strdup(s.t[1]);
-            else
-            {
-                ERR( "dclock: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        }
-        else
-        {
-            ERR( "dclock: illegal in this context %s\n", s.str);
-            goto error;
-        }
+        GdkColor color;
+        if (gdk_color_parse (color_str, &color)) 
+            dc->color = gcolor2rgb24(&color);
     }
-    if (!dc->cfmt)
-        dc->cfmt = g_strdup(CLOCK_24H_FMT);
-    if (!dc->tfmt)
-        dc->tfmt = g_strdup(DEFAULT_TIP_FORMAT);
+    if (strcmp(dc->cfmt, CLOCK_12H_FMT) &&
+        strcmp(dc->cfmt, CLOCK_24H_FMT))
+    {
+        ERR("dclock: your ClockFmt \"%s\" is not supported.\n", dc->cfmt);
+        ERR("dclock: Please use \"%s\" or \"%s\"\n", 
+            CLOCK_12H_FMT, CLOCK_24H_FMT);
+        ERR("dclock: reseting to %s\n", CLOCK_24H_FMT);
+        dc->cfmt = CLOCK_24H_FMT;
+    }
+    
     if (dc->color != 0xff000000)
         dclock_set_color(dc->glyphs, dc->color);
     dc->main = gtk_image_new_from_pixbuf(dc->clock);

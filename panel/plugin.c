@@ -158,7 +158,7 @@ plugin_start(plugin_instance *this)
         gtk_widget_set_name(this->pwid, this->class->type);
         gtk_box_pack_start(GTK_BOX(this->panel->box), this->pwid, this->expand,
                 TRUE, this->padding);
-        DBG("here\n");
+        DBG("%s expand %d\n", this->class->type, this->expand);
         gtk_container_set_border_width(GTK_CONTAINER(this->pwid), this->border);
         DBG("here this->panel->transparent = %d\n", this->panel->transparent);
         if (this->panel->transparent) {

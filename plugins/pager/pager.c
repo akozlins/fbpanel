@@ -786,7 +786,6 @@ static int
 pager_constructor(plugin_instance *plug)
 {
     pager_priv *pg;
-    line s;
 
     ENTER;
     pg = (pager_priv *) plug;
@@ -800,10 +799,7 @@ pager_constructor(plugin_instance *plug)
     pg->box = plug->panel->my_box_new(TRUE, 1);
     gtk_container_set_border_width (GTK_CONTAINER (pg->box), 0);
     gtk_widget_show(pg->box);
-    /*
-    g_signal_connect (G_OBJECT (pg->box), "expose_event",
-       (GCallback) pager_expose_event, (gpointer)pg);
-    */
+
     gtk_bgbox_set_background(plug->pwid, BG_STYLE, 0, 0);
     gtk_container_set_border_width (GTK_CONTAINER (plug->pwid), BORDER);
     gtk_container_add(GTK_CONTAINER(plug->pwid), pg->box);
@@ -819,20 +815,12 @@ pager_constructor(plugin_instance *plug)
     pg->wallpaper = 1;
     //pg->scaley = (gfloat)pg->dh / (gfloat)gdk_screen_height();
     //pg->scalex = (gfloat)pg->dw / (gfloat)gdk_screen_width();
-    while (get_line(plug->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "showwallpaper")) {
-                pg->wallpaper = str2num(bool_pair, s.t[1], 1);
-                break;
-            }
-        }
-        ERR( "pager: illegal in this context %s\n", s.str);
-        goto error;
-    }
+    XCG(plug->xc, "showwallpaper", &pg->wallpaper, enum, bool_enum);
     if (pg->wallpaper) {
         pg->fbbg = fb_bg_get_for_display();
         DBG("get fbbg %p\n", pg->fbbg);
-        g_signal_connect(G_OBJECT(pg->fbbg), "changed", G_CALLBACK(pager_bg_changed), pg);
+        g_signal_connect(G_OBJECT(pg->fbbg), "changed",
+            G_CALLBACK(pager_bg_changed), pg);
     }
     pager_rebuild_all(fbev, pg);
 
@@ -847,10 +835,6 @@ pager_constructor(plugin_instance *plug)
     g_signal_connect (G_OBJECT (fbev), "client_list_stacking",
           G_CALLBACK (do_net_client_list_stacking), (gpointer) pg);
     RET(1);
-
- error:
-    pager_destructor(plug);
-    RET(0);
 }
 
 static void

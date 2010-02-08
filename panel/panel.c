@@ -523,42 +523,27 @@ panel_parse_global(xconf *xc)
   
     /* Read config */
     /* geometry */
-    xconf_get_enum(xconf_find(xc, "edge", 0),
-        &p->edge, edge_enum);
-    xconf_get_enum(xconf_find(xc, "allign", 0),
-        &p->allign, allign_enum);
-    xconf_get_enum(xconf_find(xc, "widthtype", 0),
-        &p->widthtype, widthtype_enum);
-    xconf_get_int(xconf_find(xc, "width", 0),
-        &p->width);
-    xconf_get_int(xconf_find(xc, "margin", 0),
-        &p->margin);
-    xconf_get_enum(xconf_find(xc, "heighttype", 0),
-        &p->heighttype,heighttype_enum);
-    xconf_get_int(xconf_find(xc, "height", 0),
-        &p->height);
+    XCG(xc, "edge", &p->edge, enum, edge_enum);
+    XCG(xc, "allign", &p->allign, enum, allign_enum);
+    XCG(xc, "widthtype", &p->widthtype, enum, widthtype_enum);
+    XCG(xc, "heighttype", &p->heighttype, enum, heighttype_enum);
+    XCG(xc, "width", &p->width, int);
+    XCG(xc, "height", &p->height, int);
+    XCG(xc, "margin", &p->margin, int);
+
     /* properties */
-    xconf_get_enum(xconf_find(xc, "setdocktype", 0),
-        &p->setdocktype, bool_enum);
-    xconf_get_enum(xconf_find(xc, "setpartialstrut", 0),
-        &p->setstrut, bool_enum);
-    xconf_get_enum(xconf_find(xc, "autohide", 0),
-        &p->autohide, bool_enum);
-    xconf_get_int(xconf_find(xc, "heightwhenhidden", 0),
-        &p->height_when_hidden);
-    xconf_get_enum(xconf_find(xc, "layer", 0),
-        &p->layer, layer_enum);
+    XCG(xc, "setdocktype", &p->setdocktype, enum, bool_enum);
+    XCG(xc, "setpartialstrut", &p->setstrut, enum, bool_enum);
+    XCG(xc, "autohide", &p->autohide, enum, bool_enum);
+    XCG(xc, "heightwhenhidden", &p->height_when_hidden, int);
+    XCG(xc, "layer", &p->layer, enum, layer_enum);
+    
     /* effects */
-    xconf_get_enum(xconf_find(xc, "roundcorners", 0),
-        &p->round_corners, bool_enum);
-    xconf_get_int(xconf_find(xc, "roundcornersradius", 0),
-        &p->round_corners_radius);
-    xconf_get_enum(xconf_find(xc, "transparent", 0),
-        &p->transparent, bool_enum);
-    xconf_get_int(xconf_find(xc, "alpha", 0),
-         &p->alpha);
-    xconf_get_str(xconf_find(xc, "tintcolor", 0),
-        &p->tintcolor_name);
+    XCG(xc, "roundcorners", &p->round_corners, enum, bool_enum);
+    XCG(xc, "roundcornersradius", &p->round_corners_radius, int);
+    XCG(xc, "transparent", &p->transparent, enum, bool_enum);
+    XCG(xc, "alpha", &p->alpha, int);
+    XCG(xc, "tintcolor", &p->tintcolor_name, str);
     
     /* Sanity checks */
     if (!gdk_color_parse (p->tintcolor_name, &p->gtintcolor))
@@ -609,9 +594,9 @@ panel_parse_plugin(xconf *xc)
         return;
     }
     plug->panel = p;
-    xconf_get_int(xconf_find(xc, "expand", 0), &plug->expand);
-    xconf_get_int(xconf_find(xc, "padding", 0), &plug->padding);
-    xconf_get_int(xconf_find(xc, "border", 0), &plug->border);
+    XCG(xc, "expand", &plug->expand, enum, bool_enum);
+    XCG(xc, "padding", &plug->padding, int);
+    XCG(xc, "border", &plug->border, int);
     plug->xc = xconf_find(xc, "config", 0);
 
     if (!plugin_start(plug)) {

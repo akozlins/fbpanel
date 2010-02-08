@@ -279,6 +279,7 @@ xconf *xconf_new_from_file(gchar *fname, gchar *name)
         ret = read_block(fp, name);
         fclose(fp);
     }
+    //xconf_prn(stdout, ret, 0, FALSE);
     return ret;
 }
 

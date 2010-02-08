@@ -93,7 +93,6 @@ static int
 cpu_constructor(plugin_instance *p)
 {
     cpu_priv *c;
-    line s;
     
     if (!(k = class_get("chart")))
         RET(0);
@@ -101,32 +100,13 @@ cpu_constructor(plugin_instance *p)
         RET(0);
     c = (cpu_priv *) p;
     c->colors[0] = "green";
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR("net: illegal token %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "Color")) {
-                c->colors[0] = g_strdup(s.t[1]);
-            } else {
-                ERR("net: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        } else {
-            ERR("net: illegal in this context %s\n", s.str);
-            goto error;
-        }
-    }
+    XCG(p->xc, "Color", &c->colors[0], str);
+    
     k->set_rows(&c->chart, 1, c->colors);
     gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, "<b>Cpu</b>");
     cpu_get_load(c);
     c->timer = g_timeout_add(1000, (GSourceFunc) cpu_get_load, (gpointer) c);
     RET(1);
-    
-error:
-    cpu_destructor(p);
-    RET(0);
 }
 
 

@@ -19,14 +19,14 @@ typedef struct {
 } wincmd_priv;
 
 enum { WC_NONE, WC_ICONIFY, WC_SHADE };
-static pair wincmd_pair [] = {
-    { WC_NONE,    "none" },
-    { WC_ICONIFY, "iconify" },
-    { WC_SHADE,   "shade" },
-    { 0, NULL },
+
+
+xconf_enum wincmd_enum[] = {
+    { .num = WC_NONE, .str = "none" },
+    { .num = WC_ICONIFY, .str = "iconify" },
+    { .num = WC_SHADE, .str = "shade" },
+    { .num = 0, .str = NULL },
 };
-
-
 
 static void
 toggle_shaded(wincmd_priv *wc, guint32 action)
@@ -37,12 +37,14 @@ toggle_shaded(wincmd_priv *wc, guint32 action)
     net_wm_window_type nwwt;
     
     ENTER;
-    win = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST, XA_WINDOW, &num);
+    win = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST,
+        XA_WINDOW, &num);
     if (!win)
 	RET();
     if (!num)
         goto end;
-    //tmp = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, XA_CARDINAL, 0);
+    //tmp = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP,
+    // XA_CARDINAL, 0);
     //dno = *tmp;
     dno = get_net_current_desktop();
     DBG("wincmd: #desk=%d\n", dno);
@@ -160,7 +162,6 @@ wincmd_destructor(plugin_instance *p)
 static int
 wincmd_constructor(plugin_instance *p)
 {
-    line s;
     gchar *tooltip, *fname, *iname;
     wincmd_priv *wc;
     GtkWidget *button;
@@ -169,31 +170,15 @@ wincmd_constructor(plugin_instance *p)
     ENTER;
     wc = (wincmd_priv *) p;
     tooltip = fname = iname = NULL;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR( "wincmd: illegal token %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "Button1")) 
-                wc->button1 = str2num(wincmd_pair, s.t[1], WC_ICONIFY);
-            else if (!g_ascii_strcasecmp(s.t[0], "Button2")) 
-                wc->button2 = str2num(wincmd_pair, s.t[1], WC_SHADE);
-            else if (!g_ascii_strcasecmp(s.t[0], "tooltip"))
-                tooltip = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "icon"))
-                iname = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "image"))
-                fname = expand_tilda(s.t[1]); 
-            else {
-                ERR( "wincmd: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        } else {
-            ERR( "wincmd: illegal in this context %s\n", s.str);
-            goto error;
-        }
-    }
+    wc->button1 = WC_ICONIFY;
+    wc->button2 = WC_SHADE;
+    XCG(p->xc, "Button1", &wc->button1, enum, wincmd_enum);
+    XCG(p->xc, "Button2", &wc->button2, enum, wincmd_enum);
+    XCG(p->xc, "Icon", &iname, str);
+    XCG(p->xc, "Image", &fname, str);
+    XCG(p->xc, "tooltip", &tooltip, str);
+    fname = expand_tilda(fname);
+    
     if (p->panel->orientation == ORIENT_HORIZ) {
         w = -1;
         h = p->panel->ah;
@@ -209,22 +194,14 @@ wincmd_constructor(plugin_instance *p)
     gtk_widget_show(button);
     gtk_container_add(GTK_CONTAINER(p->pwid), button);
     if (p->panel->transparent) 
-        gtk_bgbox_set_background(button, BG_INHERIT, p->panel->tintcolor, p->panel->alpha);
+        gtk_bgbox_set_background(button, BG_INHERIT,
+            p->panel->tintcolor, p->panel->alpha);
     
     g_free(fname);
-    g_free(iname);
-    if (tooltip) {
+    if (tooltip) 
         gtk_widget_set_tooltip_markup(button, tooltip);
-        g_free(tooltip);
-    }
-    RET(1);
 
- error:
-    g_free(fname);
-    g_free(tooltip);
-    wincmd_destructor(p);
-    ERR( "%s - exit\n", __FUNCTION__);
-    RET(0);
+    RET(1);
 }
 
 

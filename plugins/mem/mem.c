@@ -166,33 +166,10 @@ mem_constructor(plugin_instance *p)
     mem_priv *mem;
     gint w, h;
     GtkProgressBarOrientation o;
-    line s;
-    
+
     ENTER;
     mem = (mem_priv *) p;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END)
-    {
-        if (s.type == LINE_NONE)
-        {
-            ERR( "space: illegal token %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_VAR)
-        {
-            if (!g_ascii_strcasecmp(s.t[0], "ShowSwap"))
-                mem->show_swap = str2num(bool_pair, s.t[1], 1);
-            else
-            {
-                ERR("mem: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        }
-        else
-        {
-            ERR("menu: illegal in this context %s\n", s.str);
-            goto error;
-        }
-    }
+    XCG(p->xc, "ShowSwap", &mem->show_swap, enum, bool_enum);
     mem->box = p->panel->my_box_new(FALSE, 0);
     gtk_container_set_border_width (GTK_CONTAINER (mem->box), 0);
 
@@ -227,10 +204,6 @@ mem_constructor(plugin_instance *p)
     mem_update(mem);
     mem->timer = g_timeout_add(3000, (GSourceFunc) mem_update, (gpointer)mem);
     RET(1);
-    
-error:
-    mem_destructor(p);
-    RET(0);
 }
 
 static plugin_class class = {

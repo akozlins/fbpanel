@@ -38,8 +38,8 @@ void xconf_get_str(xconf *x, gchar **val);
 void xconf_set_int(xconf *x, int val);
 void xconf_set_enum(xconf *x, int val, xconf_enum *e);
 
-#define XCG(xc, name, var, type)                \
-    xconf_get_ ## type(xconf_find(xc, name, 0), var)
+#define XCG(xc, name, var, type, extra...)                      \
+    xconf_get_ ## type(xconf_find(xc, name, 0), var, ## extra)
 
 
 #endif
