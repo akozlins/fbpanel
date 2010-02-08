@@ -173,10 +173,10 @@ read_button(plugin_instance *p, xconf *xc)
         RET(0);
     }
     iname = tooltip = fname = action = NULL;
-    xconf_get_str(xconf_find(xc, "image", 0), &fname);
-    xconf_get_str(xconf_find(xc, "icon", 0), &iname);
-    xconf_get_str(xconf_find(xc, "action", 0), &action);
-    xconf_get_str(xconf_find(xc, "tooltip", 0), &tooltip);
+    XCG(xc, "image", &fname, str);
+    XCG(xc, "icon",  &iname, str);
+    XCG(xc, "action", &action, str);
+    XCG(xc, "tooltip", &tooltip, str);
 
     action = expand_tilda(action);
     fname = expand_tilda(fname);

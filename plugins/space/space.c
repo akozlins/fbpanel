@@ -31,7 +31,7 @@ space_constructor(plugin_instance *p)
 
     ENTER;
     size = 1;
-    xconf_get_int(xconf_find(p->xc, "size", 0), &size);
+    XCG(p->xc, "size", &size, int);
     
     if (p->panel->orientation == ORIENT_HORIZ) {
         h = 2;

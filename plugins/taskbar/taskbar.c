@@ -1346,26 +1346,15 @@ taskbar_constructor(plugin_instance *p)
     tb->use_mouse_wheel   = 1;
     tb->use_urgency_hint  = 1;
 
-    xconf_get_enum(xconf_find(xc, "tooltips", 0),
-        &tb->tooltips, bool_enum);
-    xconf_get_enum(xconf_find(xc, "iconsonly", 0),
-        &tb->icons_only, bool_enum);
-    xconf_get_enum(xconf_find(xc, "acceptskippager", 0),
-        &tb->accept_skip_pager, bool_enum);
-    xconf_get_enum(xconf_find(xc, "showiconified", 0),
-        &tb->show_iconified, bool_enum);
-    xconf_get_enum(xconf_find(xc, "showalldesks", 0),
-        &tb->show_all_desks, bool_enum);
-    xconf_get_enum(xconf_find(xc, "showmapped", 0),
-        &tb->show_mapped, bool_enum);
-    xconf_get_enum(xconf_find(xc, "usemousewheel", 0),
-        &tb->use_mouse_wheel, bool_enum);
-    xconf_get_enum(xconf_find(xc, "useurgencyhint", 0),
-        &tb->use_urgency_hint, bool_enum);
-    
-    xconf_get_int(xconf_find(xc, "maxtaskwidth", 0),
-        // XXX: change name
-        &tb->task_width_max);
+    XCG(xc, "tooltips", &tb->tooltips, enum, bool_enum);
+    XCG(xc, "iconsonly", &tb->icons_only, enum, bool_enum);
+    XCG(xc, "acceptskippager", &tb->accept_skip_pager, enum, bool_enum);
+    XCG(xc, "showiconified", &tb->show_iconified, enum, bool_enum);
+    XCG(xc, "showalldesks", &tb->show_all_desks, enum, bool_enum);
+    XCG(xc, "showmapped", &tb->show_mapped, enum, bool_enum);
+    XCG(xc, "usemousewheel", &tb->use_mouse_wheel, enum, bool_enum);
+    XCG(xc, "useurgencyhint", &tb->use_urgency_hint, enum, bool_enum);
+    XCG(xc, "maxtaskwidth", &tb->task_width_max, int);
     
     if (p->panel->orientation == ORIENT_HORIZ) {
         tb->iconsize = GTK_WIDGET(p->panel->box)->allocation.height -
