@@ -10,11 +10,10 @@
 #include "plugin.h"
 #include "bg.h"
 #include "gtkbgbox.h"
+#include "run.h"
 
 //#define DEBUGPRN
 #include "dbg.h"
-
-/* XXX: should be global define in xconf.h */
 
 typedef struct {
     plugin_instance plugin;
@@ -42,7 +41,6 @@ menu_expand_xc(xconf *xc)
     for (w = xc->sons; w; w = g_slist_next(w))
     {
         cxc = w->data;
-        /* XXX: write handlers for these types */
         if (!strcmp(cxc->name, "systemmenu"))
         {
             smenu_xc = xconf_new_from_applications();
@@ -50,6 +48,7 @@ menu_expand_xc(xconf *xc)
             xconf_del(smenu_xc, FALSE);
             continue;
         }
+        /* XXX: write handlers for these types */
         if (!strcmp(cxc->name, "include"))
             continue;
         xconf_append(nxc, menu_expand_xc(cxc));
@@ -69,25 +68,6 @@ run_command(GtkWidget *widget, void (*cmd)(void))
     RET();
 }
 #endif
-
-
-/* XXX: should be global service with dialog on error */
-static void
-spawn_app(GtkWidget *widget, gpointer data)
-{
-    GError *error = NULL;
-
-    ENTER;
-    if (data) {
-        if (! g_spawn_command_line_async(data, &error) ) {
-            ERR("can't spawn %s\nError is %s\n", (char *)data, error->message);
-            g_error_free (error);
-        }
-    }
-    RET();
-}
-
-
 
 static GtkWidget *
 menu_create_separator()
@@ -115,7 +95,8 @@ menu_create_item(xconf *xc, GtkWidget *menu)
     {
         GdkPixbuf *pb;
 
-        if ((pb = fb_pixbuf_new(iname, fname, 22, 22, FALSE))) {
+        if ((pb = fb_pixbuf_new(iname, fname, 22, 22, FALSE)))
+        {
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
                     gtk_image_new_from_pixbuf(pb));
             g_object_unref(G_OBJECT(pb));
@@ -133,8 +114,8 @@ menu_create_item(xconf *xc, GtkWidget *menu)
     {
         action = expand_tilda(action);
 
-        g_signal_connect(G_OBJECT(mi), "activate",
-                (GCallback)spawn_app, action);
+        g_signal_connect_swapped(G_OBJECT(mi), "activate",
+                (GCallback)run_app, action);
         g_object_set_data_full(G_OBJECT(mi), "activate",
             action, g_free);
         goto done;
@@ -142,6 +123,7 @@ menu_create_item(xconf *xc, GtkWidget *menu)
     XCG(xc, "command", &cmd, str);
     if (cmd)
     {
+        /* XXX: implement command API */
 #if 0
         command *tmp;
         
@@ -190,7 +172,6 @@ menu_create_menu(xconf *xc, gboolean ret_menu)
     return (ret_menu) ? menu : menu_create_item(xc, menu);
 }
 
-
 static void
 menu_create(plugin_instance *p)
 {
@@ -219,8 +200,6 @@ menu_destroy(menu_priv *m)
         m->xc = NULL;
     }
 }
-
-
 
 static gboolean
 my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin_instance *p)
@@ -260,10 +239,13 @@ make_button(plugin_instance *p, xconf *xc)
     m = (menu_priv *) p;
     /* XXX: this code is duplicated in every plugin.
      * Lets run it once in a panel */
-    if (p->panel->orientation == ORIENT_HORIZ) {
+    if (p->panel->orientation == ORIENT_HORIZ)
+    {
         w = -1;
         h = p->panel->ah;
-    } else {
+    }
+    else
+    {
         w = p->panel->aw;
         h = -1;
     }

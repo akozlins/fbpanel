@@ -37,8 +37,6 @@ typedef struct _task{
     XClassHint ch;    
 } task;
 
-
-
 typedef struct _icons{
     plugin_instance plugin;
     Window *wins;
@@ -49,8 +47,6 @@ typedef struct _icons{
     wmpix_t *dicon;
 } icons_priv;
 
-
-
 static void ics_propertynotify(icons_priv *ics, XEvent *ev);
 static GdkFilterReturn ics_event_filter( XEvent *, GdkEvent *, icons_priv *);
 static void icons_destructor(plugin_instance *p);
@@ -58,7 +54,8 @@ static void icons_destructor(plugin_instance *p);
 /******************************************/
 /* Resource Release Code                  */
 /******************************************/
-static void free_task(icons_priv *ics, task *tk, int hdel)
+static void
+free_task(icons_priv *ics, task *tk, int hdel)
 {
     ENTER;
     ics->num_tasks--; 
@@ -72,7 +69,8 @@ static void free_task(icons_priv *ics, task *tk, int hdel)
     RET();
 }
 
-static gboolean task_remove_every(Window *win, task *tk)
+static gboolean
+task_remove_every(Window *win, task *tk)
 {
     free_task(tk->ics, tk, 0);
     return TRUE;
@@ -86,7 +84,8 @@ drop_config(icons_priv *ics)
 
     ENTER;
     /* free application icons */
-    while (ics->wmpix) {
+    while (ics->wmpix)
+    {
         wp = ics->wmpix;
         ics->wmpix = ics->wmpix->next;
         g_free(wp->ch.res_name);
@@ -96,7 +95,8 @@ drop_config(icons_priv *ics)
     }
 
     /* free default icon */
-    if (ics->dicon) {
+    if (ics->dicon)
+    {
         g_free(ics->dicon->data);
         g_free(ics->dicon);
         ics->dicon = NULL;
@@ -107,7 +107,11 @@ drop_config(icons_priv *ics)
         (GHRFunc) task_remove_every, (gpointer)ics);
 
     if (ics->wins)
+    {
+        DBG("free ics->wins\n");
         XFree(ics->wins);
+        ics->wins = NULL;
+    }
     RET();
 }
 
@@ -144,14 +148,17 @@ static int task_has_icon(task *tk)
 
     ENTER;
     data = get_xaproperty(tk->win, a_NET_WM_ICON, XA_CARDINAL, &n);
-    if (data) {
+    if (data)
+    {
         XFree(data);
         RET(1);
     }
     
     hints = XGetWMHints(GDK_DISPLAY(), tk->win);
-    if (hints) {
-        if ((hints->flags & IconPixmapHint) || (hints->flags & IconMaskHint)) {
+    if (hints)
+    {
+        if ((hints->flags & IconPixmapHint) || (hints->flags & IconMaskHint))
+        {
             XFree (hints);
             RET(1);
         }
@@ -172,13 +179,15 @@ get_user_icon(icons_priv *ics, task *tk)
     DBG("\nch.res_class=[%s] ch.res_name=[%s]\n", tk->ch.res_class,
         tk->ch.res_name);
 
-    for (tmp = ics->wmpix; tmp; tmp = tmp->next) { 
+    for (tmp = ics->wmpix; tmp; tmp = tmp->next)
+    { 
         DBG("tmp.res_class=[%s] tmp.res_name=[%s]\n", tmp->ch.res_class,
             tmp->ch.res_name);
         mc = !tmp->ch.res_class || !strcmp(tmp->ch.res_class, tk->ch.res_class);
         mn = !tmp->ch.res_name  || !strcmp(tmp->ch.res_name, tk->ch.res_name);
         DBG("mc=%d mn=%d\n", mc, mn);
-        if (mc && mn) {
+        if (mc && mn)
+        {
             DBG("match !!!!\n");
             RET(tmp);
         }
@@ -212,8 +221,10 @@ pixbuf2argb (GdkPixbuf *pixbuf, int *size)
     
     pixels = gdk_pixbuf_get_pixels (pixbuf);
     
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x++) {
+    for (y = 0; y < height; y++)
+    {
+        for (x = 0; x < width; x++)
+        {
             guchar r, g, b, a;
             
             r = pixels[y*stride + x*n_channels + 0];
@@ -243,7 +254,8 @@ set_icon_maybe (icons_priv *ics, task *tk)
 
 
     pix = get_user_icon(ics, tk);
-    if (!pix) {
+    if (!pix)
+    {
         if (task_has_icon(tk))
             RET();
         pix = ics->dicon;
@@ -265,7 +277,8 @@ static gboolean
 task_remove_stale(Window *win, task *tk)
 {
     ENTER;
-    if (tk->refcount-- == 0) {
+    if (tk->refcount-- == 0)
+    {
         free_task(tk->ics, tk, 0);
         RET(TRUE);
     }
@@ -282,7 +295,7 @@ ics_event_filter( XEvent *xev, GdkEvent *event, icons_priv *ics)
     
     ENTER;
     g_assert(ics != NULL);
-    if (xev->type == PropertyNotify )
+    if (xev->type == PropertyNotify)
 	ics_propertynotify(ics, xev);
     RET(GDK_FILTER_CONTINUE);
 }
@@ -296,16 +309,24 @@ do_net_client_list(icons_priv *ics)
     
     ENTER;
     if (ics->wins)
+    {
+        DBG("free ics->wins\n");
         XFree(ics->wins);
+        ics->wins = NULL;
+    }
     ics->wins = get_xaproperty (GDK_ROOT_WINDOW(),
         a_NET_CLIENT_LIST, XA_WINDOW, &ics->win_num);
     if (!ics->wins) 
 	RET();
-
-    for (i = 0; i < ics->win_num; i++) {
-        if ((tk = g_hash_table_lookup(ics->task_list, &ics->wins[i]))) {
+    DBG("alloc ics->wins\n");
+    for (i = 0; i < ics->win_num; i++)
+    {
+        if ((tk = g_hash_table_lookup(ics->task_list, &ics->wins[i])))
+        {
             tk->refcount++;
-        } else {
+        }
+        else
+        {
             tk = g_new0(task, 1);
             tk->refcount++;
             ics->num_tasks++;
@@ -313,8 +334,10 @@ do_net_client_list(icons_priv *ics)
             tk->ics = ics;
             
             if (!FBPANEL_WIN(tk->win))
+            {
                 XSelectInput(GDK_DISPLAY(), tk->win,
-                    PropertyChangeMask | StructureNotifyMask); 
+                    PropertyChangeMask | StructureNotifyMask);
+            }
             get_wmclass(tk);
             set_icon_maybe(ics, tk);
             g_hash_table_insert(ics->task_list, &tk->win, tk);
@@ -338,15 +361,19 @@ ics_propertynotify(icons_priv *ics, XEvent *ev)
     win = ev->xproperty.window;
     at = ev->xproperty.atom;
     DBG("win=%lx at=%ld\n", win, at);
-    if (win != GDK_ROOT_WINDOW()) {
+    if (win != GDK_ROOT_WINDOW())
+    {
 	task *tk = find_task(ics, win);
 
         if (!tk) 
             RET();
-        if (at == XA_WM_CLASS) {
+        if (at == XA_WM_CLASS)
+        {
             get_wmclass(tk);
             set_icon_maybe(ics, tk);
-        } else if (at == XA_WM_HINTS) {
+        }
+        else if (at == XA_WM_HINTS)
+        {
             set_icon_maybe(ics, tk);
         }  
     }
@@ -376,8 +403,10 @@ read_application(icons_priv *ics, xconf *xc)
     if (!(fname || iname))
         goto error;
     gp = fb_pixbuf_new(iname, fname, 48, 48, FALSE);  
-    if (gp) {
-        if ((data = pixbuf2argb(gp, &size))) {
+    if (gp)
+    {
+        if ((data = pixbuf2argb(gp, &size)))
+        {
             wp = g_new0 (wmpix_t, 1);
             wp->next = ics->wmpix;
             wp->data = data;
@@ -410,8 +439,10 @@ read_dicon(icons_priv *ics, gchar *name)
     if (!fname)
         RET(0);
     gp = gdk_pixbuf_new_from_file(fname, NULL);  
-    if (gp) {
-        if ((data = pixbuf2argb(gp, &size))) {
+    if (gp)
+    {
+        if ((data = pixbuf2argb(gp, &size)))
+        {
             ics->dicon = g_new0 (wmpix_t, 1);
             ics->dicon->data = data;
             ics->dicon->size = size;
@@ -466,9 +497,9 @@ icons_constructor(plugin_instance *p)
     ics->task_list = g_hash_table_new(g_int_hash, g_int_equal);
     theme_changed(ics);
     g_signal_connect_swapped(G_OBJECT(gtk_icon_theme_get_default()),
-           "changed", (GCallback) theme_changed, ics);
+        "changed", (GCallback) theme_changed, ics);
     g_signal_connect_swapped(G_OBJECT (fbev), "client_list",
-          G_CALLBACK (do_net_client_list), (gpointer) ics);
+        G_CALLBACK (do_net_client_list), (gpointer) ics);
     gdk_window_add_filter(NULL, (GdkFilterFunc)ics_event_filter, ics );
 
     RET(1);

@@ -15,6 +15,7 @@
 #include "misc.h"
 #include "plugin.h"
 #include "gtkbgbox.h"
+#include "run.h"
 
 //#define DEBUGPRN
 #include "dbg.h"
@@ -67,20 +68,23 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, btn *b )
 {
     ENTER;
     if (event->type == GDK_BUTTON_PRESS && event->button == 3
-          && event->state & GDK_CONTROL_MASK) {
+        && event->state & GDK_CONTROL_MASK)
+    {
         b->lb->discard_release_event = 1;
         RET(FALSE);
     }
-    if (event->type == GDK_BUTTON_RELEASE && b->lb->discard_release_event) {
+    if (event->type == GDK_BUTTON_RELEASE && b->lb->discard_release_event)
+    {
         b->lb->discard_release_event = 0;
         RET(TRUE);
     }
     g_assert(b != NULL);
-    if (event->type == GDK_BUTTON_RELEASE) {
+    if (event->type == GDK_BUTTON_RELEASE)
+    {
         if ((event->x >=0 && event->x < widget->allocation.width)
-              && (event->y >=0 && event->y < widget->allocation.height)) {
-            
-            g_spawn_command_line_async(b->action, NULL);
+            && (event->y >=0 && event->y < widget->allocation.height))
+        {
+            run_app(b->action);
         }
     }
     RET(TRUE);
@@ -94,9 +98,9 @@ launchbar_destructor(plugin_instance *p)
 
     ENTER;
     gtk_widget_destroy(lb->box);
-    for (i = 0; i < lb->btn_num; i++) {
+    for (i = 0; i < lb->btn_num; i++) 
         g_free(lb->btns[i].action);     
-    }
+
     RET();
 }
 
@@ -118,7 +122,8 @@ drag_data_received_cb (GtkWidget *widget,
         RET();
     DBG("uri drag received: info=%d/%s len=%d data=%s\n",
          info, target_table[info].target, sd->length, sd->data);
-    if (info == TARGET_URILIST) {
+    if (info == TARGET_URILIST)
+    {
         /* white-space separated list of uri's */
         s = g_strdup((gchar *)sd->data);
         str = g_strdup(b->action);
@@ -136,13 +141,16 @@ drag_data_received_cb (GtkWidget *widget,
         g_spawn_command_line_async(str, NULL);
         g_free(str);
         g_free(s);
-    } else if (info == TARGET_MOZ_URL) {
+    }
+    else if (info == TARGET_MOZ_URL)
+    {
         gchar *utf8, *tmp;
         
 	utf8 = g_utf16_to_utf8((gunichar2 *) sd->data, (glong) sd->length,
               NULL, NULL, NULL);
         tmp = utf8 ? strchr(utf8, '\n') : NULL;
-	if (!tmp) {
+	if (!tmp)
+        {
             ERR("Invalid UTF16 from text/x-moz-url target");
             g_free(utf8);
             gtk_drag_finish(context, FALSE, FALSE, time);
@@ -166,7 +174,8 @@ read_button(plugin_instance *p, xconf *xc)
     GtkWidget *button;
     
     ENTER;
-    if (lb->btn_num >= MAXBUTTONS) {
+    if (lb->btn_num >= MAXBUTTONS)
+    {
         ERR("launchbar: max number of buttons (%d) was reached."
             "skipping the rest\n", lb->btn_num );
         RET(0);
