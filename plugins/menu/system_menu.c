@@ -37,36 +37,49 @@ static void
 do_app_file(GHashTable *ht, const gchar *file)
 {
     GKeyFile *f;
-    gchar *name, *icon, *action, **cats, **tmp, *dot;
+    gchar *name, *icon, *action,*dot;
+    gchar **cats, **tmp;
     xconf *ixc, *vxc, *mxc;
     
     ENTER;
     DBG("desktop: %s\n", file);
-
     /* get values */
+    name = icon = action = dot = NULL;
+    cats = tmp = NULL;
     f = g_key_file_new();
     if (!g_key_file_load_from_file(f, file, 0, NULL))
         goto out;
     if (g_key_file_get_boolean(f, desktop_ent, "NoDisplay", NULL))
+    {
+        DBG("\tNoDisplay\n");
         goto out;
+    }
     if (g_key_file_has_key(f, desktop_ent, "OnlyShowIn", NULL))
+    {
+        DBG("\tOnlyShowIn\n");
         goto out;
+    }
     if (!(action = g_key_file_get_string(f, desktop_ent, "Exec", NULL)))
+    {
+        DBG("\tNo Exec\n");
         goto out;
+    }
     if (!(cats = g_key_file_get_string_list(f,
                 desktop_ent, "Categories", NULL, NULL)))
     {
+        DBG("\tNo Categories\n");
         goto out;
     }
     if (!(name = g_key_file_get_locale_string(f,
                 desktop_ent, "Name", NULL, NULL)))
     {
+        DBG("\tNo Name\n");
         goto out;
     }
     icon = g_key_file_get_string(f, desktop_ent, "Icon", NULL);
+    if (!icon)
+        DBG("\tNo Icon\n");
 
-    /* fixup */
-    
     /* ignore program arguments */
     while ((dot = strchr(action, '%'))) {
         if (dot[1] != '\0')
@@ -83,12 +96,14 @@ do_app_file(GHashTable *ht, const gchar *file)
         if ((mxc = g_hash_table_lookup(ht, *tmp)))
             break;
     if (!mxc)
+    {
+        DBG("\tUnknown categories\n");
         goto out;
+    }
     
     ixc = xconf_new("item", NULL);
     xconf_append(mxc, ixc);
-    /* XXX: icon should handle both icon and file */
-    vxc = xconf_new("icon", icon);
+    vxc = xconf_new((icon[0] == '/') ? "image" : "icon", icon);
     xconf_append(ixc, vxc);
     vxc = xconf_new("name", name);
     xconf_append(ixc, vxc);
