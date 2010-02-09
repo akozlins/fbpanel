@@ -1,8 +1,8 @@
 include %%topdir%%/config.mk
 
 SUBDIRS = taskbar launchbar space menu pager mem chart cpu net
-SUBDIRS += systray dclock wincmd icons separator 
-#SUBDIRS += tclock test genmon deskno image 
+SUBDIRS += systray dclock wincmd icons separator image
+#SUBDIRS += tclock test genmon deskno
 # unstable
 #SUBDIRS += deskno2
 

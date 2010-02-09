@@ -42,30 +42,13 @@ image_constructor(plugin_instance *p)
     GtkWidget *wid;
     GError *err = NULL;
     
-    line s;
-
     ENTER;
     img = (image_priv *) p;
     tooltip = fname = 0;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR( "image: illegal token %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "image")) 
-                fname = expand_tilda(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "tooltip"))
-                tooltip = g_strdup(s.t[1]);
-            else {
-                ERR( "image: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        } else {
-            ERR( "image: illegal in this context %s\n", s.str);
-            goto error;
-        }
-    }
+    XCG(p->xc, "image", &fname, str);
+    XCG(p->xc, "tooltip", &tooltip, str);
+    fname = expand_tilda(fname);
+    
     img->mainw = gtk_event_box_new();
     gtk_widget_show(img->mainw);
     //g_signal_connect(G_OBJECT(img->mainw), "expose_event",
@@ -100,12 +83,6 @@ image_constructor(plugin_instance *p)
         g_free(tooltip);
     }
     RET(1);
-
- error:
-    g_free(fname);
-    g_free(tooltip);
-    image_destructor(p);
-    RET(0);
 }
 
 
