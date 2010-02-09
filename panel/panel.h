@@ -77,6 +77,8 @@ typedef struct _panel
     GList *plugins;
 
     gboolean (*ah_state)(struct _panel *);
+
+    xconf *xc;
 } panel;
 
 

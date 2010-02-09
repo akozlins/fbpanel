@@ -62,7 +62,6 @@ typedef struct launchbar_priv {
 } launchbar_priv;
 
 
-
 static gboolean
 my_button_pressed(GtkWidget *widget, GdkEventButton *event, btn *b )
 {
@@ -208,7 +207,7 @@ read_button(plugin_instance *p, xconf *xc)
     gtk_widget_set_tooltip_markup(button, tooltip);
     
     g_free(fname);
-    g_free(iname);
+    //g_free(iname);
     DBG("here\n");
 
     lb->btns[lb->btn_num].action = action;

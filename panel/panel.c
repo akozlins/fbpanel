@@ -20,7 +20,7 @@
 static gchar version[] = VERSION;
 static gchar *profile = "default";
 static gchar *profile_file;
-static xconf *xc;
+
 guint mwid; // mouse watcher thread id
 guint hpid; // hide panel thread id
 
@@ -93,7 +93,7 @@ panel_set_wm_strut(panel *p)
 
     RET();
 }
-
+#if 0
 static void
 print_wmdata(panel *p)
 {
@@ -111,7 +111,7 @@ print_wmdata(panel *p)
               p->workarea[4*i + 3]);
     RET();
 }
-
+#endif
 
 static GdkFilterReturn
 panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
@@ -151,9 +151,9 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
             fb_ev_trigger(fbev, EV_CLIENT_LIST_STACKING);
         } else if (at == a_NET_WORKAREA) {
             DBG("A_NET_WORKAREA\n");
-            p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA,
-                  XA_CARDINAL, &p->wa_len);
-            print_wmdata(p);
+            //p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA,
+            //      XA_CARDINAL, &p->wa_len);
+            //print_wmdata(p);
         } else if (at == a_XROOTPMAP_ID) {
             if (p->transparent) 
                 fb_bg_notify_changed_bg(p->bg);           
@@ -574,9 +574,9 @@ panel_parse_global(xconf *xc)
     }
     p->curdesk = get_net_current_desktop();
     p->desknum = get_net_number_of_desktops();
-    p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA,
-        XA_CARDINAL, &p->wa_len);
-    print_wmdata(p);
+    //p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA,
+    //    XA_CARDINAL, &p->wa_len);
+    //print_wmdata(p);
     panel_start_gui(p);
     RET(1);
 }
@@ -615,6 +615,7 @@ panel_start(xconf *xc)
     ENTER;
     fbev = fb_ev_new();
 
+    //xconf_prn(stdout, xc, 0, FALSE);
     panel_parse_global(xconf_find(xc, "global", 0));
     for (i = 0; (pxc = xconf_find(xc, "plugin", i)); i++)
         panel_parse_plugin(pxc);
@@ -646,7 +647,7 @@ panel_stop(panel *p)
           (GdkFilterFunc)panel_event_filter, p);
     gtk_widget_destroy(p->topgwin);
     g_object_unref(fbev);
-    g_free(p->workarea);
+    //g_free(p->workarea);
     gdk_flush();
     XFlush(GDK_DISPLAY());
     XSync(GDK_DISPLAY(), True);
@@ -785,15 +786,16 @@ main(int argc, char *argv[])
     signal(SIGUSR2, sig_usr2);
 
     do {
-        xc = xconf_new_from_file(profile_file, profile);
-        if (!xc)
-            exit(1);
         the_panel = p = g_new0(panel, 1);
-        panel_start(xc);
+        p->xc = xconf_new_from_file(profile_file, profile);
+        if (!p->xc)
+            exit(1);
+
+        panel_start(p->xc);
         gtk_main();
         panel_stop(p);
         //xconf_save_to_profile(cprofile, xc);
-        xconf_del(xc, FALSE);
+        xconf_del(p->xc, FALSE);
         g_free(p);
         DBG("force_quit=%d\n", force_quit);
     } while (force_quit == 0);

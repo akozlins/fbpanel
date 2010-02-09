@@ -138,9 +138,12 @@ plugin_load(char *type)
 void
 plugin_put(plugin_instance *this)
 {
+    gchar *type;
+    
     ENTER;
-    class_put(this->class->type);
+    type = this->class->type;
     g_free(this);
+    class_put(type);
     RET();
 }
 

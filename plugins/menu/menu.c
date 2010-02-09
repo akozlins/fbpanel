@@ -20,7 +20,6 @@ typedef struct {
     plugin_instance plugin;
     GtkWidget *menu, *bg;
     int iconsize, paneliconsize;
-    guint tout;
     xconf *xc;
 } menu_priv;
 
@@ -132,14 +131,12 @@ menu_create_item(xconf *xc, GtkWidget *menu)
     XCG(xc, "action", &action, str);
     if (action)
     {
-#if 1        
         action = expand_tilda(action);
 
         g_signal_connect(G_OBJECT(mi), "activate",
                 (GCallback)spawn_app, action);
         g_object_set_data_full(G_OBJECT(mi), "activate",
             action, g_free);
-#endif        
         goto done;
     }
     XCG(xc, "command", &cmd, str);
@@ -270,6 +267,7 @@ make_button(plugin_instance *p, xconf *xc)
         w = p->panel->aw;
         h = -1;
     }
+    fname = iname = NULL;
     XCG(xc, "image", &fname, str);
     fname = expand_tilda(fname);
     XCG(xc, "icon", &iname, str);
@@ -304,19 +302,14 @@ menu_constructor(plugin_instance *p)
 static void
 menu_destructor(plugin_instance *p)
 {
-    //menu_priv *m = (menu_priv *) p;
+    menu_priv *m = (menu_priv *) p;
 
     ENTER;
-#if 0    
-    if (m->tout)
-        g_source_remove(m->tout);
     g_signal_handlers_disconnect_by_func(G_OBJECT(p->pwid),
             my_button_pressed, p);
     g_signal_handlers_disconnect_by_func(G_OBJECT(gtk_icon_theme_get_default()),
             menu_destroy, m);
-    menu_destroy(p);
-#endif    
-
+    menu_destroy(m);
     RET();
 }
 

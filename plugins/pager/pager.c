@@ -865,6 +865,8 @@ pager_destructor(plugin_instance *p)
         DBG("put fbbg %p\n", pg->fbbg);
         g_object_unref(pg->fbbg);
     }
+    if (pg->wins)
+        XFree(pg->wins);
     RET();
 }
 

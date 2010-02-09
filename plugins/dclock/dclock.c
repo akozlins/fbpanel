@@ -139,7 +139,8 @@ clock_update(dclock_priv *dc)
         gtk_widget_queue_draw(dc->main);
     }
     
-    if (dc->calendar_window || !strftime(output, sizeof(output), dc->tfmt, detail))
+    if (dc->calendar_window || !strftime(output, sizeof(output),
+            dc->tfmt, detail))
         output[0] = 0;    
     if (strcmp(dc->tstr, output))
     {
@@ -202,9 +203,6 @@ dclock_destructor(plugin_instance *p)
     if (dc->timer)
         g_source_remove(dc->timer);
     gtk_widget_destroy(dc->main);
-    g_free(dc->cfmt);
-    g_free(dc->tfmt);
-    g_free(dc->action);
     RET();
 }
 
@@ -263,10 +261,6 @@ dclock_constructor(plugin_instance *p)
     clock_update(dc);
     
     RET(1);
-
-error:
-    dclock_destructor(p);
-    RET(0);
 }
 
 

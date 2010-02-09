@@ -79,7 +79,8 @@ static gboolean task_remove_every(Window *win, task *tk)
 }
 
 
-static void drop_config(icons_priv *ics)
+static void
+drop_config(icons_priv *ics)
 {
     wmpix_t *wp;
 
@@ -102,7 +103,8 @@ static void drop_config(icons_priv *ics)
     }
 
     /* free task list */
-    g_hash_table_foreach_remove(ics->task_list, (GHRFunc) task_remove_every, (gpointer)ics);
+    g_hash_table_foreach_remove(ics->task_list,
+        (GHRFunc) task_remove_every, (gpointer)ics);
 
     if (ics->wins)
         XFree(ics->wins);
@@ -293,6 +295,8 @@ do_net_client_list(icons_priv *ics)
     task *tk;
     
     ENTER;
+    if (ics->wins)
+        XFree(ics->wins);
     ics->wins = get_xaproperty (GDK_ROOT_WINDOW(),
         a_NET_CLIENT_LIST, XA_WINDOW, &ics->win_num);
     if (!ics->wins) 
@@ -478,9 +482,9 @@ icons_destructor(plugin_instance *p)
     
     ENTER;
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev), do_net_client_list,
-            ics);
+        ics);
     g_signal_handlers_disconnect_by_func(G_OBJECT(gtk_icon_theme_get_default()),
-            theme_changed, ics);
+        theme_changed, ics);
     gdk_window_remove_filter(NULL, (GdkFilterFunc)ics_event_filter, ics );
     drop_config(ics);
     g_hash_table_destroy(ics->task_list);

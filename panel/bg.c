@@ -171,18 +171,22 @@ fb_bg_get_xrootpmap_real(FbBg *bg)
     Pixmap ret = None;
 
     ENTER;
-    if (bg->id) {
+    if (bg->id)
+    {
         int  act_format, c = 2 ;
         u_long  nitems ;
         u_long  bytes_after ;
         u_char *prop = NULL;
         Atom ret_type;
 
-        do {
+        do
+        {
             if (XGetWindowProperty(bg->dpy, bg->xroot, bg->id, 0, 1,
-                      False, XA_PIXMAP, &ret_type, &act_format,
-                      &nitems, &bytes_after, &prop) == Success) {
-                if (ret_type == XA_PIXMAP) {
+                    False, XA_PIXMAP, &ret_type, &act_format,
+                    &nitems, &bytes_after, &prop) == Success)
+            {
+                if (ret_type == XA_PIXMAP)
+                {
                     ret = *((Pixmap *)prop);
                     c = -c ; //to quit loop
                 }
@@ -197,7 +201,8 @@ fb_bg_get_xrootpmap_real(FbBg *bg)
 
 
 GdkPixmap *
-fb_bg_get_xroot_pix_for_area(FbBg *bg, gint x, gint y, gint width, gint height, gint depth)
+fb_bg_get_xroot_pix_for_area(FbBg *bg, gint x, gint y,
+    gint width, gint height, gint depth)
 {
     GdkPixmap *gbgpix;
     Pixmap bgpix;
@@ -230,7 +235,7 @@ fb_bg_get_xroot_pix_for_win(FbBg *bg, GtkWidget *widget)
     if (bg->pixmap == None)
         RET(NULL);
 
-    win =  GDK_WINDOW_XWINDOW(widget->window); 
+    win = GDK_WINDOW_XWINDOW(widget->window); 
     if (!XGetGeometry(bg->dpy, win, &dummy, &x, &y, &width, &height, &border,
               &depth)) {
         DBG2("XGetGeometry failed\n");
@@ -277,7 +282,8 @@ fb_bg_composite(GdkDrawable *base, GdkGC *gc, guint32 tintcolor, gint alpha)
         RET();
     }
     //gdk_pixbuf_render_to_drawable (ret2, base, gc, 0, 0, 0, 0, w, h, GDK_RGB_DITHER_NONE, 0, 0);
-    gdk_draw_pixbuf (base, gc, ret2, 0, 0, 0, 0, w, h, GDK_RGB_DITHER_NONE, 0, 0);
+    gdk_draw_pixbuf (base, gc, ret2, 0, 0, 0, 0, w, h,
+        GDK_RGB_DITHER_NONE, 0, 0);
     g_object_unref(ret);
     g_object_unref(ret2);
     RET();
