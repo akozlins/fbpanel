@@ -69,14 +69,12 @@ Atom a_NET_WM_ICON;
 Atom a_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR;
 
 xconf_enum allign_enum[] = {
-    { .num = ALLIGN_NONE, .str = "none" },
     { .num = ALLIGN_LEFT, .str = "left" },
     { .num = ALLIGN_RIGHT, .str = "right" },
     { .num = ALLIGN_CENTER, .str = "center"},
     { .num = 0, .str = NULL },
 };
 xconf_enum edge_enum[] = {
-    { .num = EDGE_NONE, .str = "none" },
     { .num = EDGE_LEFT, .str = "left" },
     { .num = EDGE_RIGHT, .str = "right" },
     { .num = EDGE_TOP, .str = "top" },
@@ -84,14 +82,12 @@ xconf_enum edge_enum[] = {
     { .num = 0, .str = NULL },
 };
 xconf_enum widthtype_enum[] = {
-    { .num = WIDTH_NONE, .str = "none" },
-    { .num = WIDTH_REQUEST, .str = "request" },
-    { .num = WIDTH_PIXEL, .str = "pixel" },
-    { .num = WIDTH_PERCENT, .str = "percent" },
+    { .num = WIDTH_REQUEST, .str = "request" , .desc = "dynamic" },
+    { .num = WIDTH_PIXEL, .str = "pixel" , .desc = "pixels" },
+    { .num = WIDTH_PERCENT, .str = "percent", .desc = "% of screen" },
     { .num = 0, .str = NULL },
 };
 xconf_enum heighttype_enum[] = {
-    { .num = HEIGHT_NONE, .str = "none" },
     { .num = HEIGHT_PIXEL, .str = "pixel" },
     { .num = 0, .str = NULL },
 };

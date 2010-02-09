@@ -99,6 +99,27 @@ void xconf_set_value(xconf *x, gchar *value)
   
 }
 
+void xconf_set_int(xconf *x, int i)
+{
+    xconf_del(x, TRUE);
+    g_free(x->value);
+    x->value = g_strdup_printf("%d", i);
+}
+
+xconf *
+xconf_get(xconf *xc, gchar *name)
+{
+    xconf *ret;
+
+    if (!xc)
+        return NULL;
+    if ((ret = xconf_find(xc, name, 0)))
+        return ret;
+    ret = xconf_new(name, NULL);
+    xconf_append(xc, ret);
+    return ret;
+}
+
 gchar *xconf_get_value(xconf *x)
 {
     return x->value;
@@ -197,6 +218,22 @@ void xconf_get_enum(xconf *x, int *val, xconf_enum *p)
     }
 }
 
+void
+xconf_set_enum(xconf *x, int val, xconf_enum *p)
+{
+    if (!x)
+        return;
+
+    while (p && p->str)
+    {
+        if (val == p->num)
+        {
+            xconf_set_value(x, p->str);
+            return;
+        }
+        p++;
+    }
+}
 
 static int
 read_line(FILE *fp, line *s)

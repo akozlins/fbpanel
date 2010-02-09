@@ -410,7 +410,7 @@ panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p)
     if (event->type == GDK_BUTTON_PRESS && event->button == 3
           && event->state & GDK_CONTROL_MASK) {
         DBG("ctrl-btn3\n");
-        //configure();
+        configure(p->xc);
         RET(TRUE);
     }
     RET(FALSE);

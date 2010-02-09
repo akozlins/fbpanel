@@ -14,6 +14,7 @@ typedef struct _xconf
 
 typedef struct {
     gchar *str;
+    gchar *desc;
     int num;
 } xconf_enum;
 
@@ -30,7 +31,8 @@ xconf *xconf_dup(xconf *xc);
 
 xconf *xconf_new_from_file(gchar *fname, gchar *name);
 void xconf_save_to_file(gchar *fname, xconf *xc);
-    
+
+xconf *xconf_get(xconf *x, gchar *name);
 void xconf_get_int(xconf *x, int *val);
 void xconf_get_enum(xconf *x, int *val, xconf_enum *e);
 void xconf_get_str(xconf *x, gchar **val);
