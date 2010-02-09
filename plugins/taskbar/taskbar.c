@@ -971,7 +971,8 @@ tb_net_client_list(GtkWidget *widget, taskbar_priv *tb)
     ENTER;
     if (tb->wins)
         XFree(tb->wins);
-    tb->wins = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST, XA_WINDOW, &tb->win_num);
+    tb->wins = get_xaproperty (GDK_ROOT_WINDOW(),
+        a_NET_CLIENT_LIST, XA_WINDOW, &tb->win_num);
     if (!tb->wins) 
 	RET();
     for (i = 0; i < tb->win_num; i++) {
@@ -1006,12 +1007,14 @@ tb_net_client_list(GtkWidget *widget, taskbar_priv *tb)
             tk_set_names(tk);
             
             g_hash_table_insert(tb->task_list, &tk->win, tk);
-            DBG("adding %08x(%p) %s\n", tk->win, FBPANEL_WIN(tk->win), tk->name);
+            DBG("adding %08x(%p) %s\n", tk->win,
+                FBPANEL_WIN(tk->win), tk->name);
         }
     }
     
     /* remove windows that arn't in the NET_CLIENT_LIST anymore */
-    g_hash_table_foreach_remove(tb->task_list, (GHRFunc) task_remove_stale, NULL);
+    g_hash_table_foreach_remove(tb->task_list, (GHRFunc) task_remove_stale,
+        NULL);
     tb_display(tb);
     RET();
 }
@@ -1382,6 +1385,7 @@ taskbar_destructor(plugin_instance *p)
     taskbar_priv *tb = (taskbar_priv *) p;
     
     ENTER;
+    gdk_window_remove_filter(NULL, (GdkFilterFunc)tb_event_filter, tb);
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev),
             tb_net_current_desktop, tb);
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev),
@@ -1390,10 +1394,12 @@ taskbar_destructor(plugin_instance *p)
             tb_net_number_of_desktops, tb);
     g_signal_handlers_disconnect_by_func(G_OBJECT (fbev),
             tb_net_client_list, tb);   
-    gdk_window_remove_filter(NULL, (GdkFilterFunc)tb_event_filter, tb );
+  
     g_hash_table_foreach_remove(tb->task_list, (GHRFunc) task_remove_every,
             NULL);
     g_hash_table_destroy(tb->task_list);
+    if (tb->wins)
+        XFree(tb->wins);
     gtk_widget_destroy(tb->bar);
     gtk_widget_destroy(tb->menu);
     DBG("alloc_no=%d\n", tb->alloc_no);
