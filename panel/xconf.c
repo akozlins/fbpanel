@@ -294,3 +294,18 @@ void xconf_save_to_file(gchar *fname, xconf *xc)
     }
 }
  
+xconf *xconf_dup(xconf *xc)
+{
+    xconf *ret, *son;
+    GSList *s;
+
+    if (!xc)
+        return NULL;
+    ret = xconf_new(xc->name, xc->value);
+    for (s = xc->sons; s; s = g_slist_next(s))
+    {
+        son = s->data;
+        xconf_append(ret, xconf_dup(son));
+    }
+    return ret;
+}
