@@ -1,7 +1,7 @@
 include %%topdir%%/config.mk
 
 SRCS = panel.c misc.c plugin.c gtkbar.c bg.c gtkbgbox.c ev.c
-SRCS += xconf.c
+SRCS += xconf.c run.c
 #SRCS += configurator.c 
 
 BINTARGET = fbpanel
