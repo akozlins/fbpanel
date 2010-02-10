@@ -155,6 +155,47 @@ gconf_edit_enum(gconf_block *b, xconf *xc, xconf_enum *e)
 }
 
 /*********************************************************
+ * Edit boolean
+ *********************************************************/
+static void
+gconf_edit_bool_cb(GtkComboBox *w, xconf *xc)
+{
+    int i;
+    
+    i = gtk_combo_box_get_active(w);
+    DBG2("%s=%d\n", xc->name, i);
+    xconf_set_enum(xc, i, g_object_get_data(G_OBJECT(w), "enum"));
+}
+
+GtkWidget *
+gconf_edit_boolean(gconf_block *b, xconf *xc, xconf_enum *e)
+{
+    gint i = 0;
+    GtkWidget *w;
+
+    xconf_get_enum(xc, &i, bool_enum);
+
+    w = gtk_combo_box_new_text();
+    g_object_set_data(G_OBJECT(w), "enum", e);
+    while (e && e->str)
+    {
+        gtk_combo_box_insert_text(GTK_COMBO_BOX(w), e->num,
+            e->desc ? e->desc : e->str);
+        e++;
+    }
+    gtk_combo_box_set_active(GTK_COMBO_BOX(w), i);
+    g_signal_connect(G_OBJECT(w), "changed",
+        G_CALLBACK(gconf_edit_bool_cb), xc);
+    if (b && b->cb)
+    {
+        g_signal_connect_swapped(G_OBJECT(w), "changed",
+            G_CALLBACK(b->cb), b);
+    }
+
+    return w;
+}
+
+/*********************************************************
  * panel geometry
  *********************************************************/
 static void
