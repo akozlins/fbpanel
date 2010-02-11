@@ -26,6 +26,7 @@ typedef struct
 } gconf_block;
 
 
+static gconf_block *gl_block;
 static gconf_block *geom_block;
 
 
@@ -50,6 +51,14 @@ gconf_block_new(GCallback cb, gpointer data)
 
     b->sgr = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
     return b;
+}
+
+void
+gconf_block_free(gconf_block *b)
+{
+    g_object_unref(b->sgr);
+    g_slist_free(b->rows);
+    g_free(b);
 }
 
 void
@@ -196,6 +205,70 @@ gconf_edit_boolean(gconf_block *b, xconf *xc, xconf_enum *e)
 }
 
 /*********************************************************
+ * panel effects
+ *********************************************************/
+static void
+effects_changed(gconf_block *b)
+{
+    //int i, j;
+    
+    ENTER;
+    RET();
+}
+    
+static void
+mk_effects_block(xconf *xc)
+{
+    GtkWidget *w;
+    
+    ENTER;
+
+    /* label */
+    w = gtk_label_new(NULL);
+    gtk_misc_set_alignment(GTK_MISC(w), 0, 0.5);
+    gtk_label_set_markup(GTK_LABEL(w), "<b>Visual Effects</b>");
+    gconf_block_add(gl_block, w, TRUE);
+
+    /* geometry */
+    effects_changed(NULL);
+        
+    /* empty row */
+    gconf_block_add(gl_block, gtk_label_new(" "), TRUE);
+}
+
+/*********************************************************
+ * panel properties
+ *********************************************************/
+static void
+prop_changed(gconf_block *b)
+{
+    //int i, j;
+    
+    ENTER;
+    RET();
+}
+    
+static void
+mk_prop_block(xconf *xc)
+{
+    GtkWidget *w;
+    
+    ENTER;
+
+    /* label */
+    w = gtk_label_new(NULL);
+    gtk_misc_set_alignment(GTK_MISC(w), 0, 0.5);
+    gtk_label_set_markup(GTK_LABEL(w), "<b>Properties</b>");
+    gconf_block_add(gl_block, w, TRUE);
+
+    /* geometry */
+    prop_changed(NULL);
+        
+    /* empty row */
+    gconf_block_add(gl_block, gtk_label_new(" "), TRUE);
+}
+
+/*********************************************************
  * panel geometry
  *********************************************************/
 static void
@@ -217,13 +290,20 @@ geom_changed(gconf_block *b)
     RET();
 }
     
-static GtkWidget *
-mk_tab_global(xconf *xc)
+static void
+mk_geom_block(xconf *xc)
 {
-    GtkWidget *w, *page;
+    GtkWidget *w;
     
     ENTER;
-    page = gtk_vbox_new(FALSE, 1);
+
+    /* label */
+    w = gtk_label_new(NULL);
+    gtk_misc_set_alignment(GTK_MISC(w), 0, 0.5);
+    gtk_label_set_markup(GTK_LABEL(w), "<b>Geometry</b>");
+    gconf_block_add(gl_block, w, TRUE);
+
+    /* geometry */
     geom_block = gconf_block_new((GCallback)geom_changed, xc);
     
     w = gconf_edit_int(geom_block, xconf_get(xc, "width"), 0, 300);
@@ -252,19 +332,56 @@ mk_tab_global(xconf *xc)
     allign_opt = w;
     
     w = gconf_edit_int(geom_block, xconf_get(xc, "margin"), 0, 300);
-    gconf_block_add(geom_block, gtk_label_new("Margin"), TRUE);
+    gconf_block_add(geom_block, gtk_label_new("Margin"), FALSE);
     gconf_block_add(geom_block, w, FALSE);
     margin_spin = w;
+
+    gconf_block_add(gl_block, geom_block->main, TRUE);
+
+    /* empty row */
+    gconf_block_add(gl_block, gtk_label_new(" "), TRUE);
+}
+ 
+static GtkWidget *
+mk_tab_global(xconf *xc)
+{
+    GtkWidget *page;
     
-    gtk_box_pack_start(GTK_BOX (page), geom_block->main, FALSE, TRUE, 0);
+    ENTER;
+    page = gtk_vbox_new(FALSE, 1);
+    gl_block = gconf_block_new(NULL, NULL);
+    gtk_box_pack_start(GTK_BOX(page), gl_block->main, FALSE, TRUE, 0);
+
+    mk_geom_block(xc);
+    mk_prop_block(xc);
+    mk_effects_block(xc);
+    
     gtk_widget_show_all(page);
     geom_changed(geom_block);
+    
     RET(page);
 }
+
 static void
-dialog_response_event(GtkDialog *dialog, gint rid, xconf *xc)
+dialog_response_event(GtkDialog *_dialog, gint rid, xconf *xc)
 {
-    xconf_prn(stdout, xconf_get(xc, "global"), 0, FALSE);
+    ENTER;
+    if (rid == GTK_RESPONSE_APPLY ||
+        rid == GTK_RESPONSE_OK)
+    {
+        DBG2("apply changes\n");
+        xconf_prn(stdout, xconf_get(xc, "global"), 0, FALSE);
+    }
+    if (rid == GTK_RESPONSE_DELETE_EVENT ||
+        rid == GTK_RESPONSE_CLOSE ||
+        rid == GTK_RESPONSE_OK)
+    {
+        gtk_widget_destroy(dialog);
+        dialog = NULL;
+        gconf_block_free(geom_block);
+        gconf_block_free(gl_block);
+    }
+    RET();
 }
 
 static GtkWidget *
@@ -278,11 +395,15 @@ mk_dialog(xconf *xc)
     //name = g_strdup_printf("fbpanel settings: <%s> profile", cprofile);
     name = g_strdup_printf("fbpanel settings: profile");
     dialog = gtk_dialog_new_with_buttons (name,
-          NULL,
-          GTK_DIALOG_NO_SEPARATOR, //GTK_DIALOG_DESTROY_WITH_PARENT,
-          GTK_STOCK_CLOSE,
-          GTK_RESPONSE_CLOSE,
-          NULL);
+        NULL,
+        GTK_DIALOG_NO_SEPARATOR, //GTK_DIALOG_DESTROY_WITH_PARENT,
+        GTK_STOCK_APPLY,
+        GTK_RESPONSE_APPLY,
+        GTK_STOCK_OK,
+        GTK_RESPONSE_OK,
+        GTK_STOCK_CLOSE,
+        GTK_RESPONSE_CLOSE,
+        NULL);
     g_free(name);
     DBG("connecting sugnal to %p\n",  dialog);
 

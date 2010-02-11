@@ -158,6 +158,7 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
             if (p->transparent) 
                 fb_bg_notify_changed_bg(p->bg);           
         } else if (at == a_NET_DESKTOP_GEOMETRY) {
+            DBG("a_NET_DESKTOP_GEOMETRY\n");
             gtk_main_quit();
         } else
             RET(GDK_FILTER_CONTINUE);
