@@ -1,7 +1,7 @@
 
 #include "gconf.h"
 
-#define DEBUGPRN
+//#define DEBUGPRN
 #include "dbg.h"
 
 static GtkWidget *dialog;
@@ -192,7 +192,7 @@ dialog_response_event(GtkDialog *_dialog, gint rid, xconf *xc)
     if (rid == GTK_RESPONSE_APPLY ||
         rid == GTK_RESPONSE_OK)
     {
-        DBG2("apply changes\n");
+        DBG("apply changes\n");
         xconf_prn(stdout, xconf_get(xc, "global"), 0, FALSE);
     }
     if (rid == GTK_RESPONSE_DELETE_EVENT ||

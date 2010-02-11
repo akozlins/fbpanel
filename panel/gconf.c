@@ -1,7 +1,7 @@
 
 #include "gconf.h"
 
-#define DEBUGPRN
+//#define DEBUGPRN
 #include "dbg.h"
 
 #define INDENT_SIZE 20
@@ -58,7 +58,7 @@ gconf_block_add(gconf_block *b, GtkWidget *w, gboolean new_row)
         /* allign first elem */
         if (GTK_IS_MISC(w))
         {
-            DBG2("misc \n");
+            DBG("misc \n");
             gtk_misc_set_alignment(GTK_MISC(w), 0, 0.5);
             gtk_size_group_add_widget(b->sgr, w);
         }
@@ -108,7 +108,7 @@ gconf_edit_enum_cb(GtkComboBox *w, xconf *xc)
     int i;
     
     i = gtk_combo_box_get_active(w);
-    DBG2("%s=%d\n", xc->name, i);
+    DBG("%s=%d\n", xc->name, i);
     xconf_set_enum(xc, i, g_object_get_data(G_OBJECT(w), "enum"));
 }
 
@@ -149,7 +149,7 @@ gconf_edit_bool_cb(GtkToggleButton *w, xconf *xc)
     int i;
     
     i = gtk_toggle_button_get_active(w);
-    DBG2("%s=%d\n", xc->name, i);
+    DBG("%s=%d\n", xc->name, i);
     xconf_set_enum(xc, i, bool_enum);
 }
 
