@@ -13,6 +13,8 @@ static gconf_block *gl_block;
 static gconf_block *geom_block;
 static gconf_block *prop_block;
 static gconf_block *effects_block;
+static gconf_block *color_block;
+static gconf_block *corner_block;
 
 /*********************************************************
  * panel effects
@@ -20,12 +22,17 @@ static gconf_block *effects_block;
 static void
 effects_changed(gconf_block *b)
 {
-    //int i, j;
+    int i;
     
     ENTER;
+    XCG(b->data, "transparent", &i, enum, bool_enum);
+    gtk_widget_set_sensitive(color_block->main, i);
+    XCG(b->data, "roundcorners", &i, enum, bool_enum);
+    gtk_widget_set_sensitive(corner_block->main, i);
     RET();
 }
-    
+
+
 static void
 mk_effects_block(xconf *xc)
 {
@@ -39,16 +46,34 @@ mk_effects_block(xconf *xc)
     gtk_label_set_markup(GTK_LABEL(w), "<b>Visual Effects</b>");
     gconf_block_add(gl_block, w, TRUE);
 
-    /* geometry */
+    /* effects */
     effects_block = gconf_block_new((GCallback)effects_changed, xc);
-    
+
+    /* transparency */
     w = gconf_edit_boolean(effects_block, xconf_get(xc, "transparent"),
         "Transparency");
     gconf_block_add(effects_block, w, TRUE);
 
+    color_block = gconf_block_new(NULL, NULL);
+    w = gtk_label_new("Color settings");
+    gconf_block_add(color_block, w, TRUE);
+    w = gconf_edit_color(color_block, xconf_get(xc, "tintcolor"),
+        xconf_get(xc, "alpha"));
+    gconf_block_add(color_block, w, FALSE);
+    
+    gconf_block_add(effects_block, color_block->main, TRUE);
+
+    /* round corners */
     w = gconf_edit_boolean(effects_block, xconf_get(xc, "roundcorners"),
         "Round corners");
     gconf_block_add(effects_block, w, TRUE);
+
+    corner_block = gconf_block_new(NULL, NULL);
+    w = gtk_label_new("Radius ");
+    gconf_block_add(corner_block, w, TRUE);
+    w = gconf_edit_int(geom_block, xconf_get(xc, "roundcornersradius"), 0, 30);
+    gconf_block_add(corner_block, w, FALSE);    
+    gconf_block_add(effects_block, corner_block->main, TRUE);
     
     gconf_block_add(gl_block, effects_block->main, TRUE);
     
@@ -150,7 +175,7 @@ mk_geom_block(xconf *xc)
 
     w = gconf_edit_enum(geom_block, xconf_get(xc, "allign"),
         allign_enum);
-    gconf_block_add(geom_block, gtk_label_new("Allign"), TRUE);
+    gconf_block_add(geom_block, gtk_label_new("Allignment"), TRUE);
     gconf_block_add(geom_block, w, FALSE);
     allign_opt = w;
     
@@ -181,7 +206,7 @@ mk_tab_global(xconf *xc)
     
     gtk_widget_show_all(page);
     geom_changed(geom_block);
-    
+    effects_changed(effects_block);
     RET(page);
 }
 

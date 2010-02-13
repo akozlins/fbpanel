@@ -24,6 +24,7 @@ void xconf_append_sons(xconf *parent, xconf *son);
 void xconf_unlink(xconf *x);
 void xconf_del(xconf *x, gboolean sons_only);
 void xconf_set_value(xconf *x, gchar *value);
+void xconf_set_value_ref(xconf *x, gchar *value);
 gchar *xconf_get_value(xconf *x);
 void xconf_prn(FILE *fp, xconf *x, int n, gboolean sons_only);
 xconf *xconf_find(xconf *x, gchar *name, int no);

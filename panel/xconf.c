@@ -99,6 +99,14 @@ void xconf_set_value(xconf *x, gchar *value)
   
 }
 
+void xconf_set_value_ref(xconf *x, gchar *value)
+{
+    xconf_del(x, TRUE);
+    g_free(x->value);
+    x->value = value;
+  
+}
+
 void xconf_set_int(xconf *x, int i)
 {
     xconf_del(x, TRUE);

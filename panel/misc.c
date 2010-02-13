@@ -11,6 +11,9 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <glib.h>
+#include <glib/gprintf.h>
+
 #include "misc.h"
 #include "gtkbgbox.h"
 
@@ -672,6 +675,14 @@ gcolor2rgb24(GdkColor *color)
     RET(i);
 }
 
+gchar *
+gdk_color_to_RRGGBB(GdkColor *color)
+{
+    static gchar str[10]; // #RRGGBB + \0
+    g_sprintf(str, "#%02x%02x%02x",
+        color->red >> 8, color->green >> 8, color->blue >> 8);
+    return str;
+}
 
 void
 menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *widget)

@@ -1,5 +1,6 @@
 
 #include "gconf.h"
+#include "misc.h"
 
 //#define DEBUGPRN
 #include "dbg.h"
@@ -168,6 +169,60 @@ gconf_edit_boolean(gconf_block *b, xconf *xc, gchar *text)
     if (b && b->cb)
     {
         g_signal_connect_swapped(G_OBJECT(w), "toggled",
+            G_CALLBACK(b->cb), b);
+    }
+
+    return w;
+}
+
+
+/*********************************************************
+ * Edit color
+ *********************************************************/
+static void
+gconf_edit_color_cb(GtkColorButton *w, xconf *xc)
+{
+    GdkColor c;
+    xconf *xc_alpha;
+    
+    gtk_color_button_get_color(GTK_COLOR_BUTTON(w), &c);
+    xconf_set_value(xc, gdk_color_to_RRGGBB(&c));
+    if ((xc_alpha = g_object_get_data(G_OBJECT(w), "alpha")))
+    {
+        guint16 a = gtk_color_button_get_alpha(GTK_COLOR_BUTTON(w));
+        a >>= 8;
+        xconf_set_int(xc_alpha, (int) a);
+    }
+}
+
+GtkWidget *
+gconf_edit_color(gconf_block *b, xconf *xc_color, xconf *xc_alpha)
+{
+   
+    GtkWidget *w;
+    GdkColor c;
+
+    gdk_color_parse(xconf_get_value(xc_color), &c);
+  
+    w = gtk_color_button_new();
+    gtk_color_button_set_color(GTK_COLOR_BUTTON(w), &c);
+    if (xc_alpha)
+    {
+        gint a;
+        
+        xconf_get_int(xc_alpha, &a);
+        a <<= 8; /* scale to 0..FFFF from 0..FF */
+        gtk_color_button_set_alpha(GTK_COLOR_BUTTON(w), (guint16) a);
+        g_object_set_data(G_OBJECT(w), "alpha", xc_alpha);
+    }
+    gtk_color_button_set_use_alpha(GTK_COLOR_BUTTON(w),
+        xc_alpha != NULL);
+    
+    g_signal_connect(G_OBJECT(w), "color-set",
+        G_CALLBACK(gconf_edit_color_cb), xc_color);
+    if (b && b->cb)
+    {
+        g_signal_connect_swapped(G_OBJECT(w), "color-set",
             G_CALLBACK(b->cb), b);
     }
 

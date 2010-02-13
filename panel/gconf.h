@@ -22,5 +22,6 @@ void gconf_block_add(gconf_block *b, GtkWidget *w, gboolean new_row);
 GtkWidget *gconf_edit_int(gconf_block *b, xconf *xc, int min, int max);
 GtkWidget *gconf_edit_enum(gconf_block *b, xconf *xc, xconf_enum *e);
 GtkWidget *gconf_edit_boolean(gconf_block *b, xconf *xc, gchar *text);
+GtkWidget *gconf_edit_color(gconf_block *b, xconf *xc_color, xconf *xc_alpha);
 
 #endif

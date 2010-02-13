@@ -33,7 +33,7 @@ gchar *expand_tilda(gchar *file);
 
 void get_button_spacing(GtkRequisition *req, GtkContainer *parent, gchar *name);
 guint32 gcolor2rgb24(GdkColor *color);
-
+gchar *gdk_color_to_RRGGBB(GdkColor *color);
 
 GdkPixbuf *fb_pixbuf_new(gchar *iname, gchar *fname, int width, int height, 
         gboolean use_fallback);
