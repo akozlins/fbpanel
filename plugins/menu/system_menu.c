@@ -187,7 +187,7 @@ out:
 }
 
 static int
-xconf_cmp(gpointer a, gpointer b)
+xconf_cmp_names(gpointer a, gpointer b)
 {
     xconf *aa = a, *bb = b;
     gchar *s1 = NULL, *s2 = NULL;
@@ -247,11 +247,11 @@ retry:
     }
     
     /* Sort  */
-    xc->sons = g_slist_sort(xc->sons, (GCompareFunc) xconf_cmp);
+    xc->sons = g_slist_sort(xc->sons, (GCompareFunc) xconf_cmp_names);
     for (w = xc->sons; w; w = g_slist_next(w))
     {
         tmp = w->data;
-        tmp->sons = g_slist_sort(tmp->sons, (GCompareFunc) xconf_cmp);
+        tmp->sons = g_slist_sort(tmp->sons, (GCompareFunc) xconf_cmp_names);
     }
     
     g_hash_table_destroy(ht);

@@ -338,7 +338,22 @@ void xconf_save_to_file(gchar *fname, xconf *xc)
         fclose(fp);
     }
 }
- 
+
+void
+xconf_save_to_profile(xconf *xc, gchar *profile)
+{
+    gchar *name;
+
+    if (!profile)
+        profile = xc->name;
+    if (!profile)
+        return;
+    name = g_build_filename(g_get_user_config_dir(),
+        "fbpanel", profile, NULL);
+    xconf_save_to_file(name, xc);
+    g_free(name);
+}
+
 xconf *xconf_dup(xconf *xc)
 {
     xconf *ret, *son;
@@ -353,4 +368,28 @@ xconf *xconf_dup(xconf *xc)
         xconf_append(ret, xconf_dup(son));
     }
     return ret;
+}
+
+gboolean
+xconf_cmp(xconf *a, xconf *b)
+{
+    GSList *as, *bs;
+    
+    if (!(a || b))
+        return FALSE;
+    if (!(a && b))
+        return TRUE;
+    
+    if (g_ascii_strcasecmp(a->name, b->name))
+        return TRUE;
+    
+    if (g_strcmp0(a->value, b->value))
+        return TRUE;
+    for (as = a->sons, bs = b->sons; as || bs;
+         as = g_slist_next(as), bs = g_slist_next(bs))
+    {
+        if (xconf_cmp(as->data, bs->data))
+            return TRUE;
+    }
+    return FALSE;
 }

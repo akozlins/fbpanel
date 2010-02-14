@@ -29,9 +29,10 @@ gchar *xconf_get_value(xconf *x);
 void xconf_prn(FILE *fp, xconf *x, int n, gboolean sons_only);
 xconf *xconf_find(xconf *x, gchar *name, int no);
 xconf *xconf_dup(xconf *xc);
-
+gboolean xconf_cmp(xconf *a, xconf *b);
 xconf *xconf_new_from_file(gchar *fname, gchar *name);
 void xconf_save_to_file(gchar *fname, xconf *xc);
+void xconf_save_to_profile(xconf *xc, gchar *profile);
 
 xconf *xconf_get(xconf *x, gchar *name);
 void xconf_get_int(xconf *x, int *val);

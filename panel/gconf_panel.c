@@ -217,8 +217,16 @@ dialog_response_event(GtkDialog *_dialog, gint rid, xconf *xc)
     if (rid == GTK_RESPONSE_APPLY ||
         rid == GTK_RESPONSE_OK)
     {
+        xconf *oxc;
+        
         DBG("apply changes\n");
         xconf_prn(stdout, xconf_get(xc, "global"), 0, FALSE);
+        oxc = g_object_get_data(G_OBJECT(dialog), "oxc");
+        if (xconf_cmp(xc, oxc))
+        {
+            xconf_save_to_profile(xc, NULL);
+            gtk_main_quit();
+        }
     }
     if (rid == GTK_RESPONSE_DELETE_EVENT ||
         rid == GTK_RESPONSE_CLOSE ||
@@ -228,15 +236,21 @@ dialog_response_event(GtkDialog *_dialog, gint rid, xconf *xc)
         dialog = NULL;
         gconf_block_free(geom_block);
         gconf_block_free(gl_block);
+        gconf_block_free(effects_block);
+        gconf_block_free(color_block);
+        gconf_block_free(corner_block);
+        gconf_block_free(prop_block);
+        xconf_del(xc, FALSE);
     }
     RET();
 }
 
 static GtkWidget *
-mk_dialog(xconf *xc)
+mk_dialog(xconf *oxc)
 {
     GtkWidget *sw, *nb, *label;
     gchar *name;
+    xconf *xc;
     
     ENTER;
     DBG("creating dialog\n");
@@ -255,6 +269,9 @@ mk_dialog(xconf *xc)
     g_free(name);
     DBG("connecting sugnal to %p\n",  dialog);
 
+    xc = xconf_dup(oxc);
+    g_object_set_data(G_OBJECT(dialog), "oxc", oxc);
+    
     g_signal_connect (G_OBJECT(dialog), "response",
         (GCallback) dialog_response_event, xc);
 #if 0    
