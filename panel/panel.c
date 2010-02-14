@@ -748,6 +748,16 @@ do_argv(int argc, char *argv[])
   
 }
 
+gchar *panel_get_profile()
+{
+    return profile;
+}
+
+gchar *panel_get_profile_file()
+{
+    return profile_file;
+}
+
 static void
 ensure_profile()
 {

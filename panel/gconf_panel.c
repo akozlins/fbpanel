@@ -1,5 +1,6 @@
 
 #include "gconf.h"
+#include "panel.h"
 
 //#define DEBUGPRN
 #include "dbg.h"
@@ -33,6 +34,9 @@ effects_changed(gconf_block *b)
     gtk_widget_set_sensitive(color_block->main, i);
     XCG(b->data, "roundcorners", &i, enum, bool_enum);
     gtk_widget_set_sensitive(corner_block->main, i);
+    XCG(b->data, "autohide", &i, enum, bool_enum);
+    gtk_widget_set_sensitive(ah_block->main, i);
+
     RET();
 }
 
@@ -80,6 +84,20 @@ mk_effects_block(xconf *xc)
     w = gtk_label_new("pixels");
     gconf_block_add(corner_block, w, FALSE);
     gconf_block_add(effects_block, corner_block->main, TRUE);
+
+    /* auto hide */
+    w = gconf_edit_boolean(effects_block, xconf_get(xc, "autohide"),
+        "Autohide");
+    gconf_block_add(effects_block, w, TRUE);
+
+    ah_block = gconf_block_new(NULL, NULL, INDENT_2);
+    w = gtk_label_new("Height when hidden is ");
+    gconf_block_add(ah_block, w, TRUE);
+    w = gconf_edit_int(ah_block, xconf_get(xc, "heightwhenhidden"), 0, 10);
+    gconf_block_add(ah_block, w, FALSE);
+    w = gtk_label_new("pixels");
+    gconf_block_add(ah_block, w, FALSE);
+    gconf_block_add(effects_block, ah_block->main, TRUE);
     
     gconf_block_add(gl_block, effects_block->main, TRUE);
     
@@ -98,8 +116,6 @@ prop_changed(gconf_block *b)
     ENTER;
     XCG(b->data, "setlayer", &i, enum, bool_enum);
     gtk_widget_set_sensitive(layer_block->main, i);
-    XCG(b->data, "autohide", &i, enum, bool_enum);
-    gtk_widget_set_sensitive(ah_block->main, i);
     RET();
 }
     
@@ -124,6 +140,10 @@ mk_prop_block(xconf *xc)
         "Do not cover by maximized windows");
     gconf_block_add(prop_block, w, TRUE);
     
+    w = gconf_edit_boolean(prop_block, xconf_get(xc, "setdocktype"),
+        "Set 'Dock' type");
+    gconf_block_add(prop_block, w, TRUE);
+    
     /* set layer */
     w = gconf_edit_boolean(prop_block, xconf_get(xc, "setlayer"),
         "Set stacking layer");
@@ -139,20 +159,7 @@ mk_prop_block(xconf *xc)
     gconf_block_add(layer_block, w, FALSE);
     gconf_block_add(prop_block, layer_block->main, TRUE);
 
-    /* auto hide */
-    w = gconf_edit_boolean(prop_block, xconf_get(xc, "autohide"),
-        "Autohide");
-    gconf_block_add(prop_block, w, TRUE);
-
-    ah_block = gconf_block_new(NULL, NULL, INDENT_2);
-    w = gtk_label_new("Height when hidden is ");
-    gconf_block_add(ah_block, w, TRUE);
-    w = gconf_edit_int(ah_block, xconf_get(xc, "heightwhenhidden"), 0, 10);
-    gconf_block_add(ah_block, w, FALSE);
-    w = gtk_label_new("pixels");
-    gconf_block_add(ah_block, w, FALSE);
-    gconf_block_add(prop_block, ah_block->main, TRUE);
-    
+  
     gconf_block_add(gl_block, prop_block->main, TRUE);
     
     /* empty row */
@@ -257,6 +264,27 @@ mk_tab_global(xconf *xc)
     RET(page);
 }
 
+static GtkWidget *
+mk_tab_profile(xconf *xc)
+{
+    GtkWidget *page, *label;
+    gchar *s1;
+    
+    ENTER;
+    page = gtk_vbox_new(FALSE, 1);
+    gtk_container_set_border_width(GTK_CONTAINER(page), 10);
+    
+    s1 = g_strdup_printf("You're using '<b>%s</b>' profile, stored at\n"
+        "<tt>%s</tt>", panel_get_profile(), panel_get_profile_file());
+    label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(label), s1);
+    gtk_box_pack_start(GTK_BOX(page), label, FALSE, TRUE, 0);
+    g_free(s1);
+    
+    gtk_widget_show_all(page);    
+    RET(page);
+}
+
 static void
 dialog_response_event(GtkDialog *_dialog, gint rid, xconf *xc)
 {
@@ -267,11 +295,10 @@ dialog_response_event(GtkDialog *_dialog, gint rid, xconf *xc)
         xconf *oxc;
         
         DBG("apply changes\n");
-        xconf_prn(stdout, xconf_get(xc, "global"), 0, FALSE);
         oxc = g_object_get_data(G_OBJECT(dialog), "oxc");
         if (xconf_cmp(xc, oxc))
         {
-            xconf_save_to_profile(xc, NULL);
+            xconf_save_to_profile(xc);
             gtk_main_quit();
         }
     }
@@ -339,7 +366,12 @@ mk_dialog(xconf *oxc)
     gtk_container_add (GTK_CONTAINER (GTK_DIALOG(dialog)->vbox), nb);
 
     sw = mk_tab_global(xconf_get(xc, "global"));
-    label = gtk_label_new("General");
+    label = gtk_label_new("Panel");
+    gtk_misc_set_padding(GTK_MISC(label), 4, 1);
+    gtk_notebook_append_page(GTK_NOTEBOOK(nb), sw, label);
+
+    sw = mk_tab_profile(xc);
+    label = gtk_label_new("Profile");
     gtk_misc_set_padding(GTK_MISC(label), 4, 1);
     gtk_notebook_append_page(GTK_NOTEBOOK(nb), sw, label);
 

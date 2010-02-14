@@ -181,4 +181,7 @@ extern FbEv *fbev;
 #define FBPANEL_WIN(win)  gdk_window_lookup(win)
 void panel_set_wm_strut(panel *p);
 
+gchar *panel_get_profile(void);
+gchar *panel_get_profile_file(void);
+
 #endif

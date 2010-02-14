@@ -4,6 +4,7 @@
 #include <ctype.h>
 
 #include "xconf.h"
+#include "panel.h"
 
 //#define DEBUGPRN
 #include "dbg.h"
@@ -340,18 +341,9 @@ void xconf_save_to_file(gchar *fname, xconf *xc)
 }
 
 void
-xconf_save_to_profile(xconf *xc, gchar *profile)
+xconf_save_to_profile(xconf *xc)
 {
-    gchar *name;
-
-    if (!profile)
-        profile = xc->name;
-    if (!profile)
-        return;
-    name = g_build_filename(g_get_user_config_dir(),
-        "fbpanel", profile, NULL);
-    xconf_save_to_file(name, xc);
-    g_free(name);
+    xconf_save_to_file(panel_get_profile_file(), xc);
 }
 
 xconf *xconf_dup(xconf *xc)
