@@ -210,7 +210,8 @@ static int
 chart_constructor(plugin_instance *p)
 {
     chart_priv *c;
-
+    int h, w;
+    
     ENTER;
     /* must be allocated by caller */
     c = (chart_priv *) p;
@@ -218,7 +219,14 @@ chart_constructor(plugin_instance *p)
     c->ticks = NULL;
     c->gc_cpu = NULL;
     c->da = p->pwid;
-    gtk_widget_set_size_request(c->da, 40, 20);
+    h = GTK_WIDGET(p->panel->box)->allocation.height;
+    w = GTK_WIDGET(p->panel->box)->allocation.width;
+    if  (p->panel->orientation == ORIENT_HORIZ)
+        gtk_widget_set_size_request(c->da, h*2, h);
+    else
+        gtk_widget_set_size_request(c->da, w, (gint)((gfloat) w / 2));
+
+    //gtk_widget_set_size_request(c->da, 40, 20);
     //gtk_container_set_border_width (GTK_CONTAINER (p->pwid), 1);
     g_signal_connect (G_OBJECT (p->pwid), "size-allocate",
           G_CALLBACK (chart_size_allocate), (gpointer) c);

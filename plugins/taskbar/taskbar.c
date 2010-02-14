@@ -1368,7 +1368,12 @@ taskbar_constructor(plugin_instance *p)
         if (tb->icons_only)
             tb->task_width_max = tb->iconsize + req.width;
     } else {
-        tb->iconsize = 24;
+        tb->iconsize = GTK_WIDGET(p->panel->box)->allocation.width -
+            req.width;
+        tb->iconsize = MIN(tb->iconsize, 24);
+        if (GTK_WIDGET(p->panel->box)->allocation.width <= 30)
+            tb->icons_only = 1;
+
         tb->task_width_max = tb->iconsize + req.height;
     }
     taskbar_build_gui(p);
