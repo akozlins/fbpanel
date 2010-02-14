@@ -142,7 +142,7 @@ void xconf_prn(FILE *fp, xconf *x, int n, gboolean sons_only)
     if (!sons_only)
     {
         for (i = 0; i < n; i++)
-            printf("    ");
+            fprintf(fp, "    ");
         fprintf(fp, "%s", x->name);
         if (x->value)
             fprintf(fp, " = %s\n", x->value);
@@ -385,11 +385,11 @@ xconf_cmp(xconf *a, xconf *b)
     
     if (g_strcmp0(a->value, b->value))
         return TRUE;
-    for (as = a->sons, bs = b->sons; as || bs;
+    for (as = a->sons, bs = b->sons; as && bs;
          as = g_slist_next(as), bs = g_slist_next(bs))
     {
         if (xconf_cmp(as->data, bs->data))
             return TRUE;
     }
-    return FALSE;
+    return (as != bs);
 }

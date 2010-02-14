@@ -15,7 +15,7 @@ typedef struct
 } gconf_block;
 
 
-gconf_block *gconf_block_new(GCallback cb, gpointer data);
+gconf_block *gconf_block_new(GCallback cb, gpointer data, int indent);
 void gconf_block_free(gconf_block *b);
 void gconf_block_add(gconf_block *b, GtkWidget *w, gboolean new_row);
 

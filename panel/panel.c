@@ -520,7 +520,8 @@ panel_parse_global(xconf *xc)
     p->alpha = 127;
     p->tintcolor_name = "white";
     p->spacing = 0;
-    p->layer = LAYER_NONE;
+    p->setlayer = FALSE;
+    p->layer = LAYER_ABOVE;
   
     /* Read config */
     /* geometry */
@@ -537,6 +538,7 @@ panel_parse_global(xconf *xc)
     XCG(xc, "setpartialstrut", &p->setstrut, enum, bool_enum);
     XCG(xc, "autohide", &p->autohide, enum, bool_enum);
     XCG(xc, "heightwhenhidden", &p->height_when_hidden, int);
+    XCG(xc, "setlayer", &p->setlayer, enum, bool_enum);
     XCG(xc, "layer", &p->layer, enum, layer_enum);
     
     /* effects */

@@ -106,7 +106,6 @@ xconf_enum pos_enum[] = {
     { .num = 0, .str = NULL},
 };
 xconf_enum layer_enum[] = {
-    { .num = LAYER_NONE, .str = "none" },
     { .num = LAYER_ABOVE, .str = "above" },
     { .num = LAYER_BELOW, .str = "below" },
     { .num = 0, .str = NULL},

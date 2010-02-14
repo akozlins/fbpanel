@@ -19,7 +19,7 @@ enum { HEIGHT_PIXEL, HEIGHT_REQUEST };
 enum { ORIENT_HORIZ, ORIENT_VERT };
 enum { POS_NONE, POS_START, POS_END };
 enum { HIDDEN, WAITING, VISIBLE };
-enum { LAYER_NONE, LAYER_ABOVE, LAYER_BELOW };
+enum { LAYER_ABOVE, LAYER_BELOW };
 
 #define PANEL_HEIGHT_DEFAULT  26
 #define PANEL_HEIGHT_MAX      200
@@ -60,7 +60,8 @@ typedef struct _panel
     gint autohide;
     gint ah_far;
     gint layer;
-
+    gint setlayer;
+    
     int ah_dx, ah_dy; // autohide shift for x and y
     int height_when_hidden;
     guint hide_tout;

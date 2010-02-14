@@ -9,7 +9,7 @@
 
 
 gconf_block *
-gconf_block_new(GCallback cb, gpointer data)
+gconf_block_new(GCallback cb, gpointer data, int indent)
 {
     GtkWidget *w;
     gconf_block *b;
@@ -19,9 +19,13 @@ gconf_block_new(GCallback cb, gpointer data)
     b->data = data;
     b->main = gtk_hbox_new(FALSE, 0);
     /* indent */
-    w = gtk_hbox_new(FALSE, 0);
-    gtk_widget_set_size_request(w, INDENT_SIZE, -1);
-    gtk_box_pack_start(GTK_BOX(b->main), w, FALSE, FALSE, 0);
+    if (indent > 0)
+    {
+        w = gtk_hbox_new(FALSE, 0);
+        gtk_widget_set_size_request(w, indent, -1);
+        gtk_box_pack_start(GTK_BOX(b->main), w, FALSE, FALSE, 0);
+    }
+    
     /* area */
     w = gtk_vbox_new(FALSE, 2);
     gtk_box_pack_start(GTK_BOX(b->main), w, FALSE, FALSE, 0);
@@ -88,6 +92,7 @@ gconf_edit_int(gconf_block *b, xconf *xc, int min, int max)
     GtkWidget *w;
 
     xconf_get_int(xc, &i);
+    xconf_set_int(xc, i);
     w = gtk_spin_button_new_with_range((gdouble) min, (gdouble) max, 1);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(w), (gdouble) i);
     g_signal_connect(G_OBJECT(w), "value-changed",
@@ -120,7 +125,7 @@ gconf_edit_enum(gconf_block *b, xconf *xc, xconf_enum *e)
     GtkWidget *w;
 
     xconf_get_enum(xc, &i, e);
-
+    xconf_set_enum(xc, i, e);
     w = gtk_combo_box_new_text();
     g_object_set_data(G_OBJECT(w), "enum", e);
     while (e && e->str)
@@ -161,6 +166,7 @@ gconf_edit_boolean(gconf_block *b, xconf *xc, gchar *text)
     GtkWidget *w;
 
     xconf_get_enum(xc, &i, bool_enum);
+    xconf_set_enum(xc, i, bool_enum);
     w = gtk_check_button_new_with_label(text);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), i);
     
