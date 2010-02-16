@@ -21,6 +21,9 @@ static gconf_block *ah_block;
 
 #define INDENT_2 25
 
+
+GtkWidget *mk_tab_plugins(xconf *xc);
+
 /*********************************************************
  * panel effects
  *********************************************************/
@@ -321,6 +324,13 @@ dialog_response_event(GtkDialog *_dialog, gint rid, xconf *xc)
     RET();
 }
 
+static void
+dialog_cancel(GtkDialog *_dialog, GdkEvent *event, xconf *xc)
+{
+    dialog_response_event(_dialog, GTK_RESPONSE_CLOSE, xc);
+    return FALSE;
+}
+
 static GtkWidget *
 mk_dialog(xconf *oxc)
 {
@@ -350,12 +360,11 @@ mk_dialog(xconf *oxc)
     
     g_signal_connect (G_OBJECT(dialog), "response",
         (GCallback) dialog_response_event, xc);
-#if 0    
-    g_signal_connect (G_OBJECT(dialog), "destroy",
-        (GCallback) dialog_destroy_event, NULL);
+    // g_signal_connect (G_OBJECT(dialog), "destroy",
+    //  (GCallback) dialog_cancel, xc);
     g_signal_connect (G_OBJECT(dialog), "delete_event",
-        (GCallback) dialog_delete_event,  NULL);
-#endif
+        (GCallback) dialog_cancel, xc);
+
     gtk_window_set_modal(GTK_WINDOW(dialog), FALSE);
     gtk_window_set_default_size(GTK_WINDOW(dialog), 400, 500);
     gtk_window_set_icon_from_file(GTK_WINDOW(dialog),
@@ -367,6 +376,11 @@ mk_dialog(xconf *oxc)
 
     sw = mk_tab_global(xconf_get(xc, "global"));
     label = gtk_label_new("Panel");
+    gtk_misc_set_padding(GTK_MISC(label), 4, 1);
+    gtk_notebook_append_page(GTK_NOTEBOOK(nb), sw, label);
+
+    sw = mk_tab_plugins(xc);
+    label = gtk_label_new("Plugins");
     gtk_misc_set_padding(GTK_MISC(label), 4, 1);
     gtk_notebook_append_page(GTK_NOTEBOOK(nb), sw, label);
 
