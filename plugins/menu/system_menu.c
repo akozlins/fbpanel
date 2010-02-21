@@ -3,6 +3,7 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "xconf.h"
 
@@ -32,6 +33,8 @@ static cat_info main_cats[] = {
     { "Utility",    "applications-utilities" },
     { "Development","applications-development" },
 };
+/* menu build time */
+static time_t btime;
 
 static void
 do_app_file(GHashTable *ht, const gchar *file)
@@ -201,14 +204,40 @@ xconf_cmp_names(gpointer a, gpointer b)
     RET(ret);
 }
 
+static gboolean
+dir_changed(const gchar *dir, time_t mtime)
+{
+    struct stat buf;
+
+    DBG2("stat %s\n", dir);
+    if (g_stat(dir, &buf))
+        return FALSE;
+    return (buf.st_mtime > mtime);
+}
+
+gboolean
+systemmenu_changed()
+{
+    const gchar * const * dirs;
+    
+    for (dirs = g_get_system_data_dirs(); *dirs; dirs++)
+        if (dir_changed(*dirs, btime))
+            return TRUE;
+    if (dir_changed(g_get_user_data_dir(), btime))
+        return TRUE;
+    return FALSE;
+}
+
 xconf *
-xconf_new_from_applications()
+xconf_new_from_systemmenu()
 {
     xconf *xc, *mxc, *tmp;
     GSList *w;
     GHashTable *ht;
     int i;
     const gchar * const * dirs;
+
+    btime = time(NULL);
     
     /* Create category menus */
     ht = g_hash_table_new(g_str_hash, g_str_equal);
