@@ -257,7 +257,8 @@ systemmenu_changed()
 {
     const gchar * const * dirs;
     gboolean ret = FALSE;
-
+    gchar *cwd = g_get_current_dir();
+    
     for (dirs = g_get_system_data_dirs(); *dirs && !ret; dirs++)
     {
         g_chdir(*dirs);
@@ -270,7 +271,8 @@ systemmenu_changed()
         g_chdir(g_get_user_data_dir());
         ret = dir_changed(app_dir_name);
     }
-    btime = time(NULL);
+    g_chdir(cwd);
+    g_free(cwd);
     return ret;
 }
 
