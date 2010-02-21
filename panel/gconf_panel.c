@@ -324,7 +324,7 @@ dialog_response_event(GtkDialog *_dialog, gint rid, xconf *xc)
     RET();
 }
 
-static void
+static gboolean
 dialog_cancel(GtkDialog *_dialog, GdkEvent *event, xconf *xc)
 {
     dialog_response_event(_dialog, GTK_RESPONSE_CLOSE, xc);
