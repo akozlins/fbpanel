@@ -20,6 +20,7 @@ typedef struct {
     GtkWidget *menu, *bg;
     int iconsize, paneliconsize;
     xconf *xc;
+    guint tout;
 } menu_priv;
 
 xconf *xconf_new_from_systemmenu();
@@ -227,7 +228,7 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin_instance *p)
         gtk_menu_popup(GTK_MENU(m->menu),
             NULL, NULL, (GtkMenuPositionFunc)menu_pos, widget,
             event->button, event->time);
-        DBG2("systemmenu changed %d\n", systemmenu_changed());
+       
     }
     RET(TRUE);
 }
@@ -270,6 +271,15 @@ make_button(plugin_instance *p, xconf *xc)
     g_free(fname);
 }
 
+static gboolean
+check_system_menu(plugin_instance *p)
+{
+    ENTER;
+    if (systemmenu_changed())
+        menu_create(p);
+    return TRUE;
+}
+
 static int
 menu_constructor(plugin_instance *p)
 {
@@ -282,6 +292,7 @@ menu_constructor(plugin_instance *p)
     g_signal_connect_swapped(G_OBJECT(gtk_icon_theme_get_default()),
         "changed", (GCallback) menu_create, p);
     menu_create(p);
+    m->tout = g_timeout_add(30000, (GSourceFunc) check_system_menu, p);
     RET(1);
 }
 
@@ -292,6 +303,7 @@ menu_destructor(plugin_instance *p)
     menu_priv *m = (menu_priv *) p;
 
     ENTER;
+    g_source_remove(m->tout);
     g_signal_handlers_disconnect_by_func(G_OBJECT(p->pwid),
         my_button_pressed, p);
     g_signal_handlers_disconnect_by_func(G_OBJECT(gtk_icon_theme_get_default()),

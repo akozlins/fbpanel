@@ -205,27 +205,73 @@ xconf_cmp_names(gpointer a, gpointer b)
 }
 
 static gboolean
-dir_changed(const gchar *dir, time_t mtime)
+dir_changed(const gchar *dir)
 {
+    GDir *d = NULL;
+    gchar *cwd;
+    const gchar *name;
+    gboolean ret = FALSE;
     struct stat buf;
-
-    DBG2("stat %s\n", dir);
+    
+    ENTER;
+    DBG("%s\n", dir);
     if (g_stat(dir, &buf))
         return FALSE;
-    return (buf.st_mtime > mtime);
+    DBG("dir=%s ct=%lu mt=%lu\n", dir, buf.st_ctime, buf.st_mtime);
+    if ((ret = buf.st_mtime > btime))
+        return TRUE;
+    
+    cwd = g_get_current_dir();
+    if (g_chdir(dir))
+    {
+        DBG("can't chdir to %s\n", dir);
+        goto out;
+    }
+    if (!(d = g_dir_open(".", 0, NULL)))
+    {
+        ERR("can't open dir %s\n", dir);
+        goto out;
+    }
+    
+    while (!ret && (name = g_dir_read_name(d)))
+    {
+        if (g_file_test(name, G_FILE_TEST_IS_DIR))
+            ret = dir_changed(name);
+        else if (!g_str_has_suffix(name, ".desktop"))
+            continue;
+        else if (g_stat(name, &buf))
+            continue;
+        DBG("name=%s ct=%lu mt=%lu\n", name, buf.st_ctime, buf.st_mtime);
+        ret = buf.st_mtime > btime;
+    }
+out:
+    if (d)
+        g_dir_close(d);
+    g_chdir(cwd);
+    g_free(cwd);
+    RET(ret);
 }
 
 gboolean
 systemmenu_changed()
 {
     const gchar * const * dirs;
-    
-    for (dirs = g_get_system_data_dirs(); *dirs; dirs++)
-        if (dir_changed(*dirs, btime))
-            return TRUE;
-    if (dir_changed(g_get_user_data_dir(), btime))
-        return TRUE;
-    return FALSE;
+    gboolean ret = FALSE;
+
+    for (dirs = g_get_system_data_dirs(); *dirs && !ret; dirs++)
+    {
+        g_chdir(*dirs);
+        ret = dir_changed(app_dir_name);
+    }
+
+    DBG("btime=%lu\n", btime);
+    if (!ret)
+    {
+        g_chdir(g_get_user_data_dir());
+        ret = dir_changed(app_dir_name);
+    }
+    btime = time(NULL);
+    return ret;
 }
 
 xconf *
