@@ -419,6 +419,7 @@ read_application(icons_priv *ics, xconf *xc)
         }
         g_object_unref(gp);
     }
+    g_free(fname);
     RET(1);
   
 error:
