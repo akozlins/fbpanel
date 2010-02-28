@@ -2,5 +2,6 @@ include %%topdir%%/config.mk
 
 SUBDIRS = taskbar launchbar space menu pager mem chart cpu net
 SUBDIRS += systray dclock wincmd icons separator image
+SUBDIRS += deskno
 
 include %%topdir%%/rules.mk
