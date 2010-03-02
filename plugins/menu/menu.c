@@ -307,7 +307,7 @@ menu_destructor(plugin_instance *p)
     g_signal_handlers_disconnect_by_func(G_OBJECT(p->pwid),
         my_button_pressed, p);
     g_signal_handlers_disconnect_by_func(G_OBJECT(gtk_icon_theme_get_default()),
-        menu_destroy, m);
+        menu_create, p);
     menu_destroy(m);
     RET();
 }
