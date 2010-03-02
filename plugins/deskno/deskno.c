@@ -106,7 +106,7 @@ deskno_destructor(plugin_instance *p)
 
   ENTER;
   g_signal_handlers_disconnect_by_func(G_OBJECT(fbev), name_update, dc);
-  g_signal_handlers_disconnect_by_func(G_OBJECT(fbev), clicked, dc); 
+  g_signal_handlers_disconnect_by_func(G_OBJECT(fbev), update, dc); 
   RET();
 }
 
