@@ -89,10 +89,14 @@ do_app_file(GHashTable *ht, const gchar *file)
             dot[0] = dot[1] = ' ';
     }
     DBG("action: %s\n", action);
-    /* if icon is not a absolute path, drop an extenstion (if any)
-     * to allow to load it as themable icon */
-    if (icon && icon[0] != '/' && (dot = strrchr(icon, '.' )))
+    /* if icon is NOT an absolute path but has an extention,
+     * e.g. firefox.png, then drop an extenstion to allow to load it
+     * as themable icon */
+    if (icon && icon[0] != '/' && (dot = strrchr(icon, '.' )) &&
+        !(strcasecmp(dot + 1, "png") && strcasecmp(dot + 1, "svg")))
+    {
         *dot = '\0';
+    }
     DBG("icon: %s\n", icon);
     
     for (mxc = NULL, tmp = cats; *tmp; tmp++) 
