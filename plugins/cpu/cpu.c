@@ -57,10 +57,12 @@ cpu_get_load(cpu_priv *c)
     gchar buf[40];
 
     ENTER;
+    total = 0;
     stat = fopen("/proc/stat", "r");
     if(!stat)
-        RET(TRUE);
-    fscanf(stat, "cpu %lu %lu %lu %lu %lu", &cpu.u, &cpu.n, &cpu.s, &cpu.i, &cpu.w);
+        goto end;
+    fscanf(stat, "cpu %lu %lu %lu %lu %lu", &cpu.u, &cpu.n, &cpu.s,
+        &cpu.i, &cpu.w);
     fclose(stat);
 
     cpu_diff.u = cpu.u - c->cpu_prev.u;
@@ -73,6 +75,8 @@ cpu_get_load(cpu_priv *c)
     a = cpu_diff.u + cpu_diff.n + cpu_diff.s;
     b = a + cpu_diff.i + cpu_diff.w;
     total = b ?  a / b : 1.0;
+    
+end:    
     DBG("total=%f a=%f b=%f\n", total, a, b);
     g_snprintf(buf, sizeof(buf), "<b>Cpu:</b> %d%%", (int)(total * 100));
     gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, buf);

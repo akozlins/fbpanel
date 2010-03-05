@@ -24,6 +24,7 @@
 
 #include "../chart/chart.h"
 #include <stdlib.h>
+#include <string.h>
 
 //#define DEBUGPRN
 #include "dbg.h"
@@ -63,9 +64,11 @@ net_get_load(net_priv *c)
     char buf[256], *s = NULL;
 
     ENTER;
+    memset(&net, 0, sizeof(net));
+    memset(&net_diff, 0, sizeof(net_diff));
     stat = fopen("/proc/net/dev", "r");
     if(!stat)
-        RET(TRUE);
+        goto end;
     fgets(buf, 256, stat);
     fgets(buf, 256, stat);
 
@@ -73,19 +76,21 @@ net_get_load(net_priv *c)
         s = g_strrstr(buf, c->iface);
     fclose(stat);
     if (!s)
-        RET(0);
+        goto end;
     s = g_strrstr(s, ":");     
     if (!s)
-        RET(0);
+        goto end;
     s++;
     if (sscanf(s,
             "%lu  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %lu",
             &net.rx, &net.tx)!= 2) {
         DBG("can't read %s statistics\n", c->iface);
-        RET(0);
+        goto end;
     }
     net_diff.tx = ((net.tx - c->net_prev.tx) >> 10) / CHECK_PERIOD;
     net_diff.rx = ((net.rx - c->net_prev.rx) >> 10) / CHECK_PERIOD;
+end:
+    
     c->net_prev = net;
     total[0] = (float)(net_diff.tx) / c->max;
     total[1] = (float)(net_diff.rx) / c->max;
