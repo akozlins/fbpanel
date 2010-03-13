@@ -14,8 +14,10 @@
 #include "dbg.h"
 
 
-#define DEFAULT_TIP_FORMAT    "%A %x"
-#define DEFAULT_CLOCK_FORMAT  "%R"
+
+#define TOOLTIP_FMT    "%A %x"
+#define CLOCK_24H_FMT  "%R"
+#define CLOCK_12H_FMT  "%I:%M"
 
 typedef struct {
     plugin_instance plugin;
@@ -28,9 +30,6 @@ typedef struct {
     short lastDay;
     int timer;
 } tclock_priv;
-
-//static tclock_priv me;
-
 
 
 static  gboolean
@@ -79,7 +78,6 @@ clock_update(gpointer data )
 static int
 tclock_constructor(plugin_instance *p)
 {
-    line s;
     tclock_priv *dc;
     char output [40] ;
     time_t now ;
@@ -87,36 +85,14 @@ tclock_constructor(plugin_instance *p)
     
     ENTER;
     dc = (tclock_priv *) p;
-    dc->cfmt = dc->tfmt = dc->action = 0;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR( "tclock: illegal token %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "ClockFmt")) 
-                dc->cfmt = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "TooltipFmt"))
-                dc->tfmt = g_strdup(s.t[1]);
-            else if (!g_ascii_strcasecmp(s.t[0], "Action"))
-                dc->action = g_strdup(s.t[1]);
-            else {
-                ERR( "tclock: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        } else {
-            ERR( "tclock: illegal in this context %s\n", s.str);
-            goto error;
-        }
-    }
-    if (!dc->cfmt)
-        dc->cfmt = g_strdup(DEFAULT_CLOCK_FORMAT);
-    if (!dc->tfmt)
-        dc->tfmt = g_strdup(DEFAULT_TIP_FORMAT);
+    dc->cfmt = CLOCK_24H_FMT;
+    dc->tfmt = TOOLTIP_FMT;
+    dc->action = NULL;
+    XCG(p->xc, "TooltipFmt", &dc->tfmt, str);
+    XCG(p->xc, "ClockFmt", &dc->cfmt, str);
+    XCG(p->xc, "Action", &dc->action, str);
+    
     dc->main = gtk_event_box_new();
-    //gtk_widget_add_events (dc->main, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
-    //button = gtk_button_new();
-    //gtk_container_add(GTK_CONTAINER(dc->main), button);
     if (dc->action)
         g_signal_connect (G_OBJECT (dc->main), "button_press_event",
               G_CALLBACK (clicked), (gpointer) dc);
@@ -126,35 +102,24 @@ tclock_constructor(plugin_instance *p)
     dc->clockw = gtk_label_new(output);
     gtk_misc_set_alignment(GTK_MISC(dc->clockw), 0.5, 0.5);
     gtk_misc_set_padding(GTK_MISC(dc->clockw), 4, 0);
-    //gtk_widget_show(dc->clockw);
     gtk_container_add(GTK_CONTAINER(dc->main), dc->clockw);
     gtk_widget_show_all(dc->main);
     dc->timer = g_timeout_add(1000, (GSourceFunc) clock_update, (gpointer)dc);
     gtk_container_add(GTK_CONTAINER(p->pwid), dc->main);
     RET(1);
-
- error:
-    g_free(dc->cfmt);
-    g_free(dc->tfmt);
-    g_free(dc->action);
-    g_free(dc);
-    RET(0);
 }
 
 
 static void
 tclock_destructor(plugin_instance *p)
 {
-  tclock_priv *dc = (tclock_priv *) p;
+    tclock_priv *dc = (tclock_priv *) p;
 
-  ENTER;
-  if (dc->timer)
-      g_source_remove(dc->timer);
-  gtk_widget_destroy(dc->main);
-  g_free(dc->cfmt);
-  g_free(dc->tfmt);
-  g_free(dc->action);
-  RET();
+    ENTER;
+    if (dc->timer)
+        g_source_remove(dc->timer);
+    gtk_widget_destroy(dc->main);
+    RET();
 }
 
 static plugin_class class = {
