@@ -110,7 +110,13 @@ deskno_destructor(plugin_instance *p)
     deskno_priv *dc = (deskno_priv *) p;
     
     ENTER;
-    g_signal_handlers_disconnect_by_func(G_OBJECT(fbev), update_dno, dc); 
+    /* disconnect ALL handlers matching func and data */
+    g_signal_handlers_disconnect_by_func(G_OBJECT(fbev), update_dno, dc);
+    g_signal_handlers_disconnect_by_func(G_OBJECT(fbev), update_all, dc);
+    if (dc->dnames)
+        g_strfreev(dc->dnames);
+    if (dc->lnames)
+        g_strfreev(dc->lnames);
     RET();
 }
 
