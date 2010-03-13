@@ -24,9 +24,11 @@
 //#define DEBUG
 #include "dbg.h"
 
+#define FMT "<span size='%s' foreground='%s'>%s</span>"
+
 typedef struct {
     plugin_instance plugin;
-    guint time;
+    int time;
     int timer;
     int max_text_len;
     char *command;
@@ -34,7 +36,6 @@ typedef struct {
     char *textcolor;
     GtkWidget *main;
 } genmon_priv;
-
 
 static int
 text_update(genmon_priv *gm)
@@ -52,16 +53,15 @@ text_update(genmon_priv *gm)
     if (len >= 0) {
         if (text[len] == '\n')
             text[len] = 0;
-
-        markup = g_markup_printf_escaped ("<span size='%s' foreground='%s'>%s</span>", 
-                gm->textsize, gm->textcolor, text);
+        
+        markup = g_markup_printf_escaped(FMT, gm->textsize, gm->textcolor,
+            text);
         gtk_label_set_markup (GTK_LABEL(gm->main), markup);
         g_free(markup);
     }
     RET(TRUE);
 }
 
-  
 static void
 genmon_destructor(plugin_instance *p)
 {
@@ -71,66 +71,38 @@ genmon_destructor(plugin_instance *p)
     if (gm->timer) {
         g_source_remove(gm->timer);
     }
-    g_free(gm->command);
-    g_free(gm->textsize);
-    g_free(gm->textcolor);
     RET();
 }
-
 
 static int
 genmon_constructor(plugin_instance *p)
 {
     genmon_priv *gm;
-    line s;
 
     ENTER;
     gm = (genmon_priv *) p;
-    while (get_line(p->fp, &s) != LINE_BLOCK_END) {
-        if (s.type == LINE_NONE) {
-            ERR( "genmon-plugin: illegal token %s\n", s.str);
-            goto error;
-        }
-        if (s.type == LINE_VAR) {
-            if (!g_ascii_strcasecmp(s.t[0], "Command")) {
-                gm->command = g_strdup(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "PollingTime")) {
-                gm->time = strtol(s.t[1],NULL,10);
-            } else if (!g_ascii_strcasecmp(s.t[0], "MaxTextLength")) {
-                gm->max_text_len = strtol(s.t[1],NULL,10);
-            } else if (!g_ascii_strcasecmp(s.t[0], "TextSize")) {
-                gm->textsize = g_strdup(s.t[1]);
-            } else if (!g_ascii_strcasecmp(s.t[0], "TextColor")) {
-                gm->textcolor = g_strdup(s.t[1]);
-            } else {
-                ERR( "genmon-plugin: unknown var %s\n", s.t[0]);
-                goto error;
-            }
-        }
-    }
-    if (!gm->time) 
-        gm->time = 1;
-    if (!gm->max_text_len)
-        gm->max_text_len = 30;
-    if (!gm->textsize)
-        gm->textsize = g_strdup("medium");
-    if (!gm->textcolor)
-        gm->textcolor = g_strdup("darkblue");
-    if (!gm->command)
-        gm->command = g_strdup("date +%R");
+    gm->command = "date +%R";
+    gm->time = 1;
+    gm->textsize = "medium";
+    gm->textcolor = "darkblue";
+    gm->max_text_len = 30;
+    
+    XCG(p->xc, "Command", &gm->command, str);
+    XCG(p->xc, "TextSize", &gm->textsize, str);
+    XCG(p->xc, "TextColor", &gm->textcolor, str);
+    XCG(p->xc, "PollingTime", &gm->time, int);
+    XCG(p->xc, "MaxTextLength", &gm->max_text_len, int);
+    
     gm->main = gtk_label_new(NULL);
     gtk_label_set_max_width_chars(GTK_LABEL(gm->main), gm->max_text_len);
     text_update(gm);
     gtk_container_set_border_width (GTK_CONTAINER (p->pwid), 1);
     gtk_container_add(GTK_CONTAINER(p->pwid), gm->main);
     gtk_widget_show_all(p->pwid);
-    gm->timer = g_timeout_add(gm->time*1000, (GSourceFunc) text_update, (gpointer)gm);
+    gm->timer = g_timeout_add((guint) gm->time * 1000,
+        (GSourceFunc) text_update, (gpointer) gm);
     
     RET(1);
-
-error:
-    genmon_destructor(p);
-    RET(0);
 }
 
 
