@@ -174,7 +174,7 @@ Plugin {
             item {
                 name = logout
                 icon = gnome-session-logout
-                action = kill -9 -1
+                action = %%libexecdir%%/fbpanel/xlogout
             }
         }
     }

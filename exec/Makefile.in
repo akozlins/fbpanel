@@ -1,6 +1,6 @@
 include %%topdir%%/config.mk
 
-TEXT = make_profile
+TEXT = make_profile xlogout
 
 install :
 	$(install) 755 $(LIBEXECDIR)/fbpanel 755 $(TEXT)
