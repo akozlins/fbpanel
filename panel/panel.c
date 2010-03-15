@@ -27,6 +27,7 @@ guint hpid; // hide panel thread id
 
 FbEv *fbev;
 gint force_quit = 0;
+int config;
 
 //#define DEBUGPRN
 #include "dbg.h"
@@ -729,7 +730,7 @@ do_argv(int argc, char *argv[])
                 log_level = atoi(argv[i]);
             }
         } else if (!strcmp(argv[i], "--configure") || !strcmp(argv[i], "-C")) {
-            //config = 1;
+            config = 1;
         } else if (!strcmp(argv[i], "--profile") || !strcmp(argv[i], "-p")) {
             i++;
             if (i == argc) {
@@ -805,6 +806,8 @@ main(int argc, char *argv[])
             exit(1);
 
         panel_start(p->xc);
+        if (config)
+            configure(p->xc);
         gtk_main();
         panel_stop(p);
         //xconf_save_to_profile(cprofile, xc);
