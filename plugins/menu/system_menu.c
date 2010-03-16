@@ -110,8 +110,11 @@ do_app_file(GHashTable *ht, const gchar *file)
     
     ixc = xconf_new("item", NULL);
     xconf_append(mxc, ixc);
-    vxc = xconf_new((icon[0] == '/') ? "image" : "icon", icon);
-    xconf_append(ixc, vxc);
+    if (icon)
+    {
+        vxc = xconf_new((icon[0] == '/') ? "image" : "icon", icon);
+        xconf_append(ixc, vxc);
+    }
     vxc = xconf_new("name", name);
     xconf_append(ixc, vxc);
     vxc = xconf_new("action", action);
