@@ -20,12 +20,26 @@
 #define TOOLTIP_FMT    "%A %x"
 #define CLOCK_24H_FMT  "%R"
 #define CLOCK_12H_FMT  "%I:%M"
+
+#define CLOCK_24H_FMT     "%R"
+#define CLOCK_24H_SEC_FMT "%T"
+#define CLOCK_12H_FMT     "%I:%M"
+#define CLOCK_12H_SEC_FMT "%I:%M:%S"
+
 #define COLON_WIDTH   7
 #define DIGIT_WIDTH   11
 #define DIGIT_HEIGHT  15
 #define DIGIT_PAD_H   1
 #define COLON_PAD_H   3
 #define STR_SIZE  64
+
+enum { DC_24H, DC_12H };
+
+xconf_enum hours_view_enum[] = {
+    { .num = DC_24H, .str = "24" },
+    { .num = DC_12H, .str = "12" },
+    { .num = 0, .str = NULL },
+};
 
 typedef struct
 {
@@ -39,6 +53,8 @@ typedef struct
     GdkPixbuf *glyphs; //vert row of '0'-'9' and ':'
     GdkPixbuf *clock;
     guint32 color;
+    gboolean show_seconds;
+    gboolean hours_view;
 } dclock_priv;
 
 //static dclock_priv me;
@@ -211,6 +227,7 @@ dclock_constructor(plugin_instance *p)
 {
     gchar *color_str;
     dclock_priv *dc;
+    int width;
     
     ENTER;
     DBG("dclock: use 'tclock' plugin for text version of a time and date\n");
@@ -219,36 +236,46 @@ dclock_constructor(plugin_instance *p)
     if (!dc->glyphs)
         RET(0);
 
-    dc->clock = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8,
-          COLON_WIDTH + 4 * DIGIT_WIDTH, DIGIT_HEIGHT + DIGIT_PAD_H);
-    gdk_pixbuf_fill(dc->clock, 0);
-    dc->cfmt = CLOCK_24H_FMT;
+    dc->cfmt = NULL;
     dc->tfmt = TOOLTIP_FMT;
     dc->action = NULL;
     dc->color = 0xff000000;
+    dc->show_seconds = FALSE;
+    dc->hours_view = DC_24H;
     color_str = NULL;
     XCG(p->xc, "TooltipFmt", &dc->tfmt, str);
     XCG(p->xc, "ClockFmt", &dc->cfmt, str);
+    XCG(p->xc, "ShowSeconds", &dc->show_seconds, enum, bool_enum);
+    XCG(p->xc, "HoursView", &dc->hours_view, enum, hours_view_enum);
     XCG(p->xc, "Action", &dc->action, str);
     XCG(p->xc, "Color", &color_str, str);
+    if (dc->cfmt)
+    {
+        ERR("dclock: ClockFmt option is deprecated. Please use\n"
+            "following options instead\n"
+            "  ShowSeconds = false | true\n"
+            "  HoursView = 12 | 24\n");
+        xconf_del(xconf_get(p->xc, "ClockFmt"), FALSE);
+        dc->cfmt = NULL;
+    }
     if (color_str)
     {
         GdkColor color;
         if (gdk_color_parse (color_str, &color)) 
             dc->color = gcolor2rgb24(&color);
     }
-    if (strcmp(dc->cfmt, CLOCK_12H_FMT) &&
-        strcmp(dc->cfmt, CLOCK_24H_FMT))
-    {
-        ERR("dclock: your ClockFmt \"%s\" is not supported.\n", dc->cfmt);
-        ERR("dclock: Please use \"%s\" or \"%s\"\n", 
-            CLOCK_12H_FMT, CLOCK_24H_FMT);
-        ERR("dclock: reseting to %s\n", CLOCK_24H_FMT);
-        dc->cfmt = CLOCK_24H_FMT;
-    }
-    
+    if (dc->hours_view == DC_24H)
+        dc->cfmt = (dc->show_seconds) ? CLOCK_24H_SEC_FMT : CLOCK_24H_FMT;
+    else
+        dc->cfmt = (dc->show_seconds) ? CLOCK_12H_SEC_FMT : CLOCK_12H_FMT;
     if (dc->color != 0xff000000)
         dclock_set_color(dc->glyphs, dc->color);
+    width = COLON_WIDTH + 4 * DIGIT_WIDTH;
+    if (dc->show_seconds)
+        width += COLON_WIDTH + 2 * DIGIT_WIDTH;
+    dc->clock = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8,
+        width, DIGIT_HEIGHT + DIGIT_PAD_H);
+    gdk_pixbuf_fill(dc->clock, 0);
     dc->main = gtk_image_new_from_pixbuf(dc->clock);
     gtk_misc_set_alignment(GTK_MISC(dc->main), 0.5, 0.5);
     gtk_misc_set_padding(GTK_MISC(dc->main), 4, 0);
