@@ -58,13 +58,15 @@ INS = $(TINS:.in=)
 ######################################################
 ## Compilation rules
 
+export EXTRA_DEPS += $(CURDIR)/Makefile
+#$(warning "EXTRA_DEPS=$(EXTRA_DEPS)")	    
 # SRCS - list of C source files to compile
 ifneq (,$(SRCS))
 OBJS += $(SRCS:.c=.o)
 DEPS +=$(SRCS:.c=.d)
 CLEANLIST += $(SRCS:.c=.o) $(SRCS:.c=.d)
+$(OBJS) : $(EXTRA_DEPS)
 endif
-
 
 
 %.o : %.c
