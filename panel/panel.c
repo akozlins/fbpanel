@@ -483,7 +483,15 @@ panel_start_gui(panel *p)
     }
     /* window mapping point */
     gtk_widget_show_all(p->topgwin);
-    gtk_widget_hide(p->topgwin);
+    /* If window position is (0, 0), then it will get its size right from
+     * beginning and no additional configure events will happen. Hence, the
+     * event handler, that calls matching gtk_widget_show, will never run and
+     * window will remain unmapped. So don't hide it */
+    if (p->ax || p->ay)
+        /* hide window until size and position negotiation is done to prevent
+         * multiple background redraw and flickering */
+        gtk_widget_hide(p->topgwin);
+
 
     /* the settings that should be done after window is mapped */
     if (p->autohide) 
