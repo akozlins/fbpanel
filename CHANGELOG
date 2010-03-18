@@ -5,15 +5,17 @@
 * GUI configurator code was reworked
 * common API to run external programs was added
 * new configuration system - xconf - was introduced
-* adding png icons for reboot and shutdown. they may be missing in some icon themes.
+* adding png icons for reboot and shutdown. They may be missing in
+  some icon themes.
 * all svg icons were removed
 * automatic profile created
 * profile dir now is ~/.config/fbpanel
 * show calendar as default action in dclock
 * introducing mem usage plugin
 * fixed 'toggle iconfig all' algorithm
-* Fixed "2891558: widthtype=request does not work"
-
+* 2863566: Allow seconds in dclock plugin
+* 2972256: rebuild code upon makefile changes
+* 2965428: fbpanel dissapears when configuring via GUI
 
 5.8
 * moving config dir ~/.config
