@@ -183,10 +183,12 @@ geom_changed(gconf_block *b)
     i = gtk_combo_box_get_active(GTK_COMBO_BOX(width_opt));
     gtk_widget_set_sensitive(width_spin, (i != WIDTH_REQUEST));
     if (i == WIDTH_PERCENT)
-    {
-        j = (int) gtk_spin_button_get_value(GTK_SPIN_BUTTON(width_spin));
-        if (j > 100)
-            gtk_spin_button_set_value(GTK_SPIN_BUTTON(width_spin), 100);
+        gtk_spin_button_set_range(GTK_SPIN_BUTTON(width_spin), 0, 100);
+    else if (i == WIDTH_PIXEL) {
+        XCG(b->data, "edge", &j, enum, edge_enum);
+        gtk_spin_button_set_range(GTK_SPIN_BUTTON(width_spin), 0,
+            (j == EDGE_RIGHT || j == EDGE_LEFT)
+            ? gdk_screen_height() : gdk_screen_width());
     }
     RET();
 }
@@ -207,7 +209,7 @@ mk_geom_block(xconf *xc)
     /* geometry */
     geom_block = gconf_block_new((GCallback)geom_changed, xc, 10);
     
-    w = gconf_edit_int(geom_block, xconf_get(xc, "width"), 0, 300);
+    w = gconf_edit_int(geom_block, xconf_get(xc, "width"), 0, 2300);
     gconf_block_add(geom_block, gtk_label_new("Width"), TRUE);
     gconf_block_add(geom_block, w, FALSE);
     width_spin = w;
@@ -341,7 +343,8 @@ mk_dialog(xconf *oxc)
     ENTER;
     DBG("creating dialog\n");
     //name = g_strdup_printf("fbpanel settings: <%s> profile", cprofile);
-    name = g_strdup_printf("fbpanel settings: profile");
+    name = g_strdup_printf("fbpanel settings: <%s> profile",
+        panel_get_profile());
     dialog = gtk_dialog_new_with_buttons (name,
         NULL,
         GTK_DIALOG_NO_SEPARATOR, //GTK_DIALOG_DESTROY_WITH_PARENT,
