@@ -448,10 +448,16 @@ get_netwm_icon(Window tkwin, int iw, int ih)
     gulong *data;
     GdkPixbuf *ret = NULL;
     int n;
+    guchar *p;
+    GdkPixbuf *src;
+    int w, h;
 
     ENTER;
     data = get_xaproperty(tkwin, a_NET_WM_ICON, XA_CARDINAL, &n);
+    if (!data)
+        RET(NULL);
 
+    /* loop through all icons in data to find best fit */
     if (0) {
         gulong *tmp;
         int len;
@@ -465,31 +471,50 @@ get_netwm_icon(Window tkwin, int iw, int ih)
             tmp += size;
         }
     }
+
+    if (0) {
+        int i, j, nn;
     
-    if (data) {
-        if (n > 2*sizeof(guint32)) {
-            guchar *p;
-            GdkPixbuf *src;
-            int w, h;
-            
-            w = data[0];
-            h = data[1];
-            DBG("orig  %dx%d dest %dx%d\n", w, h, iw, ih);
-            p = argbdata_to_pixdata(data + 2, w * h);
-            if (!p)
-                RET(NULL);
-            src = gdk_pixbuf_new_from_data (p, GDK_COLORSPACE_RGB, TRUE,
-                  8, w, h, w * 4, free_pixels, NULL);
-            if (src == NULL)
-                RET(NULL);
-            ret = src;
-            if (w != iw || h != ih) {
-                ret = gdk_pixbuf_scale_simple(src, iw, ih, GDK_INTERP_HYPER);
-                g_object_unref(src);
-            }
+        nn = MIN(10, n);
+        p = (guchar *) data;
+        for (i = 0; i < nn; i++) {
+            for (j = 0; j < sizeof(gulong); j++)
+                ERR("%02x ", (guint) p[i*sizeof(gulong) + j]);
+            ERR("\n");
         }
-        XFree (data);
     }
+    
+    /* check that data indeed represents icon in w + h + ARGB[] format
+     * with 16x16 dimension at least */
+    if (n < (16 * 16 + 1 + 1)) {
+        ERR("win %lx: icon is too small or broken (size=%d)\n", tkwin, n);
+        goto out;
+    }
+    w = data[0];
+    h = data[1];
+    /* check that sizes are in 64-256 range */
+    if (w < 16 || w > 256 || h < 16 || h > 256) {
+        ERR("win %lx: icon size (%d, %d) is not in 64-256 range\n",
+            tkwin, w, h);
+        goto out;
+    }
+    
+    DBG("orig  %dx%d dest %dx%d\n", w, h, iw, ih);
+    p = argbdata_to_pixdata(data + 2, w * h);
+    if (!p)
+        goto out;
+    src = gdk_pixbuf_new_from_data (p, GDK_COLORSPACE_RGB, TRUE,
+        8, w, h, w * 4, free_pixels, NULL);
+    if (src == NULL)
+        goto out;
+    ret = src;
+    if (w != iw || h != ih) {
+        ret = gdk_pixbuf_scale_simple(src, iw, ih, GDK_INTERP_HYPER);
+        g_object_unref(src);
+    }
+
+out:
+    XFree(data);
     RET(ret);
 }
 
