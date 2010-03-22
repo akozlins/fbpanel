@@ -16,6 +16,8 @@
 * 2863566: Allow seconds in dclock plugin
 * 2972256: rebuild code upon makefile changes
 * 2965428: fbpanel dissapears when configuring via GUI
+* 2958238: 5.6 has bugs in configure script and fails to load plugins
+* 2953357: Crashes when staring Opera
 
 5.8
 * moving config dir ~/.config
