@@ -9,9 +9,7 @@
   some icon themes.
 * all svg icons were removed
 * automatic profile created
-* profile dir now is ~/.config/fbpanel
 * show calendar as default action in dclock
-* introducing mem usage plugin
 * fixed 'toggle iconfig all' algorithm
 * 2863566: Allow seconds in dclock plugin
 * 2972256: rebuild code upon makefile changes
