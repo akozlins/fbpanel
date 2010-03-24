@@ -59,7 +59,7 @@ function take_system_profile ()
             break
         fi
     done
-    for filer in x-file-manager thunar pcmanfm rox; do
+    for filer in x-file-manager thunar pcmanfm rox nautilus; do
         if which $filer 2> /dev/null > /dev/null; then
             opt="$opt -e s/x-file-manager/$filer/"
             break
