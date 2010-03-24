@@ -317,6 +317,9 @@ get_xaproperty (Window win, Atom prop, Atom type, int *nitems)
               type, &type_ret, &format_ret, &items_ret,
               &after_ret, &prop_data) != Success)
         RET(NULL);
+    DBG("win=%x prop=%d type=%d rtype=%d rformat=%d nitems=%d\n", win, prop,
+            type, type_ret, format_ret, items_ret);
+
     if (nitems)
         *nitems = items_ret;
     RET(prop_data);
