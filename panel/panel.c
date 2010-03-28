@@ -826,6 +826,7 @@ main(int argc, char *argv[])
         DBG("force_quit=%d\n", force_quit);
     } while (force_quit == 0);
     g_free(profile_file);
+    fb_free();
     exit(0);
 }
 

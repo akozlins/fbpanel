@@ -21,6 +21,7 @@ void *get_utf8_property(Window win, Atom atom);
 char **get_utf8_property_list(Window win, Atom atom, int *count);
 
 void fb_init(void);
+void fb_free(void);
 //Window Select_Window(Display *dpy);
 guint get_net_number_of_desktops();
 guint get_net_current_desktop ();

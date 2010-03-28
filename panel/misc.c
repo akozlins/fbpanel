@@ -193,6 +193,11 @@ void fb_init()
     icon_theme = gtk_icon_theme_get_default();
 }
 
+void fb_free()
+{
+    g_object_unref(icon_theme);
+}
+
 void
 Xclimsg(Window win, long type, long l0, long l1, long l2, long l3, long l4)
 {
