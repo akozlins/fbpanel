@@ -1,265 +1,78 @@
-/*
- * CPU usage plugin to fbpanel
- *
- * Copyright (C) 2004 by Alexandre Pereira da Silva <alexandre.pereira@poli.usp.br>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * 
- */
-/*A little bug fixed by Mykola <mykola@2ka.mipt.ru>:) */
-
-
-#include <string.h>
-#include <sys/time.h>
-#include <time.h>
-#include <sys/sysinfo.h>
-#include <stdlib.h>
 
 #include "plugin.h"
 #include "panel.h"
-#include "gtkbgbox.h"
-#include "chart.h"
+#include "meter.h"
 
 
 //#define DEBUGPRN
 #include "dbg.h"
+float roundf(float x);
 
-
-static void chart_add_tick(chart_priv *c, float *val);
-static void chart_draw(chart_priv *c);
-static void chart_size_allocate(GtkWidget *widget, GtkAllocation *a, chart_priv *c);
-static gint chart_expose_event(GtkWidget *widget, GdkEventExpose *event, chart_priv *c);
-
-static void chart_alloc_ticks(chart_priv *c);
-static void chart_free_ticks(chart_priv *c);
-static void chart_alloc_gcs(chart_priv *c, gchar *colors[]);
-static void chart_free_gcs(chart_priv *c);
 
 static void
-chart_add_tick(chart_priv *c, float *val)
+meter_set_level(meter_priv *m, gfloat level)
 {
     int i;
-
-    ENTER;
-    if (!c->ticks)
-        RET();
-    for (i = 0; i < c->rows; i++) {
-        if (val[i] < 0)
-            val[i] = 0;
-        if (val[i] > 1)        
-            val[i] = 1;
-        c->ticks[i][c->pos] = val[i] * c->h;
-        DBG("new wval = %uld\n", c->ticks[i][c->pos]);
+    GdkPixbuf *pb;
+    
+    i = roundf(level * m->num);
+    if (i != m->cur_icon) {
+        m->cur_icon = i;
+        pb = gtk_icon_theme_load_icon(icon_theme, m->icons[i],
+            m->size, GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
+        gtk_image_set_from_pixbuf(GTK_IMAGE(m->meter), pb);
+        g_object_ref(G_OBJECT(pb));
     }
-    c->pos = (c->pos + 1) %  c->w;
-    gtk_widget_queue_draw(c->da);
-
-    RET();
+    m->level = level;
 }
 
 static void
-chart_draw(chart_priv *c)
+meter_set_icons(meter_priv *m, gchar *th_icon, int num, gchar **icons)
 {
-    int j, i, y;
-
-    ENTER;
-    if (!c->ticks)
-        RET();
-    for (i = 1; i < c->w-1; i++) {
-        y = c->h-2;
-        for (j = 0; j < c->rows; j++) {
-            int val;
-	
-            val = c->ticks[j][(i + c->pos) % c->w];
-            if (val)
-                gdk_draw_line(c->da->window, c->gc_cpu[j], i, y, i, y - val);
-            y -= val;
-        }
-    }
-    RET();
-}
-
-static void
-chart_size_allocate(GtkWidget *widget, GtkAllocation *a, chart_priv *c)
-{
-    ENTER;
-    if (c->w != a->width || c->h != a->height) {
-        chart_free_ticks(c);
-        c->w = a->width;
-        c->h = a->height;
-        chart_alloc_ticks(c);
-    }
-    gtk_widget_queue_draw(c->da);
-    RET();
-}
-
-
-static gint
-chart_expose_event(GtkWidget *widget, GdkEventExpose *event, chart_priv *c)
-{
-    ENTER;
-    gdk_window_clear(widget->window);
-    chart_draw(c);
-    gdk_draw_rectangle(widget->window, 
-          //widget->style->black_gc,                       
-          widget->style->bg_gc[GTK_STATE_NORMAL],
-          FALSE, 0, 0, c->w-1, c->h-1);
-    RET(FALSE);
-}
-
-static void
-chart_alloc_ticks(chart_priv *c)
-{
-    int i;
-
-    ENTER;
-    if (!c->w || !c->rows)
-        RET();
-    c->ticks = g_new0(gint *, c->rows);
-    for (i = 0; i < c->rows; i++) {
-        c->ticks[i] = g_new0(gint, c->w);
-        if (!c->ticks[i]) 
-            DBG2("can't alloc mem: %p %d\n", c->ticks[i], c->w);
-    }
-    c->pos = 0;
-    RET();
-}
-
-
-static void
-chart_free_ticks(chart_priv *c)
-{
-    int i;
-
-    ENTER;
-    if (!c->ticks)
-        RET();
-    for (i = 0; i < c->rows; i++) 
-        g_free(c->ticks[i]);
-    g_free(c->ticks);
-    c->ticks = NULL;
-    RET();
-}
-
-
-static void
-chart_alloc_gcs(chart_priv *c, gchar *colors[])
-{
-    int i;  
-    GdkColor color;
-
-    ENTER;
-    c->gc_cpu = g_new0( typeof(*c->gc_cpu), c->rows);
-    if (c->gc_cpu) {
-        for (i = 0; i < c->rows; i++) {
-            c->gc_cpu[i] = gdk_gc_new(c->plugin.panel->topgwin->window);
-            gdk_color_parse(colors[i], &color);
-            gdk_colormap_alloc_color(
-                gdk_drawable_get_colormap(c->plugin.panel->topgwin->window),
-                &color, FALSE, TRUE);
-            gdk_gc_set_foreground(c->gc_cpu[i],  &color);
-        }
-    }
-    RET();
-}
-
-
-
-static void
-chart_free_gcs(chart_priv *c)
-{
-    int i;  
-
-    ENTER;
-    if (c->gc_cpu) {
-        for (i = 0; i < c->rows; i++) 
-            g_object_unref(c->gc_cpu[i]);            
-        g_free(c->gc_cpu);
-        c->gc_cpu = NULL;
-    }
-    RET();
-}
-
-
-static void
-chart_set_rows(chart_priv *c, int num, gchar *colors[])
-{    
-    ENTER;
-    g_assert(num > 0 && num < 10);
-    chart_free_ticks(c);
-    chart_free_gcs(c);
-    c->rows = num;
-    chart_alloc_ticks(c);
-    chart_alloc_gcs(c, colors);
-    RET();
+    m->num = num;
+    m->icons = icons;
+    m->cur_icon = -1;
 }
 
 static int
-chart_constructor(plugin_instance *p)
+meter_constructor(plugin_instance *p)
 {
-    chart_priv *c;
-    int h, w;
+    meter_priv *m;
     
     ENTER;
-    /* must be allocated by caller */
-    c = (chart_priv *) p;
-    c->rows = 0;
-    c->ticks = NULL;
-    c->gc_cpu = NULL;
-    c->da = p->pwid;
-    h = GTK_WIDGET(p->panel->box)->allocation.height;
-    w = GTK_WIDGET(p->panel->box)->allocation.width;
-    if  (p->panel->orientation == ORIENT_HORIZ)
-        gtk_widget_set_size_request(c->da, h*2, h);
-    else
-        gtk_widget_set_size_request(c->da, w, (gint)((gfloat) w / 2));
-
-    //gtk_widget_set_size_request(c->da, 40, 20);
-    //gtk_container_set_border_width (GTK_CONTAINER (p->pwid), 1);
-    g_signal_connect (G_OBJECT (p->pwid), "size-allocate",
-          G_CALLBACK (chart_size_allocate), (gpointer) c);
-
-    g_signal_connect_after (G_OBJECT (p->pwid), "expose-event",
-          G_CALLBACK (chart_expose_event), (gpointer) c);
-    
+    m = (meter_priv *) p;
+    m->meter = gtk_image_new();
+    gtk_misc_set_alignment(GTK_MISC(m->meter), 0.5, 0.5);
+    gtk_misc_set_padding(GTK_MISC(m->meter), 0, 0);
+    m->cur_icon = -1;
+    m->size = 24;
+    // m->itc_id = g_signal_connect_after(G_OBJECT(icon_theme),
+    // "changed", (GCallback) update_view, m);
     RET(1);
 }
 
 static void
-chart_destructor(plugin_instance *p)
+meter_destructor(plugin_instance *p)
 {
-    chart_priv *c = (chart_priv *) p;
+    meter_priv *m = (meter_priv *) p;
 
     ENTER;
-    chart_free_ticks(c);
-    chart_free_gcs(c);
+    //g_signal_handler_disconnect(G_OBJECT(icon_theme), m->itc_id);
     RET();
 }
 
-chart_class class = {
+meter_class class = {
     .plugin = {
-        .type        = "chart",
-        .name        = "Chart",
-        .description = "Basic chart plugin",
-        .priv_size   = sizeof(chart_priv),
+        .type        = "meter",
+        .name        = "Meter",
+        .description = "Basic meter plugin",
+        .priv_size   = sizeof(meter_priv),
 
-        .constructor = chart_constructor,
-        .destructor  = chart_destructor,
+        .constructor = meter_constructor,
+        .destructor  = meter_destructor,
     },
-    .add_tick = chart_add_tick,
-    .set_rows = chart_set_rows,
+    .set_level = meter_set_level,
+    .set_icons = meter_set_icons,
 };
 
 
