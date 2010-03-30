@@ -38,6 +38,12 @@ meter_set_icons(meter_priv *m, int num, gchar **icons)
     m->icons = icons;
     m->cur_icon = -1;
 }
+static void
+update_view(meter_priv *m)
+{
+    m->cur_icon = -1;
+    meter_set_level(m, m->level);
+}
 
 static int
 meter_constructor(plugin_instance *p)
@@ -53,18 +59,18 @@ meter_constructor(plugin_instance *p)
     gtk_container_add(GTK_CONTAINER(p->pwid), m->meter);
     m->cur_icon = -1;
     m->size = MIN(p->panel->aw, p->panel->ah);
-    // m->itc_id = g_signal_connect_after(G_OBJECT(icon_theme),
-    // "changed", (GCallback) update_view, m);
+    m->itc_id = g_signal_connect_swapped(G_OBJECT(icon_theme),
+        "changed", (GCallback) update_view, m);
     RET(1);
 }
 
 static void
 meter_destructor(plugin_instance *p)
 {
-    //meter_priv *m = (meter_priv *) p;
+    meter_priv *m = (meter_priv *) p;
 
     ENTER;
-    //g_signal_handler_disconnect(G_OBJECT(icon_theme), m->itc_id);
+    g_signal_handler_disconnect(G_OBJECT(icon_theme), m->itc_id);
     RET();
 }
 

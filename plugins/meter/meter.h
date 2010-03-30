@@ -12,6 +12,7 @@ typedef struct {
     gfloat level;
     gint cur_icon;
     gint size;
+    gint itc_id;
 } meter_priv;
 
 typedef struct {
