@@ -22,7 +22,7 @@
 
 extern panel *the_panel;
 
-static GtkIconTheme *icon_theme;
+GtkIconTheme *icon_theme;
 
 /* X11 data types */
 Atom a_UTF8_STRING;
@@ -195,7 +195,8 @@ void fb_init()
 
 void fb_free()
 {
-    g_object_unref(icon_theme);
+    // MUST NOT be ref'd or unref'd
+    // g_object_unref(icon_theme);
 }
 
 void

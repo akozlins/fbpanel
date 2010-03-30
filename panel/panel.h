@@ -177,7 +177,7 @@ extern xconf_enum layer_enum[];
 extern int verbose;
 extern gint force_quit;
 extern FbEv *fbev;
-
+extern GtkIconTheme *icon_theme;
 #define FBPANEL_WIN(win)  gdk_window_lookup(win)
 void panel_set_wm_strut(panel *p);
 
