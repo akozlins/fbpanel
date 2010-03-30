@@ -248,7 +248,7 @@ chart_destructor(plugin_instance *p)
     RET();
 }
 
-chart_class class = {
+static chart_class class = {
     .plugin = {
         .type        = "chart",
         .name        = "Chart",
@@ -261,6 +261,4 @@ chart_class class = {
     .add_tick = chart_add_tick,
     .set_rows = chart_set_rows,
 };
-
-
 static plugin_class *class_ptr = (plugin_class *) &class;
