@@ -12,7 +12,8 @@
 #if defined __linux__
 #include <linux/soundcard.h>
 #endif
-#define DEBUGPRN
+
+//#define DEBUGPRN
 #include "dbg.h"
 
 static gchar *names[] = {
@@ -40,7 +41,8 @@ static gboolean
 volume_get_load(volume_priv *c)
 {
     guchar vols[2];
-
+    gchar buf[20];
+    
     if (c->dev == -1) {
         c->dev = SOUND_MIXER_VOLUME;
         if (!ioctl(c->fd, MIXER_READ(c->dev), &vols))
@@ -62,6 +64,8 @@ ready:
     }
     c->vol = vols[0];
     k->set_level(&c->meter, (gfloat) (vols[0] / 100.0));
+    g_snprintf(buf, sizeof(buf), "<b>Volume:</b> %d%%", vols[0]);
+    gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, buf);
     RET(TRUE);
 }
 
