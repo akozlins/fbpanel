@@ -1,5 +1,8 @@
 6.1
 * fixed locale/NLS issues
+* 2977832: meter plugin 
+* 2977833: battery plugin
+* chart class struct was made static
 
 6.0
 * adding xlogout script
