@@ -1,4 +1,5 @@
 #!/bin/bash
+PID=$$
 
 # NLS nuisances.
 for as_var in \
@@ -63,7 +64,7 @@ function error ()
 function check_name ()
 {
     local s=""
-    for i in `eval echo \$$2`; do
+    for i in `eval echo \\$$2`; do
         [ "$1" == "$i" ] && s=1 && break
     done
     [ -z "$s" ] && return 0
