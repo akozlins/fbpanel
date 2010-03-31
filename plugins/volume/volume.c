@@ -28,7 +28,7 @@ static gchar *s_names[] = {
   
 typedef struct {
     meter_priv meter;
-    int fd, dev;
+    int fd, chan;
     guchar vol, muted_vol;
     int timer;
     gboolean muted;
@@ -40,31 +40,27 @@ static meter_class *k;
 static gboolean
 volume_get_load(volume_priv *c)
 {
-    guchar vols[2];
+    int volume;
     gchar buf[20];
-    
-    if (c->dev == -1) {
-        c->dev = SOUND_MIXER_VOLUME;
-        if (!ioctl(c->fd, MIXER_READ(c->dev), &vols))
-            goto ready;
-        c->dev = SOUND_MIXER_PCM;
-        if (!ioctl(c->fd, MIXER_READ(c->dev), &vols))
-            goto ready;
-        return FALSE;
+
+    ENTER;
+    if (ioctl(c->fd, MIXER_READ(c->chan), &volume)) {
+        ERR("volume: can't get volume from /dev/mixer\n");
+        RET(FALSE);
     }
-ready:
-    ioctl(c->fd, MIXER_READ(c->dev), &vols);
-    DBG("dev=%d vol=%d/%d oldvol=%d\n", c->dev, vols[0], vols[1], c->vol);
-    if ((vols[0] != 0) != (c->vol != 0)) {
-        if (vols[0])
+    DBG("chan=%d vol=%d/%d oldvol=%d\n", c->chan, volume & 0xFF,
+        (volume >> 8) & 0xFF, c->vol);
+    volume &= 0xFF;
+    if ((volume != 0) != (c->vol != 0)) {
+        if (volume)
             k->set_icons(&c->meter, G_N_ELEMENTS(names), names);
         else
             k->set_icons(&c->meter, G_N_ELEMENTS(s_names), s_names);
-        DBG("seting %s icons\n", vols[0] ? "normal" : "muted");
+        DBG("seting %s icons\n", volume ? "normal" : "muted");
     }
-    c->vol = vols[0];
-    k->set_level(&c->meter, (gfloat) (vols[0] / 100.0));
-    g_snprintf(buf, sizeof(buf), "<b>Volume:</b> %d%%", vols[0]);
+    c->vol = volume;
+    k->set_level(&c->meter, (gfloat) (volume / 100.0));
+    g_snprintf(buf, sizeof(buf), "<b>Volume:</b> %d%%", volume);
     gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, buf);
     RET(TRUE);
 }
@@ -73,18 +69,18 @@ ready:
 static gboolean
 clicked(GtkWidget *widget, GdkEventButton *event, volume_priv *c)
 {
-    guchar vols[2];
+    int volume;
     
     if (!(event->type == GDK_BUTTON_PRESS && event->button == 2))
         RET(FALSE);
     
     if (c->muted) {
-        vols[0] = vols[1] = c->muted_vol;
+        volume = (c->muted_vol << 8) | c->muted_vol;
     } else {
         c->muted_vol = c->vol;
-        vols[0] = vols[1] = 0;
+        volume = 0;
     }
-    ioctl(c->fd, MIXER_WRITE(c->dev), &vols);
+    ioctl(c->fd, MIXER_WRITE(c->chan), &volume);
     c->muted = !c->muted;
     DBG("btn 2 press - %smute\n", c->muted ? "" : "un");
     volume_get_load(c);
@@ -94,17 +90,18 @@ clicked(GtkWidget *widget, GdkEventButton *event, volume_priv *c)
 static gboolean
 scrolled(GtkWidget *widget, GdkEventScroll *event, volume_priv *c)
 {
-    guchar vols[2];
     gchar i;
+    int volume;
+    
     ENTER;
 
     if (c->muted) {
         i = c->muted_vol;
     } else {
-        ioctl(c->fd, MIXER_READ(c->dev), &vols);
-        i = vols[0];
+        ioctl(c->fd, MIXER_READ(c->chan), &volume);
+        i = volume & 0xFF;
     }
-    i += 3 * ((event->direction == GDK_SCROLL_UP
+    i += 2 * ((event->direction == GDK_SCROLL_UP
             || event->direction == GDK_SCROLL_LEFT) ? 1 : -1);
     if (i > 100)
         i = 100;
@@ -114,8 +111,8 @@ scrolled(GtkWidget *widget, GdkEventScroll *event, volume_priv *c)
     if (c->muted) {
         c->muted_vol = i;
     } else {
-        vols[0] = vols[1] = (guchar) i;
-        ioctl(c->fd, MIXER_WRITE(c->dev), &vols);
+        volume = (i << 8) | i;
+        ioctl(c->fd, MIXER_WRITE(c->chan), &volume);
     }
     DBG("seting vol=%d\n", i);
     volume_get_load(c);
@@ -155,6 +152,7 @@ volume_constructor(plugin_instance *p)
     k->set_icons(&c->meter, G_N_ELEMENTS(names), names);
     c->timer = g_timeout_add(1000, (GSourceFunc) volume_get_load, (gpointer) c);
     c->vol = 200;
+    c->chan = SOUND_MIXER_VOLUME;
     volume_get_load(c);
     g_signal_connect(G_OBJECT(p->pwid), "scroll-event",
         G_CALLBACK(scrolled), (gpointer) c);
