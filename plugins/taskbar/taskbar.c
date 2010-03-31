@@ -125,7 +125,6 @@ static gboolean tk_has_urgency( task* tk );
 static void tk_flash_window( task *tk );
 static void tk_unflash_window( task *tk );
 static void tk_raise_window( task *tk, guint32 time );
-extern panel *the_panel;
 
 #define TASK_VISIBLE(tb, tk) \
  ((tk)->desktop == (tb)->cur_desk || (tk)->desktop == -1 /* 0xFFFFFFFF */ )
@@ -838,7 +837,7 @@ tk_callback_button_release_event(GtkWidget *widget, GdkEventButton *event, task 
         tk->tb->menutask = tk;
         gtk_menu_popup (GTK_MENU (tk->tb->menu), NULL, NULL,
               (GtkMenuPositionFunc)menu_pos,
-              the_panel->orientation == ORIENT_HORIZ ? NULL : widget, 
+              tk->tb->plugin.panel->orientation == ORIENT_HORIZ ? NULL : widget, 
               event->button, event->time);
         
     }

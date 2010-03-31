@@ -37,7 +37,7 @@ int config;
 int log_level = LOG_WARN;
 
 
-panel *p;
+static panel *p;
 panel *the_panel;
 
 void
