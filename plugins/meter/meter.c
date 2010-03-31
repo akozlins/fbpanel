@@ -15,8 +15,9 @@ meter_set_level(meter_priv *m, gfloat level)
     int i;
     GdkPixbuf *pb;
 
+    ENTER;
     if (!m->num)
-        return;
+        RET();
     i = roundf(level * (m->num - 1));
     DBG("level=%f icon=%d\n", level, i);
     if (i != m->cur_icon) {
@@ -29,20 +30,25 @@ meter_set_level(meter_priv *m, gfloat level)
             g_object_ref(G_OBJECT(pb));
     }
     m->level = level;
+    RET();
 }
 
 static void
 meter_set_icons(meter_priv *m, int num, gchar **icons)
 {
+    ENTER;
     m->num = num;
     m->icons = icons;
     m->cur_icon = -1;
+    RET();
 }
 static void
 update_view(meter_priv *m)
 {
+    ENTER;
     m->cur_icon = -1;
     meter_set_level(m, m->level);
+    RET();
 }
 
 static int
