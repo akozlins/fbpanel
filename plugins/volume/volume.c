@@ -180,9 +180,9 @@ volume_destructor(plugin_instance *p)
 static plugin_class class = {
     .count       = 0,
     .type        = "volume",
-    .name        = "Volume usage",
+    .name        = "Volume",
     .version     = "1.0",
-    .description = "Display volume usage",
+    .description = "OSS volume control",
     .priv_size   = sizeof(volume_priv),
     .constructor = volume_constructor,
     .destructor  = volume_destructor,
