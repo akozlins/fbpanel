@@ -96,7 +96,7 @@ function check_var ()
 
     A=${1:2}
     var=${A%%=*}
-    var=$(tr "\-[:upper:]" "_[:lower:]"  <<< $var)
+    var=$(tr "[:upper:]-" "[:lower:]_"  <<< $var)
     val=${A#*=}
     [ "$vars" == "${vars/$var/}" ] && error "$var - unknown variable"
     eval $var="\"${val}\""
@@ -132,7 +132,7 @@ function dump_vars_h ()
     if true; then
         for i in $vars; do
             eval val=\$$i
-            echo "#define  $(tr "\-[:lower:]" "_[:upper:]"  <<< $i)  \"${val}\""
+            echo "#define  $(tr "[:lower:]-" "[:upper:]_"  <<< $i)  \"${val}\""
         done
     fi
 
@@ -144,7 +144,7 @@ function dump_vars_mk ()
     if true; then
         for i in $vars; do
             eval val=\$$i
-            echo "$(tr "\-[:lower:]" "_[:upper:]"  <<< $i) = $val"
+            echo "$(tr "[:lower:]-" "[:upper:]_"  <<< $i) = $val"
         done
     fi
 
@@ -209,7 +209,7 @@ function dump_features_h ()
         for i in $features; do
             str='#undef'
             eval [ "\$$i" == "enabled" ] && str='#define'
-            echo "$str $(tr "\-[:lower:]" "_[:upper:]"  <<< $i)"
+            echo "$str $(tr "[:lower:]-" "[:upper:]_"  <<< $i)"
         done
     fi
 }
@@ -220,7 +220,7 @@ function dump_features_mk ()
     if true; then
         for i in $features; do
             eval [ "\$$i" == "enabled" ] && str='#define'
-            eval echo "$(tr "\-[:lower:]" "_[:upper:]"  <<< $i):=\$$i"
+            eval echo "$(tr "[:lower:]-" "[:upper:]_"  <<< $i):=\$$i"
         done
     fi
 }

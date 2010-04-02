@@ -1,8 +1,13 @@
 6.1
-* fixed locale/NLS issues
+New Features:
 * 2977832: meter plugin 
-* 2977833: battery plugin
+* 2977833: battery plugin (gui part only)
+* 2981332: volume plugin
+Fixed Bugs:
+* fixed locale/NLS issues with configure
 * chart class struct was made static
+* 2979388: configure broken - problems in busybox environments
+* fixing variable name check in configure
 
 6.0
 * adding xlogout script
