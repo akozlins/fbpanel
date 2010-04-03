@@ -1,8 +1,10 @@
 6.1
 New Features:
-* 2977832: meter plugin 
+* 2977832: meter plugin  - base plugin for icons slide show
 * 2977833: battery plugin (gui part only)
 * 2981332: volume plugin
+* 2981313: Enhancements to 'tclock' plugin - calendar and transparency
+
 Fixed Bugs:
 * fixed locale/NLS issues with configure
 * chart class struct was made static

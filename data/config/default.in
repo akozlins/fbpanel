@@ -334,7 +334,26 @@ Plugin {
     }
 }
 
-
+# Text Clock
+# ClockFmt: (string) Clock format string.  May contain strftime conversion
+#           specifications and Pango markup information.
+# TooltipFmt: (string) Tooltip format string.
+# Action: (string) Shell command to execute when clock is clicked.
+# ShowCalendar: (boolean) Show a GTK calendar widget when the clock is
+#               clicked.  Only valid if Action is unset.
+# ShowTooltip: (boolean) Show tooltip for clock.
+#Plugin {
+#    type = tclock
+#    config {
+#        ClockFmt = <b>%I:%M</b>
+#        # 2 line view, time in bold above and date below
+#        # ClockFmt = <span font="Sans 8"><b>%-l:%M</b> %P&#xA;%a %B %-e</span>
+#        TooltipFmt = %A %x
+#        #Action = xmessage Please define some command &
+#        ShowCalendar = false
+#        ShowTooltip = true
+#    }
+#}
 
 # 'icons' plugin lets you customize window icons.
 # these changes apply to entire desktop
