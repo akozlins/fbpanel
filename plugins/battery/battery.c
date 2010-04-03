@@ -1,17 +1,9 @@
-/*
- * OSS battery plugin. Will works with ALSA since it usually 
- * emulates OSS layer.
- */
-
 #include "misc.h"
 #include "../meter/meter.h"
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#if defined __linux__
-#include <linux/soundcard.h>
-#endif
 
 //#define DEBUGPRN
 #include "dbg.h"
@@ -42,6 +34,8 @@ static gchar *batt_na[] = {
     "battery_na",
 };
 
+#if defined __linux__
+
 /* Searches in /sys/class/power_supply/ for first directory
  * representing active battery.
  * Returns
@@ -64,6 +58,40 @@ update_battery_status(battery_priv *c, int *level, gboolean *charging)
         *charging = !c->charging;
     }
 }
+#elif defined __test__
+
+static gchar *
+battery_find_sys(void)
+{
+    return "ok";
+}
+
+static void
+update_battery_status(battery_priv *c, int *level, gboolean *charging)
+{
+    *level = c->level + 2;
+    *charging = c->charging;
+    if (*level > 100) {
+        *level = 0;
+        *charging = !c->charging;
+    }
+}
+#else
+static gchar *
+battery_find_sys(void)
+{
+    return NULL;
+}
+
+static void
+update_battery_status(battery_priv *c, int *level, gboolean *charging)
+{
+    *level = 0;
+    *charging = 0;
+    return;
+}
+
+#endif
 
 static gboolean
 battery_get_load(battery_priv *c)
