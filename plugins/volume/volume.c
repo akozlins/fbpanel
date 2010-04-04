@@ -32,6 +32,7 @@ typedef struct {
     guchar vol, muted_vol;
     int timer;
     gboolean muted;
+    GtkWidget *pbar_window;
 } volume_priv;
 
 static meter_class *k;
@@ -65,12 +66,54 @@ volume_get_load(volume_priv *c)
     RET(TRUE);
 }
 
+static GtkWidget *
+volume_create_pbar(volume_priv *c)
+{
+    GtkWidget *pbar, *win;
+    int o[] = {
+        [EDGE_BOTTOM] = GTK_PROGRESS_BOTTOM_TO_TOP,
+        [EDGE_TOP] = GTK_PROGRESS_TOP_TO_BOTTOM,
+        [EDGE_LEFT] = GTK_PROGRESS_LEFT_TO_RIGHT,
+        [EDGE_RIGHT] = GTK_PROGRESS_RIGHT_TO_LEFT,
+    };
+
+    win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_default_size(GTK_WINDOW(win), 180, 180);
+    gtk_window_set_decorated(GTK_WINDOW(win), FALSE);
+    gtk_window_set_resizable(GTK_WINDOW(win), FALSE);
+    gtk_container_set_border_width(GTK_CONTAINER(win), 5);
+    gtk_window_set_skip_taskbar_hint(GTK_WINDOW(win), TRUE);
+    gtk_window_set_skip_pager_hint(GTK_WINDOW(win), TRUE);
+    gtk_window_set_position(GTK_WINDOW(win), GTK_WIN_POS_MOUSE);
+    gtk_window_stick(GTK_WINDOW(win));
+          
+    pbar = gtk_progress_bar_new();
+    gtk_progress_bar_set_orientation(GTK_PROGRESS_BAR(pbar),
+        o[((plugin_instance *)c)->panel->edge]);
+    gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(pbar));
+ 
+    return win;
+}  
+
 
 static gboolean
 clicked(GtkWidget *widget, GdkEventButton *event, volume_priv *c)
 {
     int volume;
-    
+
+    if (event->button == 1 && event->type == GDK_BUTTON_PRESS) {
+        if (c->pbar_window == NULL)
+        {
+            c->pbar_window = volume_create_pbar(c);
+            gtk_widget_show_all(c->pbar_window);
+            gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, NULL);
+        }
+        else
+        {
+            gtk_widget_destroy(c->pbar_window);
+            c->pbar_window = NULL;
+        }
+    }
     if (!(event->type == GDK_BUTTON_PRESS && event->button == 2))
         RET(FALSE);
     
