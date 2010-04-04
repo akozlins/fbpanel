@@ -113,19 +113,25 @@ static GtkWidget *
 volume_create_slider(volume_priv *c)
 {
     GtkWidget *slider, *win;
+    GtkWidget *frame;
     
     win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size(GTK_WINDOW(win), 180, 180);
     gtk_window_set_decorated(GTK_WINDOW(win), FALSE);
     gtk_window_set_resizable(GTK_WINDOW(win), FALSE);
-    gtk_container_set_border_width(GTK_CONTAINER(win), 5);
+    gtk_container_set_border_width(GTK_CONTAINER(win), 1);
     gtk_window_set_skip_taskbar_hint(GTK_WINDOW(win), TRUE);
     gtk_window_set_skip_pager_hint(GTK_WINDOW(win), TRUE);
     gtk_window_set_position(GTK_WINDOW(win), GTK_WIN_POS_MOUSE);
     gtk_window_stick(GTK_WINDOW(win));
 
+    frame = gtk_frame_new(NULL);
+    gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_ETCHED_IN);
+    gtk_container_add(GTK_CONTAINER(win), frame);
+    gtk_container_set_border_width(GTK_CONTAINER(frame), 1);
+    
     slider = gtk_vscale_new_with_range(0.0, 100.0, 1.0);
-    gtk_widget_set_size_request(slider, 20, 82);
+    gtk_widget_set_size_request(slider, 25, 82);
     gtk_scale_set_draw_value(GTK_SCALE(slider), TRUE);
     gtk_scale_set_value_pos(GTK_SCALE(slider), GTK_POS_BOTTOM);
     gtk_scale_set_digits(GTK_SCALE(slider), 0);
@@ -138,7 +144,8 @@ volume_create_slider(volume_priv *c)
         G_CALLBACK(crossed), (gpointer)c);
     g_signal_connect(G_OBJECT(slider), "leave-notify-event",
         G_CALLBACK(crossed), (gpointer)c);
-    gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(slider));
+    gtk_container_add(GTK_CONTAINER(frame), slider);
+    
     c->slider = slider;
     return win;
 }  
@@ -157,6 +164,10 @@ icon_clicked(GtkWidget *widget, GdkEventButton *event, volume_priv *c)
         } else {
             gtk_widget_destroy(c->slider_window);
             c->slider_window = NULL;
+            if (c->leave_id) {
+                g_source_remove(c->leave_id);
+                c->leave_id = 0;
+            }
         }
         RET(FALSE);
     }
@@ -223,8 +234,8 @@ crossed(GtkWidget *widget, GdkEventCrossing *event, volume_priv *c)
             c->leave_id = 0;
         }
     } else {
-        if (!c->leave_id) {
-            c->leave_id = g_timeout_add(2000, (GSourceFunc) leave_cb, c);
+        if (!c->leave_id && c->slider_window) {
+            c->leave_id = g_timeout_add(1200, (GSourceFunc) leave_cb, c);
         }
     }
     DBG("has_pointer=%d\n", c->has_pointer);
