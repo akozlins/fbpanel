@@ -63,7 +63,7 @@ update_battery_status(battery_priv *c, int *level, gboolean *charging)
 static gchar *
 battery_find_sys(void)
 {
-    return "ok";
+    return strdup("ok");
 }
 
 static void
