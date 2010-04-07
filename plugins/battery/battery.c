@@ -8,6 +8,8 @@
 //#define DEBUGPRN
 #include "dbg.h"
 
+static meter_class *k;
+
 typedef struct {
     meter_priv meter;
     int timer;
@@ -16,7 +18,7 @@ typedef struct {
     gboolean exist;
 } battery_priv;
 
-static meter_class *k;
+static void battery_update_os(battery_priv *c);
 
 static gchar *batt_working[] = {
     "battery_0",
@@ -38,18 +40,7 @@ static gchar *batt_na[] = {
 };
 
 #if defined __linux__
-
-static void
-battery_update_os(battery_priv *c)
-{
-    c->exist = TRUE;
-    c->level += 2;
-    if (c->level > 100) {
-        c->level = 0;
-        c->charging = !c->charging;
-    }
-}
-
+#include "os_linux.c"
 #else
 
 static void
