@@ -194,7 +194,7 @@ icon_scrolled(GtkWidget *widget, GdkEventScroll *event, volume_priv *c)
     int volume;
     
     ENTER;
-    volume = (c->muted) ? c->muted_vol : ((meter_priv *) c)->level * 100;
+    volume = (c->muted) ? c->muted_vol : ((meter_priv *) c)->level;
     volume += 2 * ((event->direction == GDK_SCROLL_UP
             || event->direction == GDK_SCROLL_LEFT) ? 1 : -1);
     if (volume > 100)
