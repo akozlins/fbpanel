@@ -85,14 +85,14 @@ read_proc(battery_priv *c, GString *path)
     RET(TRUE);
 }
 
-static void
-battery_update_os(battery_priv *c)
+static gboolean
+battery_update_os_proc(battery_priv *c)
 {
     
     GString *path;
     int len;
     GDir *dir;
-    gboolean ret;
+    gboolean ret = FALSE;
     const gchar *file;
     
     ENTER;
@@ -104,19 +104,31 @@ battery_update_os(battery_priv *c)
         DBG("can't open dir %s\n", path->str);
         goto out;
     }
-    while ((file = g_dir_read_name(dir))) {
+    while (!ret && (file = g_dir_read_name(dir))) {
         g_string_append(path, file);
         DBG("testing %s\n", path->str);
-        if (!g_file_test(path->str, G_FILE_TEST_IS_DIR))
-            continue;
-        ret = read_proc(c, path);
+        ret = g_file_test(path->str, G_FILE_TEST_IS_DIR);
+        if (ret) 
+            ret = read_proc(c, path);
         g_string_truncate(path, len);
-        if (ret)
-            break;
     }    
     g_dir_close(dir);
         
 out:
     g_string_free(path, TRUE);
-    RET();
+    RET(ret);
+}
+
+static gboolean
+battery_update_os_sys(battery_priv *c)
+{
+    ENTER;
+    RET(FALSE);
+}
+
+static gboolean
+battery_update_os(battery_priv *c)
+{
+    ENTER;
+    RET(battery_update_os_proc(c) || battery_update_os_sys(c));
 }

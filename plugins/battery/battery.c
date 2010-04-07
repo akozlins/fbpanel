@@ -18,7 +18,7 @@ typedef struct {
     gboolean exist;
 } battery_priv;
 
-static void battery_update_os(battery_priv *c);
+static gboolean battery_update_os(battery_priv *c);
 
 static gchar *batt_working[] = {
     "battery_0",
@@ -85,7 +85,7 @@ battery_constructor(plugin_instance *p)
     if (!PLUGIN_CLASS(k)->constructor(p))
         RET(0);
     c = (battery_priv *) p;
-    c->timer = g_timeout_add(1000, (GSourceFunc) battery_update,
+    c->timer = g_timeout_add(60000, (GSourceFunc) battery_update,
         (gpointer) c);
     battery_update(c);
     RET(1);
