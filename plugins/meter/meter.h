@@ -17,8 +17,8 @@ typedef struct {
 
 typedef struct {
     plugin_class plugin;
-    void (*set_level)(meter_priv *c, gfloat val);
-    void (*set_icons)(meter_priv *c, int num, gchar **icons);
+    void (*set_level)(meter_priv *c, int val);
+    void (*set_icons)(meter_priv *c, gchar **icons);
 } meter_class;
 
 

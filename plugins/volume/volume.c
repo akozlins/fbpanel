@@ -20,10 +20,12 @@ static gchar *names[] = {
     "stock_volume-min",
     "stock_volume-med",
     "stock_volume-max",
+    NULL
 };
 
 static gchar *s_names[] = {
     "stock_volume-mute",
+    NULL
 };
   
 typedef struct {
@@ -78,13 +80,13 @@ volume_update_gui(volume_priv *c)
     volume = oss_get_volume(c);
     if ((volume != 0) != (c->vol != 0)) {
         if (volume)
-            k->set_icons(&c->meter, G_N_ELEMENTS(names), names);
+            k->set_icons(&c->meter, names);
         else
-            k->set_icons(&c->meter, G_N_ELEMENTS(s_names), s_names);
+            k->set_icons(&c->meter, s_names);
         DBG("seting %s icons\n", volume ? "normal" : "muted");
     }
     c->vol = volume;
-    k->set_level(&c->meter, (gfloat) (volume / 100.0));
+    k->set_level(&c->meter, volume);
     g_snprintf(buf, sizeof(buf), "<b>Volume:</b> %d%%", volume);
     if (!c->slider_window)
         gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, buf);
@@ -256,7 +258,7 @@ volume_constructor(plugin_instance *p)
         ERR("volume: can't open /dev/mixer\n");
         RET(0);
     }
-    k->set_icons(&c->meter, G_N_ELEMENTS(names), names);
+    k->set_icons(&c->meter, names);
     c->update_id = g_timeout_add(1000, (GSourceFunc) volume_update_gui, c);
     c->vol = 200;
     c->chan = SOUND_MIXER_VOLUME;

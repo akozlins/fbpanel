@@ -8,9 +8,9 @@
 #include "dbg.h"
 float roundf(float x);
 
-
+/* level - per cent level from 0 to 100 */
 static void
-meter_set_level(meter_priv *m, gfloat level)
+meter_set_level(meter_priv *m, int level)
 {
     int i;
     GdkPixbuf *pb;
@@ -18,7 +18,11 @@ meter_set_level(meter_priv *m, gfloat level)
     ENTER;
     if (!m->num)
         RET();
-    i = roundf(level * (m->num - 1));
+    if (level < 0 || level > 100) {
+        ERR("meter: illegal level %d\n", level);
+        RET();
+    }
+    i = roundf((gfloat) level / 100 * (m->num - 1));
     DBG("level=%f icon=%d\n", level, i);
     if (i != m->cur_icon) {
         m->cur_icon = i;
@@ -34,10 +38,15 @@ meter_set_level(meter_priv *m, gfloat level)
 }
 
 static void
-meter_set_icons(meter_priv *m, int num, gchar **icons)
+meter_set_icons(meter_priv *m, gchar **icons)
 {
+    gchar **s;
+
     ENTER;
-    m->num = num;
+    for (s = icons; *s; s++)
+        DBG("icon %s\n", *s);
+    m->num = (s - icons);
+    DBG("total %d icons\n", m->num);
     m->icons = icons;
     m->cur_icon = -1;
     RET();
