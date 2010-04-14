@@ -138,7 +138,7 @@ volume_create_slider(volume_priv *c)
     gtk_scale_set_value_pos(GTK_SCALE(slider), GTK_POS_BOTTOM);
     gtk_scale_set_digits(GTK_SCALE(slider), 0);
     gtk_range_set_inverted(GTK_RANGE(slider), TRUE);
-    gtk_range_set_value(GTK_RANGE(slider), ((meter_priv *) c)->level * 100);
+    gtk_range_set_value(GTK_RANGE(slider), ((meter_priv *) c)->level);
     DBG("meter->level %f\n", ((meter_priv *) c)->level);
     g_signal_connect(G_OBJECT(slider), "value_changed",
         G_CALLBACK(slider_changed), c);
