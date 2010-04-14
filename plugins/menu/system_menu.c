@@ -33,8 +33,6 @@ static cat_info main_cats[] = {
     { "Utility",    "applications-utilities" },
     { "Development","applications-development" },
 };
-/* menu build time */
-static time_t btime;
 
 static void
 do_app_file(GHashTable *ht, const gchar *file)
@@ -212,7 +210,7 @@ xconf_cmp_names(gpointer a, gpointer b)
 }
 
 static gboolean
-dir_changed(const gchar *dir)
+dir_changed(const gchar *dir, time_t btime)
 {
     GDir *d = NULL;
     gchar *cwd;
@@ -243,7 +241,7 @@ dir_changed(const gchar *dir)
     while (!ret && (name = g_dir_read_name(d)))
     {
         if (g_file_test(name, G_FILE_TEST_IS_DIR))
-            ret = dir_changed(name);
+            ret = dir_changed(name, btime);
         else if (!g_str_has_suffix(name, ".desktop"))
             continue;
         else if (g_stat(name, &buf))
@@ -260,7 +258,7 @@ out:
 }
 
 gboolean
-systemmenu_changed()
+systemmenu_changed(time_t btime)
 {
     const gchar * const * dirs;
     gboolean ret = FALSE;
@@ -269,14 +267,14 @@ systemmenu_changed()
     for (dirs = g_get_system_data_dirs(); *dirs && !ret; dirs++)
     {
         g_chdir(*dirs);
-        ret = dir_changed(app_dir_name);
+        ret = dir_changed(app_dir_name, btime);
     }
 
     DBG("btime=%lu\n", btime);
     if (!ret)
     {
         g_chdir(g_get_user_data_dir());
-        ret = dir_changed(app_dir_name);
+        ret = dir_changed(app_dir_name, btime);
     }
     g_chdir(cwd);
     g_free(cwd);
@@ -292,8 +290,6 @@ xconf_new_from_systemmenu()
     int i;
     const gchar * const * dirs;
 
-    btime = time(NULL);
-    
     /* Create category menus */
     ht = g_hash_table_new(g_str_hash, g_str_equal);
     xc = xconf_new("systemmenu", NULL);
