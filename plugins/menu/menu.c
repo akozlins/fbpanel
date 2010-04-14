@@ -280,9 +280,9 @@ check_system_menu(plugin_instance *p)
 {
     menu_priv *m = (menu_priv *) p;
     
-    ENTER2;
+    ENTER;
     if (systemmenu_changed()) {
-        DBG2("%s rebuild\n",
+        DBG("%s rebuild\n",
             GTK_WIDGET_MAPPED(GTK_WIDGET(m->menu)) ? "delayed" : "immediate");
         if (GTK_WIDGET_MAPPED(GTK_WIDGET(m->menu)))
             m->need_rebuild = TRUE;
@@ -305,7 +305,7 @@ menu_constructor(plugin_instance *p)
         "changed", (GCallback) menu_create, p);
     menu_create(p);
     if (m->has_system_menu) {
-        m->tout = g_timeout_add(10000, (GSourceFunc) check_system_menu, p);
+        m->tout = g_timeout_add(30000, (GSourceFunc) check_system_menu, p);
     }
     RET(1);
 }
