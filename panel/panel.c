@@ -32,10 +32,8 @@ int config;
 //#define DEBUGPRN
 #include "dbg.h"
 
-
 /** verbosity level of dbg and log functions */
 int log_level = LOG_WARN;
-
 
 static panel *p;
 panel *the_panel;
@@ -47,7 +45,7 @@ panel_set_wm_strut(panel *p)
     int i = 4;
 
     ENTER;
-    if (!GTK_WIDGET_MAPPED (p->topgwin))
+    if (!GTK_WIDGET_MAPPED(p->topgwin))
         return;
     switch (p->edge) {
     case EDGE_LEFT:
@@ -87,10 +85,10 @@ panel_set_wm_strut(panel *p)
 
     /* if wm supports STRUT_PARTIAL it will ignore STRUT */
     XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT_PARTIAL,
-          XA_CARDINAL, 32, PropModeReplace,  (unsigned char *) data, 12);
+        XA_CARDINAL, 32, PropModeReplace,  (unsigned char *) data, 12);
     /* old spec, for wms that do not support STRUT_PARTIAL */
     XChangeProperty(GDK_DISPLAY(), p->topxwin, a_NET_WM_STRUT,
-          XA_CARDINAL, 32, PropModeReplace,  (unsigned char *) data, 4);
+        XA_CARDINAL, 32, PropModeReplace,  (unsigned char *) data, 4);
 
     RET();
 }
@@ -173,7 +171,6 @@ panel_event_filter(GdkXEvent *xevent, GdkEvent *event, panel *p)
  *         panel's handlers for GTK events          *
  ****************************************************/
 
-
 static gint
 panel_destroy_event(GtkWidget * widget, GdkEvent * event, gpointer data)
 {
@@ -225,7 +222,7 @@ make_round_corners(panel *p)
     gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, 0, r, r, h-2*r);
     gdk_draw_rectangle(GDK_DRAWABLE(b), gc, TRUE, w-r, r, r, h-2*r);
 
-    br = 2 * r ;
+    br = 2 * r;
     gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, 0, br, br, 0*64, 360*64);
     gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, 0, h-br-1, br, br, 0*64, 360*64);
     gdk_draw_arc(GDK_DRAWABLE(b), gc, TRUE, w-br, 0, br, br, 0*64, 360*64);
@@ -238,9 +235,8 @@ make_round_corners(panel *p)
     RET();
 }
 
-
-static  gboolean
-panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
+static gboolean
+panel_configure_event(GtkWidget *widget, GdkEventConfigure *e, panel *p)
 {
     ENTER;
     DBG("cur geom: %dx%d+%d+%d\n", e->width, e->height, e->x, e->y);
@@ -295,7 +291,7 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
  *         autohide                                 *
  ****************************************************/
 
-/* Autohide is behaviour whne panel hides itself when mouse is "far enough"
+/* Autohide is behaviour when panel hides itself when mouse is "far enough"
  * and pops up again when mouse comes "close enough". 
  * Formally, it's a state machine with 3 states that driven by mouse 
  * coordinates and timer:
@@ -309,13 +305,12 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
  * Mouse coordinates are queried every PERIOD milisec
  *
  * Note 2
- * If mouse is less then GAP pixels to panel it's considered to be close, otherwise far
- *
+ * If mouse is less then GAP pixels to panel it's considered to be close,
+ * otherwise it's far
  */
 
 #define GAP 30
 #define PERIOD 500
-
 
 static gboolean ah_state_visible(panel *p);
 static gboolean ah_state_waiting(panel *p);
@@ -341,7 +336,8 @@ mouse_watch(panel *p)
 
     ENTER;
     gdk_display_get_pointer(gdk_display_get_default(), NULL, &x, &y, NULL);
-    p->ah_far = ((x < p->cx - GAP) || (x > p->cx + p->cw + GAP) || (y < p->cy - GAP) || (y > p->cy + p->ch + GAP));
+    p->ah_far = ((x < p->cx - GAP) || (x > p->cx + p->cw + GAP)
+        || (y < p->cy - GAP) || (y > p->cy + p->ch + GAP));
     p->ah_state(p);
     RET(TRUE);
 }
@@ -353,7 +349,7 @@ ah_state_visible(panel *p)
     if (p->ah_state != ah_state_visible) {
         p->ah_state = ah_state_visible;
         gtk_widget_show(p->topgwin);
-        gtk_window_stick (GTK_WINDOW(p->topgwin));
+        gtk_window_stick(GTK_WINDOW(p->topgwin));
     } else if (p->ah_far) {
         ah_state_waiting(p);
     }
@@ -418,8 +414,6 @@ ah_stop(panel *p)
  *         panel creation                           *
  ****************************************************/
 
-
-
 gboolean
 panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p)
 {
@@ -439,18 +433,18 @@ panel_start_gui(panel *p)
     ENTER;
 
     // main toplevel window
-    p->topgwin =  gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    p->topgwin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_container_set_border_width(GTK_CONTAINER(p->topgwin), 0);
     g_signal_connect(G_OBJECT(p->topgwin), "destroy-event",
-          G_CALLBACK(panel_destroy_event), p);
-    g_signal_connect (G_OBJECT (p->topgwin), "size-request",
-          (GCallback) panel_size_req, p);
-    g_signal_connect (G_OBJECT (p->topgwin), "map-event",
+        (GCallback) panel_destroy_event, p);
+    g_signal_connect(G_OBJECT(p->topgwin), "size-request",
+        (GCallback) panel_size_req, p);
+    g_signal_connect(G_OBJECT(p->topgwin), "map-event",
         (GCallback) panel_mapped, p);
-    g_signal_connect (G_OBJECT (p->topgwin), "configure-event",
-          (GCallback) panel_configure_event, p);
-    g_signal_connect (G_OBJECT (p->topgwin), "button-press-event",
-          (GCallback) panel_button_press_event, p);
+    g_signal_connect(G_OBJECT(p->topgwin), "configure-event",
+        (GCallback) panel_configure_event, p);
+    g_signal_connect(G_OBJECT(p->topgwin), "button-press-event",
+        (GCallback) panel_button_press_event, p);
 
     gtk_window_set_resizable(GTK_WINDOW(p->topgwin), FALSE);
     gtk_window_set_wmclass(GTK_WINDOW(p->topgwin), "panel", "fbpanel");
@@ -459,13 +453,14 @@ panel_start_gui(panel *p)
     gtk_window_set_decorated(GTK_WINDOW(p->topgwin), FALSE);
     gtk_window_set_accept_focus(GTK_WINDOW(p->topgwin), FALSE);
     if (p->setdocktype)
-        gtk_window_set_type_hint(GTK_WINDOW(p->topgwin), GDK_WINDOW_TYPE_HINT_DOCK);
+        gtk_window_set_type_hint(GTK_WINDOW(p->topgwin),
+            GDK_WINDOW_TYPE_HINT_DOCK);
 
     if (p->layer == LAYER_ABOVE)
         gtk_window_set_keep_above(GTK_WINDOW(p->topgwin), TRUE);
     else if (p->layer == LAYER_BELOW)
         gtk_window_set_keep_below(GTK_WINDOW(p->topgwin), TRUE);
-    gtk_window_stick (GTK_WINDOW(p->topgwin));
+    gtk_window_stick(GTK_WINDOW(p->topgwin));
 
     gtk_widget_realize(p->topgwin);
     p->topxwin = GDK_WINDOW_XWINDOW(p->topgwin->window);
@@ -499,7 +494,7 @@ panel_start_gui(panel *p)
     p->box = p->my_box_new(FALSE, p->spacing);
     gtk_container_set_border_width(GTK_CONTAINER(p->box), 0);
     gtk_box_pack_start(GTK_BOX(p->lbox), p->box, TRUE, TRUE,
-          (p->round_corners) ? p->round_corners_radius : 0);
+        (p->round_corners) ? p->round_corners_radius : 0);
     if (p->round_corners) {
         make_round_corners(p);
         DBG("make_round_corners\n");
@@ -512,10 +507,11 @@ panel_start_gui(panel *p)
     if (p->setstrut)
         panel_set_wm_strut(p);
     
-    XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), PropertyChangeMask);
-    gdk_window_add_filter(gdk_get_default_root_window (),
+    XSelectInput(GDK_DISPLAY(), GDK_ROOT_WINDOW(), PropertyChangeMask);
+    gdk_window_add_filter(gdk_get_default_root_window(),
           (GdkFilterFunc)panel_event_filter, p);
-    XSync(GDK_DISPLAY(), False);
+    //XSync(GDK_DISPLAY(), False);
+    gdk_flush();
     RET();
 }
 
@@ -569,8 +565,8 @@ panel_parse_global(xconf *xc)
     XCG(xc, "tintcolor", &p->tintcolor_name, str);
     
     /* Sanity checks */
-    if (!gdk_color_parse (p->tintcolor_name, &p->gtintcolor))
-        gdk_color_parse ("white", &p->gtintcolor);
+    if (!gdk_color_parse(p->tintcolor_name, &p->gtintcolor))
+        gdk_color_parse("white", &p->gtintcolor);
     p->tintcolor = gcolor2rgb24(&p->gtintcolor);
     DBG("tintcolor=%x\n", p->tintcolor);
     if (p->alpha > 255)
@@ -665,8 +661,8 @@ panel_stop(panel *p)
     g_list_free(p->plugins);
     p->plugins = NULL;
 
-    XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), NoEventMask);
-    gdk_window_remove_filter(gdk_get_default_root_window (),
+    XSelectInput(GDK_DISPLAY(), GDK_ROOT_WINDOW(), NoEventMask);
+    gdk_window_remove_filter(gdk_get_default_root_window(),
           (GdkFilterFunc)panel_event_filter, p);
     gtk_widget_destroy(p->topgwin);
     g_object_unref(fbev);
@@ -676,7 +672,6 @@ panel_stop(panel *p)
     XSync(GDK_DISPLAY(), True);
     RET();
 }
-
 
 void
 usage()
@@ -726,7 +721,6 @@ sig_usr2(int signum)
     force_quit = 1;
 }
 
-
 static void
 do_argv(int argc, char *argv[])
 {
@@ -765,7 +759,6 @@ do_argv(int argc, char *argv[])
             exit(1);
         }
     }
-  
 }
 
 gchar *panel_get_profile()

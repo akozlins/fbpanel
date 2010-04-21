@@ -10,6 +10,8 @@ Fixed Bugs:
 * chart class struct was made static
 * 2979388: configure broken - problems in busybox environments
 * fixing variable name check in configure
+* 2985792: Menu disappears too quickly
+* 2990610: panel with autohide disappears when positioned at (0,0)
 
 6.0
 * adding xlogout script
