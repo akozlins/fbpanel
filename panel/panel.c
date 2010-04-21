@@ -320,6 +320,19 @@ panel_configure_event (GtkWidget *widget, GdkEventConfigure *e, panel *p)
 static gboolean ah_state_visible(panel *p);
 static gboolean ah_state_waiting(panel *p);
 static gboolean ah_state_hidden(panel *p);
+static void ah_start(panel *p);
+static void ah_stop(panel *p);
+
+static gboolean
+panel_mapped(GtkWidget *widget, GdkEvent *event, panel *p)
+{
+    ENTER;
+    if (p->autohide) {
+        ah_stop(p);
+        ah_start(p);
+    }
+    RET(FALSE);
+}
 
 static gboolean 
 mouse_watch(panel *p)
@@ -376,7 +389,7 @@ ah_state_hidden(panel *p)
 }
 
 /* starts autohide behaviour */
-void
+static void
 ah_start(panel *p)
 {
     ENTER;
@@ -386,7 +399,7 @@ ah_start(panel *p)
 }
 
 /* stops autohide */
-void
+static void
 ah_stop(panel *p)
 {
     ENTER;
@@ -432,6 +445,8 @@ panel_start_gui(panel *p)
           G_CALLBACK(panel_destroy_event), p);
     g_signal_connect (G_OBJECT (p->topgwin), "size-request",
           (GCallback) panel_size_req, p);
+    g_signal_connect (G_OBJECT (p->topgwin), "map-event",
+        (GCallback) panel_mapped, p);
     g_signal_connect (G_OBJECT (p->topgwin), "configure-event",
           (GCallback) panel_configure_event, p);
     g_signal_connect (G_OBJECT (p->topgwin), "button-press-event",
@@ -453,12 +468,18 @@ panel_start_gui(panel *p)
     gtk_window_stick (GTK_WINDOW(p->topgwin));
 
     gtk_widget_realize(p->topgwin);
+    p->topxwin = GDK_WINDOW_XWINDOW(p->topgwin->window);
+    DBG("topxwin = %lx\n", p->topxwin);
+    /* ensure configure event */
+    XMoveWindow(GDK_DISPLAY(), p->topxwin, 20, 20);
+    XSync(GDK_DISPLAY(), False);
+    
     gtk_widget_set_app_paintable(p->topgwin, TRUE);
     calculate_position(p);
     gtk_window_move(GTK_WINDOW(p->topgwin), p->ax, p->ay);
     gtk_window_resize(GTK_WINDOW(p->topgwin), p->aw, p->ah);
     DBG("move-resize x %d y %d w %d h %d\n", p->ax, p->ay, p->aw, p->ah);
-    XSync(GDK_DISPLAY(), False);
+    //XSync(GDK_DISPLAY(), False);
     //gdk_flush();
 
     // background box all over toplevel
@@ -483,29 +504,17 @@ panel_start_gui(panel *p)
         make_round_corners(p);
         DBG("make_round_corners\n");
     }
-    /* window mapping point */
+    /* start window creation process */
     gtk_widget_show_all(p->topgwin);
-    /* If window position is (0, 0), then it will get its size right from
-     * beginning and no additional configure events will happen. Hence, the
-     * event handler, that calls matching gtk_widget_show, will never run and
-     * window will remain unmapped. So don't hide it */
-    if (p->ax || p->ay)
-        /* hide window until size and position negotiation is done to prevent
-         * multiple background redraw and flickering */
-        gtk_widget_hide(p->topgwin);
+    /* .. and hide it from user until everything is done */
+    gtk_widget_hide(p->topgwin);
 
-
-    /* the settings that should be done after window is mapped */
-    if (p->autohide) 
-        ah_start(p);
     if (p->setstrut)
         panel_set_wm_strut(p);
     
     XSelectInput (GDK_DISPLAY(), GDK_ROOT_WINDOW(), PropertyChangeMask);
     gdk_window_add_filter(gdk_get_default_root_window (),
           (GdkFilterFunc)panel_event_filter, p);
-    p->topxwin = GDK_WINDOW_XWINDOW(GTK_WIDGET(p->topgwin)->window);
-    DBG("topxwin = %lx\n", p->topxwin);
     XSync(GDK_DISPLAY(), False);
     RET();
 }
