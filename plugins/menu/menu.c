@@ -280,11 +280,11 @@ make_button(plugin_instance *p, xconf *xc)
     if (p->panel->orientation == ORIENT_HORIZ)
     {
         w = -1;
-        h = p->panel->ah;
+        h = p->panel->icon_size;
     }
     else
     {
-        w = p->panel->aw;
+        w = p->panel->icon_size;
         h = -1;
     }
     fname = iname = NULL;

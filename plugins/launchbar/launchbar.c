@@ -232,7 +232,7 @@ launchbar_constructor(plugin_instance *p)
     launchbar_priv *lb; 
     int i;
     xconf *pxc;
-    
+    GtkWidget *ali;
     static gchar *launchbar_rc = "style 'launchbar-style'\n"
         "{\n"
         "GtkWidget::focus-line-width = 0\n"
@@ -247,17 +247,14 @@ launchbar_constructor(plugin_instance *p)
     gtk_widget_set_name(p->pwid, "launchbar");
     gtk_rc_parse_string(launchbar_rc);
     //get_button_spacing(&req, GTK_CONTAINER(p->pwid), "");
-    
+    ali = gtk_alignment_new(0.5, 0.5, 0, 0);
+    gtk_container_add(GTK_CONTAINER(p->pwid), ali);
     lb->box = p->panel->my_box_new(FALSE, 0);
-    gtk_container_add(GTK_CONTAINER(p->pwid), lb->box);
+    gtk_container_add(GTK_CONTAINER(ali), lb->box);
     gtk_container_set_border_width (GTK_CONTAINER (lb->box), 0);
-    gtk_widget_show(lb->box);
+    gtk_widget_show_all(ali);
     
-    if  (p->panel->orientation == ORIENT_HORIZ) 
-        lb->iconsize = GTK_WIDGET(p->panel->box)->allocation.height;
-    else
-        lb->iconsize = GTK_WIDGET(p->panel->box)->allocation.width;
-
+    lb->iconsize = p->panel->icon_size;
     DBG("iconsize=%d\n", lb->iconsize);
     for (i = 0; (pxc = xconf_find(p->xc, "button", i)); i++)
         read_button(p, pxc);

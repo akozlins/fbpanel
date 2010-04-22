@@ -51,9 +51,11 @@ typedef struct _panel
     int widthtype, width;
     int heighttype, height;
     int round_corners_radius;
-
+    int max_icon_size;
+    int icon_size;
+    
     gint self_destroy;
-    gint setdocktype ;
+    gint setdocktype;
     gint setstrut;
     gint round_corners;
     gint transparent;
@@ -71,8 +73,6 @@ typedef struct _panel
     guint desknum;
     guint curdesk;
     guint32 *workarea;
-    int wa_len;
-    guint style_timer;
 
     int plug_num;
     GList *plugins;

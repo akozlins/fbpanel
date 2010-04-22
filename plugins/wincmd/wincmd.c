@@ -181,9 +181,9 @@ wincmd_constructor(plugin_instance *p)
     
     if (p->panel->orientation == ORIENT_HORIZ) {
         w = -1;
-        h = p->panel->ah;
+        h = p->panel->icon_size;
     } else {
-        w = p->panel->aw;
+        w = p->panel->icon_size;
         h = -1;
     }
     button = fb_button_new(iname, fname, w, h, 0x202020, NULL);

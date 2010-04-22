@@ -73,7 +73,7 @@ meter_constructor(plugin_instance *p)
     gtk_widget_show(m->meter);
     gtk_container_add(GTK_CONTAINER(p->pwid), m->meter);
     m->cur_icon = -1;
-    m->size = MIN(p->panel->aw, p->panel->ah);
+    m->size = p->panel->icon_size;
     m->itc_id = g_signal_connect_swapped(G_OBJECT(icon_theme),
         "changed", (GCallback) update_view, m);
     RET(1);

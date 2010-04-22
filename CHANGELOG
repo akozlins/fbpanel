@@ -13,6 +13,7 @@ Fixed Bugs:
 * 2985792: Menu disappears too quickly
 * 2990610: panel with autohide disappears when positioned at (0,0)
 * 2990620: fix dclock for vertical orientation
+* 2991081: do not autohide panel when menu is open
 
 6.0
 * adding xlogout script
