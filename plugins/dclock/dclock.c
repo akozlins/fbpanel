@@ -27,10 +27,13 @@
 #define CLOCK_12H_SEC_FMT "%I:%M:%S"
 
 #define COLON_WIDTH   7
+#define COLON_HEIGHT  5
+#define VCOLON_WIDTH   10
+#define VCOLON_HEIGHT  6
 #define DIGIT_WIDTH   11
 #define DIGIT_HEIGHT  15
-#define DIGIT_PAD_H   1
-#define COLON_PAD_H   3
+#define SHADOW 2
+
 #define STR_SIZE  64
 
 enum { DC_24H, DC_12H };
@@ -55,11 +58,13 @@ typedef struct
     guint32 color;
     gboolean show_seconds;
     gboolean hours_view;
+    gint orientation;
 } dclock_priv;
 
 //static dclock_priv me;
 
-static GtkWidget *dclock_create_calendar()
+static GtkWidget *
+dclock_create_calendar()
 {
     GtkWidget *calendar, *win;
 
@@ -117,7 +122,7 @@ clock_update(dclock_priv *dc)
     char output[STR_SIZE], *tmp, *utf8;
     time_t now;
     struct tm * detail;
-    int i, w;
+    int i, x, y;
     
     ENTER;
     time(&now);
@@ -127,24 +132,34 @@ clock_update(dclock_priv *dc)
         strcpy(output, "  :  ");
     if (strcmp(dc->cstr, output))
     {
-        strcpy(dc->cstr, output);
-        for (tmp = output, w = 0; *tmp; tmp++)
+        strncpy(dc->cstr, output, sizeof(dc->cstr));
+        x = y = SHADOW;
+        for (tmp = output; *tmp; tmp++)
         {
             DBGE("%c", *tmp);
             if (isdigit(*tmp))
             {
                 i = *tmp - '0';
-                gdk_pixbuf_copy_area(dc->glyphs, i * 20,
-                        0, DIGIT_WIDTH, DIGIT_HEIGHT,
-                        dc->clock, w, DIGIT_PAD_H);
-                w += DIGIT_WIDTH;
+                gdk_pixbuf_copy_area(dc->glyphs, i * 20, 0,
+                    DIGIT_WIDTH, DIGIT_HEIGHT,
+                    dc->clock, x, y);
+                x += DIGIT_WIDTH;
             }
             else if (*tmp == ':')
             {
-                gdk_pixbuf_copy_area(dc->glyphs, 10 * 20, 0, COLON_WIDTH,
-                        DIGIT_HEIGHT - 3,
-                        dc->clock, w, COLON_PAD_H + DIGIT_PAD_H);
-                w += COLON_WIDTH;
+                if (dc->orientation == ORIENT_HORIZ) {
+                    gdk_pixbuf_copy_area(dc->glyphs, 10 * 20, 0,
+                        COLON_WIDTH, DIGIT_HEIGHT - 2,
+                        dc->clock, x, y + 2);
+                    x += COLON_WIDTH;
+                } else {
+                    x = SHADOW;
+                    y += DIGIT_HEIGHT;
+                    gdk_pixbuf_copy_area(dc->glyphs, 10 * 20, 0,
+                        VCOLON_WIDTH, VCOLON_HEIGHT,
+                        dc->clock, x + DIGIT_WIDTH / 2, y);
+                    y += VCOLON_HEIGHT;
+                }
             }
             else
             {
@@ -162,7 +177,7 @@ clock_update(dclock_priv *dc)
     {
         strcpy(dc->tstr, output);
         if (dc->tstr[0] && (utf8 = g_locale_to_utf8(output, -1,
-                                NULL, NULL, NULL)))
+                    NULL, NULL, NULL)))
         {
             gtk_widget_set_tooltip_markup(dc->plugin.pwid, utf8);
             g_free(utf8);
@@ -172,10 +187,6 @@ clock_update(dclock_priv *dc)
     }
     RET(TRUE);
 }
-
-#define BLUE_R    0
-#define BLUE_G    0
-#define BLUE_B    0xFF
 
 static void
 dclock_set_color(GdkPixbuf *glyphs, guint32 color)
@@ -191,8 +202,7 @@ dclock_set_color(GdkPixbuf *glyphs, guint32 color)
     g = (color & 0x0000ff00) >> 8;
     b = (color & 0x000000ff);
     DBG("%dx%d: %02x %02x %02x\n",
-            gdk_pixbuf_get_width(glyphs), gdk_pixbuf_get_height(glyphs),
-            r, g, b);
+        gdk_pixbuf_get_width(glyphs), gdk_pixbuf_get_height(glyphs), r, g, b);
     while (h--)
     {
         for (p2 = p1, w = gdk_pixbuf_get_width(glyphs); w; w--, p2 += 4)
@@ -207,6 +217,39 @@ dclock_set_color(GdkPixbuf *glyphs, guint32 color)
         p1 += gdk_pixbuf_get_rowstride(glyphs);
     }
     DBG("here\n");
+    RET();
+}
+
+static void
+dclock_create_pixbufs(dclock_priv *dc)
+{
+    int width, height;
+    ENTER;
+
+    width = height = SHADOW;
+    if (dc->orientation == ORIENT_VERT) {
+        GdkPixbuf *ch, *cv;
+        
+        ch = gdk_pixbuf_new_subpixbuf(dc->glyphs, 200, 0, 8, 8);
+        cv = gdk_pixbuf_rotate_simple(ch, 270);
+        gdk_pixbuf_copy_area(cv, 0, 0, 8, 8, ch, 0, 0);
+        g_object_unref(cv);
+        g_object_unref(ch);
+        height += DIGIT_HEIGHT * 2 + VCOLON_HEIGHT;
+        width += DIGIT_WIDTH * 2;
+        if (dc->show_seconds)
+            height += VCOLON_HEIGHT + DIGIT_HEIGHT;
+        dc->clock = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8,
+            width, height);
+    } else {
+        width += COLON_WIDTH + 4 * DIGIT_WIDTH;
+        height += DIGIT_HEIGHT;
+        if (dc->show_seconds)
+            width += COLON_WIDTH + 2 * DIGIT_WIDTH;
+        dc->clock = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8,
+            width, height);
+    }
+    gdk_pixbuf_fill(dc->clock, 0);
     RET();
 }
 
@@ -242,6 +285,7 @@ dclock_constructor(plugin_instance *p)
     dc->color = 0xff000000;
     dc->show_seconds = FALSE;
     dc->hours_view = DC_24H;
+    dc->orientation = p->panel->orientation;
     color_str = NULL;
     XCG(p->xc, "TooltipFmt", &dc->tfmt, str);
     XCG(p->xc, "ClockFmt", &dc->cfmt, str);
@@ -268,17 +312,13 @@ dclock_constructor(plugin_instance *p)
         dc->cfmt = (dc->show_seconds) ? CLOCK_24H_SEC_FMT : CLOCK_24H_FMT;
     else
         dc->cfmt = (dc->show_seconds) ? CLOCK_12H_SEC_FMT : CLOCK_12H_FMT;
+    dclock_create_pixbufs(dc);
     if (dc->color != 0xff000000)
         dclock_set_color(dc->glyphs, dc->color);
-    width = COLON_WIDTH + 4 * DIGIT_WIDTH;
-    if (dc->show_seconds)
-        width += COLON_WIDTH + 2 * DIGIT_WIDTH;
-    dc->clock = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8,
-        width, DIGIT_HEIGHT + DIGIT_PAD_H);
-    gdk_pixbuf_fill(dc->clock, 0);
+  
     dc->main = gtk_image_new_from_pixbuf(dc->clock);
     gtk_misc_set_alignment(GTK_MISC(dc->main), 0.5, 0.5);
-    gtk_misc_set_padding(GTK_MISC(dc->main), 4, 0);
+    gtk_misc_set_padding(GTK_MISC(dc->main), 1, 1);
     gtk_container_add(GTK_CONTAINER(p->pwid), dc->main);
     //gtk_widget_show(dc->clockw);
     g_signal_connect (G_OBJECT (p->pwid), "button_press_event",
