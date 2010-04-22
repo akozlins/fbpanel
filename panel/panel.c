@@ -315,8 +315,6 @@ panel_configure_event(GtkWidget *widget, GdkEventConfigure *e, panel *p)
 static gboolean ah_state_visible(panel *p);
 static gboolean ah_state_waiting(panel *p);
 static gboolean ah_state_hidden(panel *p);
-static void ah_start(panel *p);
-static void ah_stop(panel *p);
 
 static gboolean
 panel_mapped(GtkWidget *widget, GdkEvent *event, panel *p)
@@ -385,7 +383,7 @@ ah_state_hidden(panel *p)
 }
 
 /* starts autohide behaviour */
-static void
+void
 ah_start(panel *p)
 {
     ENTER;
@@ -395,7 +393,7 @@ ah_start(panel *p)
 }
 
 /* stops autohide */
-static void
+void
 ah_stop(panel *p)
 {
     ENTER;

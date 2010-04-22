@@ -186,6 +186,15 @@ menu_create_menu(xconf *xc, gboolean ret_menu, menu_priv *m)
     return (ret_menu) ? menu : menu_create_item(xc, menu, m);
 }
 
+static gboolean
+menu_unmap(GtkWidget *menu, plugin_instance *p)
+{
+    ENTER;
+    if (p->panel->autohide)
+        ah_start(p->panel);
+    RET(FALSE);
+}
+
 static void
 menu_create(plugin_instance *p)
 {
@@ -197,6 +206,8 @@ menu_create(plugin_instance *p)
     m->need_rebuild = FALSE;
     m->xc = menu_expand_xc(p->xc, m);
     m->menu = menu_create_menu(m->xc, TRUE, m);
+    g_signal_connect(G_OBJECT(m->menu), "unmap", 
+        G_CALLBACK(menu_unmap), p);
     m->btime = time(NULL);
     if (m->has_system_menu) 
         m->tout = g_timeout_add(30000, (GSourceFunc) check_system_menu, p);
@@ -244,6 +255,8 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin_instance *p)
     {
         if (!m->menu || m->need_rebuild)
             menu_create(p);
+        if (p->panel->autohide)
+            ah_stop(p->panel);
         gtk_menu_popup(GTK_MENU(m->menu),
             NULL, NULL, (GtkMenuPositionFunc)menu_pos, widget,
             event->button, event->time);

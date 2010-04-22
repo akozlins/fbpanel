@@ -184,4 +184,7 @@ void panel_set_wm_strut(panel *p);
 gchar *panel_get_profile(void);
 gchar *panel_get_profile_file(void);
 
+void ah_start(panel *p);
+void ah_stop(panel *p);
+
 #endif
