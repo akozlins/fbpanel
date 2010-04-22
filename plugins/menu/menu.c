@@ -15,6 +15,8 @@
 //#define DEBUGPRN
 #include "dbg.h"
 
+#define MENU_DEFAULT_ICON_SIZE 22
+
 typedef struct {
     plugin_instance plugin;
     GtkWidget *menu, *bg;
@@ -24,6 +26,7 @@ typedef struct {
     gboolean has_system_menu;
     gboolean need_rebuild;
     time_t btime;
+    GtkIconSize icon_size;
 } menu_priv;
 
 xconf *xconf_new_from_systemmenu();
@@ -83,11 +86,11 @@ menu_create_separator()
     return gtk_separator_menu_item_new();
 }
 
-/* Ccreates menu item. Text and image are read from xconf. Action
+/* Creates menu item. Text and image are read from xconf. Action
  * depends on @menu. If @menu is NULL, action is to execute external
  * command. Otherwise it is to pop up @menu menu */
 static GtkWidget *
-menu_create_item(xconf *xc, GtkWidget *menu)
+menu_create_item(xconf *xc, GtkWidget *menu, menu_priv *m)
 {
     gchar *name, *fname, *iname, *action, *cmd;
     GtkWidget *mi;
@@ -102,8 +105,11 @@ menu_create_item(xconf *xc, GtkWidget *menu)
     if (fname || iname)
     {
         GdkPixbuf *pb;
-
-        if ((pb = fb_pixbuf_new(iname, fname, 22, 22, FALSE)))
+        gint icon_w, icon_h;
+ 
+        gtk_icon_size_lookup(m->icon_size, &icon_w, &icon_h);
+        DBG("w=%d h=%d\n", icon_w, icon_h);
+        if ((pb = fb_pixbuf_new(iname, fname, icon_w, icon_h, FALSE)))
         {
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
                     gtk_image_new_from_pixbuf(pb));
@@ -153,7 +159,7 @@ done:
  * If @ret_menu is TRUE, then a menu is returned. Otherwise,
  * button is created, linked to a menu and returned instead. */
 static GtkWidget *
-menu_create_menu(xconf *xc, gboolean ret_menu)
+menu_create_menu(xconf *xc, gboolean ret_menu, menu_priv *m)
 {
     GtkWidget *mi, *menu;
     GSList *w;
@@ -169,15 +175,15 @@ menu_create_menu(xconf *xc, gboolean ret_menu)
         if (!strcmp(nxc->name, "separator"))
             mi = menu_create_separator();
         else if (!strcmp(nxc->name, "item"))
-            mi = menu_create_item(nxc, NULL);
+            mi = menu_create_item(nxc, NULL, m);
         else if (!strcmp(nxc->name, "menu"))
-            mi = menu_create_menu(nxc, FALSE);
+            mi = menu_create_menu(nxc, FALSE, m);
         else
             continue;
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
     }
     gtk_widget_show_all(menu);
-    return (ret_menu) ? menu : menu_create_item(xc, menu);
+    return (ret_menu) ? menu : menu_create_item(xc, menu, m);
 }
 
 static void
@@ -190,8 +196,7 @@ menu_create(plugin_instance *p)
         menu_destroy(m);
     m->need_rebuild = FALSE;
     m->xc = menu_expand_xc(p->xc, m);
-    //xconf_prn(stdout, m->xc, 0, TRUE);
-    m->menu = menu_create_menu(m->xc, TRUE);
+    m->menu = menu_create_menu(m->xc, TRUE, m);
     m->btime = time(NULL);
     if (m->has_system_menu) 
         m->tout = g_timeout_add(30000, (GSourceFunc) check_system_menu, p);
@@ -305,8 +310,17 @@ menu_constructor(plugin_instance *p)
 
     ENTER;
     m = (menu_priv *) p;
-    m->iconsize = 22;
     make_button(p, p->xc);
+    
+    /* Set the default icon size for menu items to 22x22.  This can be
+     * overridden by the gtk+ theme or in the .gtkrc-2.0 file with an 
+     * option like gtk-icon-sizes = "panel-menu=16,16" */
+    m->icon_size = gtk_icon_size_from_name("panel-menu");
+    if (m->icon_size == GTK_ICON_SIZE_INVALID) {
+        m->icon_size = gtk_icon_size_register("panel-menu",
+            MENU_DEFAULT_ICON_SIZE, MENU_DEFAULT_ICON_SIZE);
+    }
+    DBG("icon_size=%d\n", m->icon_size);
     g_signal_connect_swapped(G_OBJECT(icon_theme),
         "changed", (GCallback) menu_create, p);
     RET(1);
