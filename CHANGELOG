@@ -12,6 +12,7 @@ Fixed Bugs:
 * fixing variable name check in configure
 * 2985792: Menu disappears too quickly
 * 2990610: panel with autohide disappears when positioned at (0,0)
+* 2990620: fix dclock for vertical orientation
 
 6.0
 * adding xlogout script
