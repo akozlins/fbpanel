@@ -16,7 +16,6 @@
 #include "panel.h"
 #include "misc.h"
 #include "plugin.h"
-#include "gtkbar.h"
 
 
 //#define DEBUGPRN
