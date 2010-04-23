@@ -84,6 +84,7 @@ typedef struct _taskbar{
 
     int iconsize;
     int task_width_max;
+    int task_min_height;
     int accept_skip_pager;
     int show_iconified;
     int show_mapped;
@@ -114,6 +115,7 @@ static gboolean use_net_active=FALSE;
 
 
 #define TASK_WIDTH_MAX   200
+#define TASK_MIN_HEIGHT 24
 #define TASK_PADDING     4
 static void tk_display(taskbar_priv *tb, task *tk);
 static void tb_propertynotify(taskbar_priv *tb, XEvent *ev);
@@ -1299,7 +1301,8 @@ taskbar_build_gui(plugin_instance *p)
     ENTER;
     bo = (tb->plugin.panel->orientation == ORIENT_HORIZ)
         ? GTK_BAR_HORIZ : GTK_BAR_VERTICAL;
-    tb->bar = gtk_bar_new(bo, tb->spacing);
+    tb->bar = gtk_bar_new(bo, tb->spacing,
+        p->panel->ah / tb->task_min_height);
     gtk_bar_set_max_child_size(GTK_BAR(tb->bar), tb->task_width_max);
     gtk_container_add (GTK_CONTAINER (p->pwid), tb->bar);
     gtk_widget_show(tb->bar);
@@ -1366,6 +1369,7 @@ taskbar_constructor(plugin_instance *p)
     tb->show_mapped       = 1;
     tb->show_all_desks    = 0;
     tb->task_width_max    = TASK_WIDTH_MAX;
+    tb->task_min_height   = TASK_MIN_HEIGHT;
     tb->task_list         = g_hash_table_new(g_int_hash, g_int_equal);
     tb->focused_state     = GTK_STATE_ACTIVE;
     tb->normal_state      = GTK_STATE_NORMAL;
@@ -1382,20 +1386,15 @@ taskbar_constructor(plugin_instance *p)
     XCG(xc, "usemousewheel", &tb->use_mouse_wheel, enum, bool_enum);
     XCG(xc, "useurgencyhint", &tb->use_urgency_hint, enum, bool_enum);
     XCG(xc, "maxtaskwidth", &tb->task_width_max, int);
+    XCG(xc, "mintaskheight", &tb->task_min_height, int);
     
     if (p->panel->orientation == ORIENT_HORIZ) {
-        tb->iconsize = GTK_WIDGET(p->panel->box)->allocation.height -
-            req.height;
-        DBG("pwid height = %d\n", GTK_WIDGET(p->panel->box)->allocation.height);
-        DBG("req.height = %d\n", req.height);
-        DBG("icnosize = %d\n", tb->iconsize);
+        tb->iconsize = MIN(p->panel->ah, tb->task_min_height) - req.height;
         if (tb->icons_only)
             tb->task_width_max = tb->iconsize + req.width;
     } else {
-        tb->iconsize = GTK_WIDGET(p->panel->box)->allocation.width -
-            req.width;
-        tb->iconsize = MIN(tb->iconsize, 24);
-        if (GTK_WIDGET(p->panel->box)->allocation.width <= 30)
+        tb->iconsize = MIN(p->panel->aw, tb->task_min_height) - req.height;
+        if (p->panel->aw <= 30)
             tb->icons_only = 1;
 
         tb->task_width_max = tb->iconsize + req.height;

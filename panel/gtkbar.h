@@ -53,8 +53,10 @@ struct _GtkBar
 {
     GtkBox box;
     gint max_child_size;
+    gint rows;
+    gint max_chwidth;
+    gint max_chheight;
     GtkBarOrientation orient;
-    int maxx, maxy;
 };
 
 struct _GtkBarClass
@@ -64,7 +66,7 @@ struct _GtkBarClass
 
 
 GType	   gtk_bar_get_type (void) G_GNUC_CONST;
-GtkWidget* gtk_bar_new      (GtkBarOrientation orient, gint spacing);
+GtkWidget* gtk_bar_new(GtkBarOrientation orient, gint spacing, gint rows);
 void       gtk_bar_set_max_child_size(GtkBar *bar, gint size);
 
 
