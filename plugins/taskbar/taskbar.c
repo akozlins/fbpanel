@@ -1296,14 +1296,15 @@ static void
 taskbar_build_gui(plugin_instance *p)
 {
     taskbar_priv *tb = (taskbar_priv *) p;
-    GtkBarOrientation  bo;
     
     ENTER;
-    bo = (tb->plugin.panel->orientation == ORIENT_HORIZ)
-        ? GTK_BAR_HORIZ : GTK_BAR_VERTICAL;
-    tb->bar = gtk_bar_new(bo, tb->spacing,
-        p->panel->ah / tb->task_min_height);
-    gtk_bar_set_max_child_size(GTK_BAR(tb->bar), tb->task_width_max);
+    if (tb->plugin.panel->orientation == ORIENT_HORIZ) {
+        tb->bar = gtk_bar_new(GTK_BAR_HORIZ, tb->spacing, tb->task_min_height,
+            tb->task_width_max);
+    } else {
+        tb->bar = gtk_bar_new(GTK_BAR_VERTICAL, tb->spacing,
+            tb->task_min_height, tb->task_width_max);
+    }
     gtk_container_add (GTK_CONTAINER (p->pwid), tb->bar);
     gtk_widget_show(tb->bar);
   
@@ -1387,17 +1388,17 @@ taskbar_constructor(plugin_instance *p)
     XCG(xc, "useurgencyhint", &tb->use_urgency_hint, enum, bool_enum);
     XCG(xc, "maxtaskwidth", &tb->task_width_max, int);
     XCG(xc, "mintaskheight", &tb->task_min_height, int);
-    
+
     if (p->panel->orientation == ORIENT_HORIZ) {
         tb->iconsize = MIN(p->panel->ah, tb->task_min_height) - req.height;
         if (tb->icons_only)
             tb->task_width_max = tb->iconsize + req.width;
     } else {
-        tb->iconsize = MIN(p->panel->aw, tb->task_min_height) - req.height;
         if (p->panel->aw <= 30)
             tb->icons_only = 1;
-
-        tb->task_width_max = tb->iconsize + req.height;
+        tb->iconsize = MIN(p->panel->aw, tb->task_min_height) - req.height;
+        if (tb->icons_only)
+            tb->task_width_max = tb->iconsize + req.height;
     }
     taskbar_build_gui(p);
     tb_net_client_list(NULL, tb);
