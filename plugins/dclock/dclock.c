@@ -224,12 +224,21 @@ static void
 dclock_create_pixbufs(dclock_priv *dc)
 {
     int width, height;
+    GdkPixbuf *ch, *cv;
+    
     ENTER;
-
     width = height = SHADOW;
+    width += COLON_WIDTH + 4 * DIGIT_WIDTH;
+    height += DIGIT_HEIGHT;
+    if (dc->show_seconds)
+        width += COLON_WIDTH + 2 * DIGIT_WIDTH;
     if (dc->orientation == ORIENT_VERT) {
-        GdkPixbuf *ch, *cv;
-        
+        DBG("width=%d height=%d aw=%d\n", width, height, dc->plugin.panel->aw);
+        if (width < dc->plugin.panel->aw) {
+            dc->orientation = ORIENT_HORIZ;
+            goto done;
+        }
+        width = height = SHADOW;
         ch = gdk_pixbuf_new_subpixbuf(dc->glyphs, 200, 0, 8, 8);
         cv = gdk_pixbuf_rotate_simple(ch, 270);
         gdk_pixbuf_copy_area(cv, 0, 0, 8, 8, ch, 0, 0);
@@ -239,16 +248,10 @@ dclock_create_pixbufs(dclock_priv *dc)
         width += DIGIT_WIDTH * 2;
         if (dc->show_seconds)
             height += VCOLON_HEIGHT + DIGIT_HEIGHT;
-        dc->clock = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8,
-            width, height);
-    } else {
-        width += COLON_WIDTH + 4 * DIGIT_WIDTH;
-        height += DIGIT_HEIGHT;
-        if (dc->show_seconds)
-            width += COLON_WIDTH + 2 * DIGIT_WIDTH;
-        dc->clock = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8,
-            width, height);
     }
+done:
+    dc->clock = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, width, height);
+    DBG("width=%d height=%d\n", width, height);
     gdk_pixbuf_fill(dc->clock, 0);
     RET();
 }
@@ -270,7 +273,7 @@ dclock_constructor(plugin_instance *p)
 {
     gchar *color_str;
     dclock_priv *dc;
-    int width;
+    //int width;
     
     ENTER;
     DBG("dclock: use 'tclock' plugin for text version of a time and date\n");
