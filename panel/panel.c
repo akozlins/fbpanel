@@ -425,6 +425,28 @@ panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p)
     RET(FALSE);
 }
 
+static gboolean
+panel_scroll_event(GtkWidget *widget, GdkEventScroll *event, panel *p)
+{
+    int i;
+
+    ENTER;
+    DBG("scroll direction = %d\n", event->direction);
+    i = p->curdesk;
+    if (event->direction == GDK_SCROLL_UP || event->direction == GDK_SCROLL_LEFT) {
+        i--;
+        if (i < 0)
+            i = p->desknum - 1;
+    } else {
+        i++;
+        if (i >= p->desknum)
+            i = 0;
+    }
+    Xclimsg(GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, i, 0, 0, 0, 0);
+    RET(TRUE);
+}
+
+
 static void
 panel_start_gui(panel *p)
 {
@@ -443,6 +465,8 @@ panel_start_gui(panel *p)
         (GCallback) panel_configure_event, p);
     g_signal_connect(G_OBJECT(p->topgwin), "button-press-event",
         (GCallback) panel_button_press_event, p);
+    g_signal_connect(G_OBJECT(p->topgwin), "scroll-event",
+        (GCallback) panel_scroll_event, p);
 
     gtk_window_set_resizable(GTK_WINDOW(p->topgwin), FALSE);
     gtk_window_set_wmclass(GTK_WINDOW(p->topgwin), "panel", "fbpanel");
