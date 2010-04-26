@@ -442,38 +442,6 @@ desk_button_press_event(GtkWidget * widget, GdkEventButton * event, desk *d)
     RET(TRUE);
 }
 
-/*
-static gint
-desk_button_release_event(GtkWidget * widget, GdkEventButton * event, desk *d)
-{
-    ENTER;
-    DBG("t=%d\n", d->no);
-    Xclimsg(GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, d->no, 0, 0, 0, 0);
-    RET(TRUE);
-}
-*/
-
-static gint
-desk_scroll_event (GtkWidget *widget, GdkEventScroll *event, desk *d)
-{
-    int i;
-
-    ENTER;
-    DBG("scroll direction = %d\n", event->direction);
-    i = d->pg->curdesk;
-    if (event->direction == GDK_SCROLL_UP ||event->direction == GDK_SCROLL_LEFT) {
-        i--;
-        if (i < 0)
-            i = d->pg->desknum - 1;
-    } else {
-        i++;
-        if (i >= d->pg->desknum)
-            i = 0;
-    }
-    Xclimsg(GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP, i, 0, 0, 0, 0);
-    RET(TRUE);
-}
-
 static void
 desk_new(pager_priv *pg, int i)
 {
@@ -498,12 +466,8 @@ desk_new(pager_priv *pg, int i)
           (GCallback) desk_expose_event, (gpointer)d);
     g_signal_connect (G_OBJECT (d->da), "configure_event",
           (GCallback) desk_configure_event, (gpointer)d);
-    g_signal_connect (G_OBJECT (d->da), "scroll-event",
-          (GCallback) desk_scroll_event, (gpointer)d);
     g_signal_connect (G_OBJECT (d->da), "button_press_event",
          (GCallback) desk_button_press_event, (gpointer)d);
-    //g_signal_connect (G_OBJECT (d->da), "button_release_event",
-    //     (GCallback) desk_button_release_event, (gpointer)d);
     gtk_widget_show_all(d->da);
     RET();
 }
