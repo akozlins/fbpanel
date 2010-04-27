@@ -769,7 +769,7 @@ pager_constructor(plugin_instance *plug)
     gtk_container_add(GTK_CONTAINER(plug->pwid), pg->box);
 
     pg->ratio = (gfloat)gdk_screen_width() / (gfloat)gdk_screen_height();
-    if (plug->panel->orientation == ORIENT_HORIZ) {
+    if (plug->panel->orientation == GTK_ORIENTATION_HORIZONTAL) {
         pg->dah = plug->panel->ah - 2 * BORDER;
         pg->daw = (gfloat) pg->dah * pg->ratio;
     } else {

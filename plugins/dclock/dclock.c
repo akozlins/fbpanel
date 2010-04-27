@@ -58,7 +58,7 @@ typedef struct
     guint32 color;
     gboolean show_seconds;
     gboolean hours_view;
-    gint orientation;
+    GtkOrientation orientation;
 } dclock_priv;
 
 //static dclock_priv me;
@@ -147,7 +147,7 @@ clock_update(dclock_priv *dc)
             }
             else if (*tmp == ':')
             {
-                if (dc->orientation == ORIENT_HORIZ) {
+                if (dc->orientation == GTK_ORIENTATION_HORIZONTAL) {
                     gdk_pixbuf_copy_area(dc->glyphs, 10 * 20, 0,
                         COLON_WIDTH, DIGIT_HEIGHT - 2,
                         dc->clock, x, y + 2);
@@ -232,10 +232,10 @@ dclock_create_pixbufs(dclock_priv *dc)
     height += DIGIT_HEIGHT;
     if (dc->show_seconds)
         width += COLON_WIDTH + 2 * DIGIT_WIDTH;
-    if (dc->orientation == ORIENT_VERT) {
+    if (dc->orientation == GTK_ORIENTATION_VERTICAL) {
         DBG("width=%d height=%d aw=%d\n", width, height, dc->plugin.panel->aw);
         if (width < dc->plugin.panel->aw) {
-            dc->orientation = ORIENT_HORIZ;
+            dc->orientation = GTK_ORIENTATION_HORIZONTAL;
             goto done;
         }
         width = height = SHADOW;

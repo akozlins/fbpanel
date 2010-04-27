@@ -186,9 +186,9 @@ panel_size_req(GtkWidget *widget, GtkRequisition *req, panel *p)
     ENTER;
     DBG("IN req=(%d, %d)\n", req->width, req->height);
     if (p->widthtype == WIDTH_REQUEST)
-        p->width = (p->orientation == ORIENT_HORIZ) ? req->width : req->height;
+        p->width = (p->orientation == GTK_ORIENTATION_HORIZONTAL) ? req->width : req->height;
     if (p->heighttype == HEIGHT_REQUEST)
-        p->height = (p->orientation == ORIENT_HORIZ) ? req->height : req->width;
+        p->height = (p->orientation == GTK_ORIENTATION_HORIZONTAL) ? req->height : req->width;
     calculate_position(p);
     req->width  = p->aw;
     req->height = p->ah;
@@ -596,8 +596,8 @@ panel_parse_global(xconf *xc)
     if (p->alpha > 255)
         p->alpha = 255;
     p->orientation = (p->edge == EDGE_TOP || p->edge == EDGE_BOTTOM)
-        ? ORIENT_HORIZ : ORIENT_VERT;
-    if (p->orientation == ORIENT_HORIZ) {
+        ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL;
+    if (p->orientation == GTK_ORIENTATION_HORIZONTAL) {
         p->my_box_new = gtk_hbox_new;
         p->my_separator_new = gtk_vseparator_new;
     } else {

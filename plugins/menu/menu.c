@@ -277,7 +277,7 @@ make_button(plugin_instance *p, xconf *xc)
     m = (menu_priv *) p;
     /* XXX: this code is duplicated in every plugin.
      * Lets run it once in a panel */
-    if (p->panel->orientation == ORIENT_HORIZ)
+    if (p->panel->orientation == GTK_ORIENTATION_HORIZONTAL)
     {
         w = -1;
         h = p->panel->icon_size;

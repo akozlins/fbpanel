@@ -179,7 +179,7 @@ wincmd_constructor(plugin_instance *p)
     XCG(p->xc, "tooltip", &tooltip, str);
     fname = expand_tilda(fname);
     
-    if (p->panel->orientation == ORIENT_HORIZ) {
+    if (p->panel->orientation == GTK_ORIENTATION_HORIZONTAL) {
         w = -1;
         h = p->panel->icon_size;
     } else {

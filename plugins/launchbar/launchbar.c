@@ -16,6 +16,7 @@
 #include "plugin.h"
 #include "gtkbgbox.h"
 #include "run.h"
+#include "gtkbar.h"
 
 //#define DEBUGPRN
 #include "dbg.h"
@@ -226,6 +227,23 @@ read_button(plugin_instance *p, xconf *xc)
     RET(1);
 }
 
+static void
+launchbar_size_alloc(GtkWidget *widget, GtkAllocation *a,
+    launchbar_priv *lb)
+{
+    int dim;
+
+    ENTER;
+    if (lb->plugin.panel->orientation == GTK_ORIENTATION_HORIZONTAL) 
+        dim = a->height / lb->iconsize;
+    else
+        dim = a->width / lb->iconsize;
+    DBG2("width=%d height=%d iconsize=%d -> dim=%d\n",
+        a->width, a->height, lb->iconsize, dim);
+    gtk_bar_set_dimension(GTK_BAR(lb->box), dim);
+    RET();
+}
+                                      
 static int
 launchbar_constructor(plugin_instance *p)
 {
@@ -244,18 +262,23 @@ launchbar_constructor(plugin_instance *p)
    
     ENTER;
     lb = (launchbar_priv *) p;
+    lb->iconsize = p->panel->icon_size;
+    DBG2("iconsize=%d\n", lb->iconsize);
+
     gtk_widget_set_name(p->pwid, "launchbar");
     gtk_rc_parse_string(launchbar_rc);
     //get_button_spacing(&req, GTK_CONTAINER(p->pwid), "");
     ali = gtk_alignment_new(0.5, 0.5, 0, 0);
+    g_signal_connect(G_OBJECT(ali), "size-allocate",
+        (GCallback) launchbar_size_alloc, lb);
+    gtk_container_set_border_width(GTK_CONTAINER(ali), 0);
     gtk_container_add(GTK_CONTAINER(p->pwid), ali);
-    lb->box = p->panel->my_box_new(FALSE, 0);
+    lb->box = gtk_bar_new(p->panel->orientation, 0,
+        lb->iconsize, lb->iconsize);
     gtk_container_add(GTK_CONTAINER(ali), lb->box);
-    gtk_container_set_border_width (GTK_CONTAINER (lb->box), 0);
+    gtk_container_set_border_width(GTK_CONTAINER (lb->box), 0);
     gtk_widget_show_all(ali);
     
-    lb->iconsize = p->panel->icon_size;
-    DBG("iconsize=%d\n", lb->iconsize);
     for (i = 0; (pxc = xconf_find(p->xc, "button", i)); i++)
         read_button(p, pxc);
     RET(1);

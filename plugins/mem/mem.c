@@ -173,7 +173,7 @@ mem_constructor(plugin_instance *p)
     mem->box = p->panel->my_box_new(FALSE, 0);
     gtk_container_set_border_width (GTK_CONTAINER (mem->box), 0);
 
-    if (p->panel->orientation == ORIENT_HORIZ)
+    if (p->panel->orientation == GTK_ORIENTATION_HORIZONTAL)
     {
         o = GTK_PROGRESS_BOTTOM_TO_TOP;
         w = 9;

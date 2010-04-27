@@ -16,7 +16,6 @@ enum { ALLIGN_CENTER, ALLIGN_LEFT, ALLIGN_RIGHT  };
 enum { EDGE_BOTTOM, EDGE_LEFT, EDGE_RIGHT, EDGE_TOP };
 enum { WIDTH_PERCENT, WIDTH_REQUEST, WIDTH_PIXEL };
 enum { HEIGHT_PIXEL, HEIGHT_REQUEST };
-enum { ORIENT_HORIZ, ORIENT_VERT };
 enum { POS_NONE, POS_START, POS_END };
 enum { HIDDEN, WAITING, VISIBLE };
 enum { LAYER_ABOVE, LAYER_BELOW };
@@ -47,7 +46,7 @@ typedef struct _panel
     int ax, ay, aw, ah;  /* prefferd allocation of a panel */
     int cx, cy, cw, ch;  /* current allocation (as reported by configure event) allocation */
     int allign, edge, margin;
-    int orientation;
+    GtkOrientation orientation;
     int widthtype, width;
     int heighttype, height;
     int round_corners_radius;

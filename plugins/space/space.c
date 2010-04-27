@@ -33,7 +33,7 @@ space_constructor(plugin_instance *p)
     size = 1;
     XCG(p->xc, "size", &size, int);
     
-    if (p->panel->orientation == ORIENT_HORIZ) {
+    if (p->panel->orientation == GTK_ORIENTATION_HORIZONTAL) {
         h = 2;
         w = size;
     } else {

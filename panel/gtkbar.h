@@ -47,17 +47,13 @@
 
 typedef struct _GtkBar       GtkBar;
 typedef struct _GtkBarClass  GtkBarClass;
-typedef enum { GTK_BAR_VERTICAL, GTK_BAR_HORIZ } GtkBarOrientation;
 
 struct _GtkBar
 {
     GtkBox box;
-    gint max_child_size;
-    gint child_min_height, child_max_width;
-    gint rows;
-    gint max_chwidth;
-    gint max_chheight;
-    GtkBarOrientation orient;
+    gint child_height, child_width;
+    gint dimension;
+    GtkOrientation orient;
 };
 
 struct _GtkBarClass
@@ -67,8 +63,10 @@ struct _GtkBarClass
 
 
 GType	   gtk_bar_get_type (void) G_GNUC_CONST;
-GtkWidget* gtk_bar_new(GtkBarOrientation orient,
-    gint spacing, gint child_min_height, gint child_max_width);
+GtkWidget* gtk_bar_new(GtkOrientation orient,
+    gint spacing, gint child_height, gint child_width);
+void gtk_bar_set_dimension(GtkBar *bar, gint dimension);
+gint gtk_bar_get_dimension(GtkBar *bar);
 
 #ifdef __cplusplus
 }

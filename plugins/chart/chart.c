@@ -219,8 +219,7 @@ chart_constructor(plugin_instance *p)
     c->ticks = NULL;
     c->gc_cpu = NULL;
     c->da = p->pwid;
-    w = MIN(p->panel->ah, p->panel->aw);
-    w = MIN(w, 50);
+    w = 40;
     h = 25;
     gtk_widget_set_size_request(c->da, w, h);
 
