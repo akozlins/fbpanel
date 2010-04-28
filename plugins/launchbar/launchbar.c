@@ -160,7 +160,7 @@ drag_data_received_cb (GtkWidget *widget,
 	*tmp = '\0';
         tmp = g_strdup_printf("%s %s", b->action, utf8);
         g_spawn_command_line_async(tmp, NULL);
-        DBG2("%s %s\n", b->action, utf8);
+        DBG("%s %s\n", b->action, utf8);
         g_free(utf8);
         g_free(tmp);
     }
@@ -238,7 +238,7 @@ launchbar_size_alloc(GtkWidget *widget, GtkAllocation *a,
         dim = a->height / lb->iconsize;
     else
         dim = a->width / lb->iconsize;
-    DBG2("width=%d height=%d iconsize=%d -> dim=%d\n",
+    DBG("width=%d height=%d iconsize=%d -> dim=%d\n",
         a->width, a->height, lb->iconsize, dim);
     gtk_bar_set_dimension(GTK_BAR(lb->box), dim);
     RET();
@@ -263,7 +263,7 @@ launchbar_constructor(plugin_instance *p)
     ENTER;
     lb = (launchbar_priv *) p;
     lb->iconsize = p->panel->icon_size;
-    DBG2("iconsize=%d\n", lb->iconsize);
+    DBG("iconsize=%d\n", lb->iconsize);
 
     gtk_widget_set_name(p->pwid, "launchbar");
     gtk_rc_parse_string(launchbar_rc);

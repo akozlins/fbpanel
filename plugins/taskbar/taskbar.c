@@ -115,7 +115,7 @@ static gboolean use_net_active=FALSE;
 
 
 #define TASK_WIDTH_MAX   200
-#define TASK_MIN_HEIGHT 34
+#define TASK_MIN_HEIGHT 24
 #define TASK_PADDING     4
 static void tk_display(taskbar_priv *tb, task *tk);
 static void tb_propertynotify(taskbar_priv *tb, XEvent *ev);
@@ -888,50 +888,6 @@ tb_display(taskbar_priv *tb)
 
 }
 
-
-static void
-label_size_alloc(GtkWidget *widget, GtkAllocation *a,
-    taskbar_priv *tb)
-{
-    ENTER;
-    DBG2("x=%d y=%d width=%d height=%d\n",
-        a->x, a->y, a->width, a->height);
-    RET();
-}
-   
-
-static void
-image_size_alloc(GtkWidget *widget, GtkAllocation *a,
-    taskbar_priv *tb)
-{
-    ENTER;
-    DBG2("x=%d y=%d width=%d height=%d\n",
-        a->x, a->y, a->width, a->height);
-    RET();
-}
- 
-static void
-box_size_alloc(GtkWidget *widget, GtkAllocation *a,
-    taskbar_priv *tb)
-{
-    ENTER;
-    DBG2("x=%d y=%d width=%d height=%d\n",
-        a->x, a->y, a->width, a->height);
-    RET();
-}
-   
-
-static void
-button_size_alloc(GtkWidget *widget, GtkAllocation *a,
-    taskbar_priv *tb)
-{
-    ENTER;
-    DBG2("x=%d y=%d width=%d height=%d\n",
-        a->x, a->y, a->width, a->height);
-    RET();
-}
-   
-
 static void
 tk_build_gui(taskbar_priv *tb, task *tk)
 {
@@ -952,8 +908,6 @@ tk_build_gui(taskbar_priv *tb, task *tk)
 
     /* button */
     tk->button = gtk_button_new();
-    g_signal_connect (G_OBJECT(tk->button), "size-allocate",
-            (GCallback) button_size_alloc, tb);
     gtk_button_set_alignment(GTK_BUTTON(tk->button), 0.5, 0.5);
     gtk_widget_show(tk->button);
     gtk_container_set_border_width(GTK_CONTAINER(tk->button), 0);
@@ -979,24 +933,18 @@ tk_build_gui(taskbar_priv *tb, task *tk)
     /* pix */
     tk_update_icon(tb, tk, None);
     w1 = tk->image = gtk_image_new_from_pixbuf(tk->pixbuf);
-    g_signal_connect (G_OBJECT(w1), "size-allocate",
-            (GCallback) image_size_alloc, tb);
     gtk_misc_set_alignment(GTK_MISC(tk->image), 0.5, 0.5);
     gtk_misc_set_padding(GTK_MISC(tk->image), 0, 0);
 
     if (!tb->icons_only) {
         w1 = gtk_hbox_new(FALSE, 1);
-        g_signal_connect (G_OBJECT(w1), "size-allocate",
-            (GCallback) box_size_alloc, tb);
         gtk_container_set_border_width(GTK_CONTAINER(w1), 0);
         gtk_box_pack_start(GTK_BOX(w1), tk->image, FALSE, FALSE, 0);
         tk->label = gtk_label_new(tk->iconified ? tk->iname : tk->name);
-        g_signal_connect (G_OBJECT(tk->label), "size-allocate",
-            (GCallback) label_size_alloc, tb);
         gtk_label_set_ellipsize(GTK_LABEL(tk->label), PANGO_ELLIPSIZE_END);
-        gtk_misc_set_alignment(GTK_MISC(tk->label), 0.0, 0.5);
+        gtk_misc_set_alignment(GTK_MISC(tk->label), 0.0, 0.5); 
         gtk_misc_set_padding(GTK_MISC(tk->label), 0, 0);
-        gtk_box_pack_start(GTK_BOX(w1), tk->label, FALSE, TRUE, 0);
+        gtk_box_pack_start(GTK_BOX(w1), tk->label, TRUE, TRUE, 0);
     }
 
     gtk_container_add (GTK_CONTAINER (tk->button), w1);
@@ -1356,12 +1304,11 @@ taskbar_size_alloc(GtkWidget *widget, GtkAllocation *a,
         dim = a->height / tb->task_min_height;
     else 
         dim = a->width / tb->task_width_max;
-    DBG2("width=%d height=%d task_min_height=%d -> dim=%d\n",
+    DBG("width=%d height=%d task_min_height=%d -> dim=%d\n",
         a->width, a->height, tb->task_min_height, dim);
     gtk_bar_set_dimension(GTK_BAR(tb->bar), dim);
     RET();
 }
-   
 
 static void
 taskbar_build_gui(plugin_instance *p)
