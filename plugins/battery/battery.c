@@ -33,7 +33,19 @@ static gchar *batt_working[] = {
     NULL
 };
 
-static gchar **batt_charging = batt_working;
+static gchar *batt_charging[] = {
+    "battery_charging_0",
+    "battery_charging_1",
+    "battery_charging_2",
+    "battery_charging_3",
+    "battery_charging_4",
+    "battery_charging_5",
+    "battery_charging_6",
+    "battery_charging_7",
+    "battery_charging_8",
+    NULL
+};
+
 static gchar *batt_na[] = {
     "battery_na",
     NULL
