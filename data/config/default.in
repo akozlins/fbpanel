@@ -140,6 +140,7 @@ Plugin {
 Plugin {
     type = menu
     config {
+        IconSize = 22
         #icon = start-here
         icon = logo
         systemmenu {

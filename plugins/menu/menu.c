@@ -26,7 +26,7 @@ typedef struct {
     gboolean has_system_menu;
     gboolean need_rebuild;
     time_t btime;
-    GtkIconSize icon_size;
+    gint icon_size;
 } menu_priv;
 
 xconf *xconf_new_from_systemmenu();
@@ -105,11 +105,9 @@ menu_create_item(xconf *xc, GtkWidget *menu, menu_priv *m)
     if (fname || iname)
     {
         GdkPixbuf *pb;
-        gint icon_w, icon_h;
- 
-        gtk_icon_size_lookup(m->icon_size, &icon_w, &icon_h);
-        DBG("w=%d h=%d\n", icon_w, icon_h);
-        if ((pb = fb_pixbuf_new(iname, fname, icon_w, icon_h, FALSE)))
+        
+        if ((pb = fb_pixbuf_new(iname, fname, m->icon_size, m->icon_size,
+                    FALSE)))
         {
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
                     gtk_image_new_from_pixbuf(pb));
@@ -323,17 +321,10 @@ menu_constructor(plugin_instance *p)
 
     ENTER;
     m = (menu_priv *) p;
-    make_button(p, p->xc);
-    
-    /* Set the default icon size for menu items to 22x22.  This can be
-     * overridden by the gtk+ theme or in the .gtkrc-2.0 file with an 
-     * option like gtk-icon-sizes = "panel-menu=16,16" */
-    m->icon_size = gtk_icon_size_from_name("panel-menu");
-    if (m->icon_size == GTK_ICON_SIZE_INVALID) {
-        m->icon_size = gtk_icon_size_register("panel-menu",
-            MENU_DEFAULT_ICON_SIZE, MENU_DEFAULT_ICON_SIZE);
-    }
+    m->icon_size = MENU_DEFAULT_ICON_SIZE;
+    XCG(p->xc, "iconsize", &m->icon_size, int);
     DBG("icon_size=%d\n", m->icon_size);
+    make_button(p, p->xc);
     g_signal_connect_swapped(G_OBJECT(icon_theme),
         "changed", (GCallback) menu_create, p);
     RET(1);
