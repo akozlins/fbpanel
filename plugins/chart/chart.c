@@ -100,6 +100,26 @@ chart_size_allocate(GtkWidget *widget, GtkAllocation *a, chart_priv *c)
         c->w = a->width;
         c->h = a->height;
         chart_alloc_ticks(c);
+        c->area.x = 0;
+        c->area.y = 0;
+        c->area.width = a->width;
+        c->area.height = a->height;
+        if (c->plugin.panel->transparent) {
+            c->fx = 0;
+            c->fy = 0;
+            c->fw = a->width;
+            c->fh = a->height;
+        } else if (c->plugin.panel->orientation == GTK_ORIENTATION_HORIZONTAL) {
+            c->fx = 0;
+            c->fy = 1;
+            c->fw = a->width;
+            c->fh = a->height -2;
+        } else {
+            c->fx = 1;
+            c->fy = 0;
+            c->fw = a->width -2;
+            c->fh = a->height;
+        }
     }
     gtk_widget_queue_draw(c->da);
     RET();
@@ -112,10 +132,16 @@ chart_expose_event(GtkWidget *widget, GdkEventExpose *event, chart_priv *c)
     ENTER;
     gdk_window_clear(widget->window);
     chart_draw(c);
+
+    gtk_paint_shadow(widget->style, widget->window,
+        widget->state, GTK_SHADOW_ETCHED_IN,
+        &c->area, widget, "frame", c->fx, c->fy, c->fw, c->fh);
+
+#if 0
     gdk_draw_rectangle(widget->window, 
-          //widget->style->black_gc,                       
-          widget->style->bg_gc[GTK_STATE_NORMAL],
-          FALSE, 0, 0, c->w-1, c->h-1);
+        widget->style->bg_gc[GTK_STATE_NORMAL],
+        FALSE, 0, 0, c->w-1, c->h-1);
+#endif    
     RET(FALSE);
 }
 
@@ -210,7 +236,6 @@ static int
 chart_constructor(plugin_instance *p)
 {
     chart_priv *c;
-    int h, w;
     
     ENTER;
     /* must be allocated by caller */
@@ -219,11 +244,8 @@ chart_constructor(plugin_instance *p)
     c->ticks = NULL;
     c->gc_cpu = NULL;
     c->da = p->pwid;
-    w = 40;
-    h = 25;
-    gtk_widget_set_size_request(c->da, w, h);
 
-    //gtk_widget_set_size_request(c->da, 40, 20);
+    gtk_widget_set_size_request(c->da, 40, 25);
     //gtk_container_set_border_width (GTK_CONTAINER (p->pwid), 1);
     g_signal_connect (G_OBJECT (p->pwid), "size-allocate",
           G_CALLBACK (chart_size_allocate), (gpointer) c);

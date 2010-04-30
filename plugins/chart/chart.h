@@ -15,6 +15,8 @@ typedef struct {
     gint **ticks;
     gint pos;
     gint w, h, rows;
+    GdkRectangle area; /* frame area and exact positions */
+    int fx, fy, fw, fh; 
 } chart_priv;
 
 typedef struct {
