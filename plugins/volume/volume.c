@@ -208,7 +208,7 @@ icon_scrolled(GtkWidget *widget, GdkEventScroll *event, volume_priv *c)
         oss_set_volume(c, volume);
         volume_update_gui(c);
     }
-    RET(FALSE);
+    RET(TRUE);
 }
 
 static gboolean
