@@ -1,11 +1,21 @@
 6.1
 New Features:
 * 2977832: meter plugin  - base plugin for icons slide show
-* 2977833: battery plugin (gui part only)
+* 2977833: battery plugin
 * 2981332: volume plugin
 * 2981313: Enhancements to 'tclock' plugin - calendar and transparency
-
+* multiline taskbar: new config MinTaskHeight was added to set minimal
+  task/row height
+* multiline launchbar: row height is MaxIconSize
+* scrolling on panel changes desktops
+* dclock vertical layout was implemented. It still draws digits
+  horizontaly if there is enough space
+* new global config MaxIconSize was added to limits icon size for
+  panel's  plugins
+  
 Fixed Bugs:
+* 2990621: add charging icons to battery plugin
+* 2993878: set menu icons size from panel config not from gtk rc
 * fixed locale/NLS issues with configure
 * chart class struct was made static
 * 2979388: configure broken - problems in busybox environments
