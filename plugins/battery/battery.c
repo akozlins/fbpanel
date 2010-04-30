@@ -68,7 +68,8 @@ battery_update(battery_priv *c)
 {
     gchar buf[50];
     gchar **i;
-    
+
+    ENTER;
     battery_update_os(c);
     if (c->exist) {
         i = c->charging ? batt_charging : batt_working;
@@ -80,8 +81,7 @@ battery_update(battery_priv *c)
         gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid,
             "Runing on AC\nNo battery found");
     }
-    if (i != ((meter_priv *) c)->icons)
-        k->set_icons(&c->meter, i);
+    k->set_icons(&c->meter, i);
     k->set_level(&c->meter, c->level);
     RET(TRUE);
 }
@@ -91,7 +91,8 @@ static int
 battery_constructor(plugin_instance *p)
 {
     battery_priv *c;
-    
+
+    ENTER;
     if (!(k = class_get("meter")))
         RET(0);
     if (!PLUGIN_CLASS(k)->constructor(p))

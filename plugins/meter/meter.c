@@ -16,6 +16,8 @@ meter_set_level(meter_priv *m, int level)
     GdkPixbuf *pb;
 
     ENTER;
+    if (m->level == level)
+        RET();
     if (!m->num)
         RET();
     if (level < 0 || level > 100) {
@@ -31,7 +33,7 @@ meter_set_level(meter_priv *m, int level)
         DBG("loading icon '%s' %s\n", m->icons[i], pb ? "ok" : "failed");
         gtk_image_set_from_pixbuf(GTK_IMAGE(m->meter), pb);
         if (pb)
-            g_object_ref(G_OBJECT(pb));
+            g_object_unref(G_OBJECT(pb));
     }
     m->level = level;
     RET();
@@ -43,12 +45,15 @@ meter_set_icons(meter_priv *m, gchar **icons)
     gchar **s;
 
     ENTER;
+    if (m->icons == icons)
+        RET();
     for (s = icons; *s; s++)
         DBG("icon %s\n", *s);
     m->num = (s - icons);
     DBG("total %d icons\n", m->num);
     m->icons = icons;
     m->cur_icon = -1;
+    m->level = -1;
     RET();
 }
 static void
