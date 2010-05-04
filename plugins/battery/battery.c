@@ -98,8 +98,7 @@ battery_constructor(plugin_instance *p)
     if (!PLUGIN_CLASS(k)->constructor(p))
         RET(0);
     c = (battery_priv *) p;
-    c->timer = g_timeout_add(60000, (GSourceFunc) battery_update,
-        (gpointer) c);
+    c->timer = g_timeout_add(2000, (GSourceFunc) battery_update, c);
     battery_update(c);
     RET(1);
 }
