@@ -313,6 +313,13 @@ Plugin {
     }
 }
 
+plugin {
+    type = volume
+}
+
+#plugin {
+#    type = battery
+#}
 
 Plugin {
     type = tray
