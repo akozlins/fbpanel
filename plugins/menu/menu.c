@@ -22,9 +22,8 @@ typedef struct {
     GtkWidget *menu, *bg;
     int iconsize, paneliconsize;
     xconf *xc;
-    guint tout;
+    guint tout, rtout;
     gboolean has_system_menu;
-    gboolean need_rebuild;
     time_t btime;
     gint icon_size;
 } menu_priv;
@@ -201,7 +200,6 @@ menu_create(plugin_instance *p)
     ENTER;
     if (m->menu)
         menu_destroy(m);
-    m->need_rebuild = FALSE;
     m->xc = menu_expand_xc(p->xc, m);
     m->menu = menu_create_menu(m->xc, TRUE, m);
     g_signal_connect(G_OBJECT(m->menu), "unmap", 
@@ -216,8 +214,7 @@ static void
 menu_destroy(menu_priv *m)
 {
     ENTER;
-    if (m->menu)
-    {
+    if (m->menu) {
         gtk_widget_destroy(m->menu);
         m->menu = NULL;
         m->has_system_menu = FALSE;
@@ -226,8 +223,11 @@ menu_destroy(menu_priv *m)
         g_source_remove(m->tout);
         m->tout = 0;
     }
-    if (m->xc)
-    {
+    if (m->rtout) {
+        g_source_remove(m->rtout);
+        m->rtout = 0;
+    }
+    if (m->xc) {
         xconf_del(m->xc, FALSE);
         m->xc = NULL;
     }
@@ -251,7 +251,7 @@ my_button_pressed(GtkWidget *widget, GdkEventButton *event, plugin_instance *p)
         && (event->x >=0 && event->x < widget->allocation.width)
         && (event->y >=0 && event->y < widget->allocation.height))
     {
-        if (!m->menu || m->need_rebuild)
+        if (!m->menu)
             menu_create(p);
         if (p->panel->autohide)
             ah_stop(p->panel);
@@ -302,15 +302,41 @@ make_button(plugin_instance *p, xconf *xc)
 }
 
 static gboolean
+rebuild_menu(plugin_instance *p)
+{
+    menu_priv *m = (menu_priv *) p;
+    
+    ENTER;
+    if (m->menu && GTK_WIDGET_MAPPED(m->menu))
+        RET(TRUE);
+    menu_create(p);
+    m->rtout = 0;
+    RET(FALSE);
+}
+
+static void
+schedule_rebuild_menu(plugin_instance *p)
+{
+    menu_priv *m = (menu_priv *) p;
+    
+    ENTER;
+    if (!m->rtout) {
+        DBG("scheduling menu rebuild p=%p\n", p);
+        m->rtout = g_timeout_add(2000, (GSourceFunc) rebuild_menu, p);
+    }
+    RET();
+
+}
+
+static gboolean
 check_system_menu(plugin_instance *p)
 {
     menu_priv *m = (menu_priv *) p;
     
     ENTER;
-    if (systemmenu_changed(m->btime)) {
-        DBG("system nenu changed - need rebuild all\n");
-        m->need_rebuild = TRUE;
-    }
+    if (systemmenu_changed(m->btime)) 
+        schedule_rebuild_menu(p);
+    
     RET(TRUE);
 }
 
@@ -326,7 +352,8 @@ menu_constructor(plugin_instance *p)
     DBG("icon_size=%d\n", m->icon_size);
     make_button(p, p->xc);
     g_signal_connect_swapped(G_OBJECT(icon_theme),
-        "changed", (GCallback) menu_create, p);
+        "changed", (GCallback) schedule_rebuild_menu, p);
+    schedule_rebuild_menu(p);
     RET(1);
 }
 
@@ -338,7 +365,7 @@ menu_destructor(plugin_instance *p)
 
     ENTER;
     g_signal_handlers_disconnect_by_func(G_OBJECT(icon_theme),
-        menu_create, p);
+        schedule_rebuild_menu, p);
     menu_destroy(m);
     RET();
 }
