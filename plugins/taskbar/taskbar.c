@@ -1314,13 +1314,23 @@ static void
 taskbar_build_gui(plugin_instance *p)
 {
     taskbar_priv *tb = (taskbar_priv *) p;
+    GtkWidget *ali;
     
     ENTER;
+    if (p->panel->orientation == GTK_ORIENTATION_HORIZONTAL) 
+        ali = gtk_alignment_new(0.0, 0.5, 0, 0);
+    else
+        ali = gtk_alignment_new(0.5, 0.0, 0, 0);
+    g_signal_connect(G_OBJECT(ali), "size-allocate",
+        (GCallback) taskbar_size_alloc, tb);
+    gtk_container_set_border_width(GTK_CONTAINER(ali), 0);
+    gtk_container_add(GTK_CONTAINER(p->pwid), ali);
+    
     tb->bar = gtk_bar_new(p->panel->orientation, tb->spacing,
         tb->task_min_height, tb->task_width_max);
     gtk_container_set_border_width(GTK_CONTAINER(tb->bar), 0);
-    gtk_container_add(GTK_CONTAINER(p->pwid), tb->bar);
-    gtk_widget_show(tb->bar);
+    gtk_container_add(GTK_CONTAINER(ali), tb->bar);
+    gtk_widget_show_all(ali);
   
     tb->gen_pixbuf = gdk_pixbuf_new_from_xpm_data((const char **)icon_xpm);
 
@@ -1334,8 +1344,7 @@ taskbar_build_gui(plugin_instance *p)
           G_CALLBACK (tb_net_number_of_desktops), (gpointer) tb);
     g_signal_connect (G_OBJECT (fbev), "client_list",
           G_CALLBACK (tb_net_client_list), (gpointer) tb);
-    g_signal_connect (G_OBJECT(tb->bar), "size-allocate",
-        (GCallback) taskbar_size_alloc, tb);
+   
     tb->desk_num = get_net_number_of_desktops();
     tb->cur_desk = get_net_current_desktop();
     tb->focused = NULL;
@@ -1444,7 +1453,7 @@ taskbar_destructor(plugin_instance *p)
     g_hash_table_destroy(tb->task_list);
     if (tb->wins)
         XFree(tb->wins);
-    gtk_widget_destroy(tb->bar);
+    //gtk_widget_destroy(tb->bar); // destroy of p->pwid does it all
     gtk_widget_destroy(tb->menu);
     DBG("alloc_no=%d\n", tb->alloc_no);
     RET();
