@@ -296,16 +296,18 @@ mk_tab_profile(xconf *xc)
 static void
 dialog_response_event(GtkDialog *_dialog, gint rid, xconf *xc)
 {
+    xconf *oxc = g_object_get_data(G_OBJECT(dialog), "oxc");
+    
     ENTER;
     if (rid == GTK_RESPONSE_APPLY ||
         rid == GTK_RESPONSE_OK)
     {
-        xconf *oxc;
-        
         DBG("apply changes\n");
-        oxc = g_object_get_data(G_OBJECT(dialog), "oxc");
         if (xconf_cmp(xc, oxc))
         {
+            xconf_del(oxc, FALSE);
+            oxc = xconf_dup(xc);
+            g_object_set_data(G_OBJECT(dialog), "oxc", oxc);
             xconf_save_to_profile(xc);
             gtk_main_quit();
         }
@@ -325,6 +327,7 @@ dialog_response_event(GtkDialog *_dialog, gint rid, xconf *xc)
         gconf_block_free(prop_block);
         gconf_block_free(ah_block);
         xconf_del(xc, FALSE);
+        xconf_del(oxc, FALSE);
     }
     RET();
 }
@@ -362,7 +365,8 @@ mk_dialog(xconf *oxc)
     DBG("connecting sugnal to %p\n",  dialog);
 
     xc = xconf_dup(oxc);
-    g_object_set_data(G_OBJECT(dialog), "oxc", oxc);
+    g_object_set_data(G_OBJECT(dialog), "oxc", xc);
+    xc = xconf_dup(oxc);
     
     g_signal_connect (G_OBJECT(dialog), "response",
         (GCallback) dialog_response_event, xc);
