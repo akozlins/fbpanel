@@ -124,7 +124,7 @@ Global {
     roundcorners = true
     roundcornersradius = 7
     layer = none
-    MaxIconSize = 32
+    MaxElemHeight = 32
 }
 
 

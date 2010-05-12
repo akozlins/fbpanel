@@ -50,9 +50,8 @@ typedef struct _panel
     int widthtype, width;
     int heighttype, height;
     int round_corners_radius;
-    int max_icon_size;
-    int icon_size;
-    
+    int max_elem_height;
+
     gint self_destroy;
     gint setdocktype;
     gint setstrut;

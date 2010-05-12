@@ -102,8 +102,8 @@ mk_effects_block(xconf *xc)
     gconf_block_add(ah_block, w, FALSE);
     gconf_block_add(effects_block, ah_block->main, TRUE);
     
-    w = gconf_edit_int(effects_block, xconf_get(xc, "maxiconsize"), 0, 128);
-    gconf_block_add(effects_block, gtk_label_new("Max Icon Size"), TRUE);
+    w = gconf_edit_int(effects_block, xconf_get(xc, "maxelemheight"), 0, 128);
+    gconf_block_add(effects_block, gtk_label_new("Max Element Height"), TRUE);
     gconf_block_add(effects_block, w, FALSE);
     gconf_block_add(gl_block, effects_block->main, TRUE);
     

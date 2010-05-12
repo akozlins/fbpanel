@@ -262,7 +262,7 @@ launchbar_constructor(plugin_instance *p)
    
     ENTER;
     lb = (launchbar_priv *) p;
-    lb->iconsize = p->panel->icon_size;
+    lb->iconsize = p->panel->max_elem_height;
     DBG("iconsize=%d\n", lb->iconsize);
 
     gtk_widget_set_name(p->pwid, "launchbar");

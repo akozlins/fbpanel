@@ -278,11 +278,11 @@ make_button(plugin_instance *p, xconf *xc)
     if (p->panel->orientation == GTK_ORIENTATION_HORIZONTAL)
     {
         w = -1;
-        h = p->panel->icon_size;
+        h = p->panel->max_elem_height;
     }
     else
     {
-        w = p->panel->icon_size;
+        w = p->panel->max_elem_height;
         h = -1;
     }
     fname = iname = NULL;

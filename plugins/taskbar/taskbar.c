@@ -84,7 +84,7 @@ typedef struct _taskbar{
 
     int iconsize;
     int task_width_max;
-    int task_min_height;
+    int task_height_max;
     int accept_skip_pager;
     int show_iconified;
     int show_mapped;
@@ -115,7 +115,7 @@ static gboolean use_net_active=FALSE;
 
 
 #define TASK_WIDTH_MAX   200
-#define TASK_MIN_HEIGHT 24
+#define TASK_HEIGHT_MAX  28
 #define TASK_PADDING     4
 static void tk_display(taskbar_priv *tb, task *tk);
 static void tb_propertynotify(taskbar_priv *tb, XEvent *ev);
@@ -1301,11 +1301,11 @@ taskbar_size_alloc(GtkWidget *widget, GtkAllocation *a,
 
     ENTER;
     if (tb->plugin.panel->orientation == GTK_ORIENTATION_HORIZONTAL) 
-        dim = a->height / tb->task_min_height;
+        dim = a->height / tb->task_height_max;
     else 
         dim = a->width / tb->task_width_max;
-    DBG("width=%d height=%d task_min_height=%d -> dim=%d\n",
-        a->width, a->height, tb->task_min_height, dim);
+    DBG("width=%d height=%d task_height_max=%d -> dim=%d\n",
+        a->width, a->height, tb->task_height_max, dim);
     gtk_bar_set_dimension(GTK_BAR(tb->bar), dim);
     RET();
 }
@@ -1327,7 +1327,7 @@ taskbar_build_gui(plugin_instance *p)
     gtk_container_add(GTK_CONTAINER(p->pwid), ali);
     
     tb->bar = gtk_bar_new(p->panel->orientation, tb->spacing,
-        tb->task_min_height, tb->task_width_max);
+        tb->task_height_max, tb->task_width_max);
     gtk_container_set_border_width(GTK_CONTAINER(tb->bar), 0);
     gtk_container_add(GTK_CONTAINER(ali), tb->bar);
     gtk_widget_show_all(ali);
@@ -1394,7 +1394,7 @@ taskbar_constructor(plugin_instance *p)
     tb->show_mapped       = 1;
     tb->show_all_desks    = 0;
     tb->task_width_max    = TASK_WIDTH_MAX;
-    tb->task_min_height   = TASK_MIN_HEIGHT;
+    tb->task_height_max   = p->panel->max_elem_height;
     tb->task_list         = g_hash_table_new(g_int_hash, g_int_equal);
     tb->focused_state     = GTK_STATE_ACTIVE;
     tb->normal_state      = GTK_STATE_NORMAL;
@@ -1411,16 +1411,19 @@ taskbar_constructor(plugin_instance *p)
     XCG(xc, "usemousewheel", &tb->use_mouse_wheel, enum, bool_enum);
     XCG(xc, "useurgencyhint", &tb->use_urgency_hint, enum, bool_enum);
     XCG(xc, "maxtaskwidth", &tb->task_width_max, int);
-    XCG(xc, "mintaskheight", &tb->task_min_height, int);
 
+    /* FIXME: until per-plugin elem height limit is ready, lets
+     * use hardcoded TASK_HEIGHT_MAX pixels */
+    if (tb->task_height_max > TASK_HEIGHT_MAX)
+        tb->task_height_max = TASK_HEIGHT_MAX; 
     if (p->panel->orientation == GTK_ORIENTATION_HORIZONTAL) {
-        tb->iconsize = MIN(p->panel->ah, tb->task_min_height) - req.height;
+        tb->iconsize = MIN(p->panel->ah, tb->task_height_max) - req.height;
         if (tb->icons_only)
             tb->task_width_max = tb->iconsize + req.width;
     } else {
         if (p->panel->aw <= 30)
             tb->icons_only = 1;
-        tb->iconsize = MIN(p->panel->aw, tb->task_min_height) - req.height;
+        tb->iconsize = MIN(p->panel->aw, tb->task_height_max) - req.height;
         if (tb->icons_only)
             tb->task_width_max = tb->iconsize + req.height;
     }

@@ -548,7 +548,7 @@ panel_parse_global(xconf *xc)
     p->width = 100;
     p->heighttype = HEIGHT_PIXEL;
     p->height = PANEL_HEIGHT_DEFAULT;
-    p->max_icon_size = PANEL_HEIGHT_MAX;
+    p->max_elem_height = PANEL_HEIGHT_MAX;
     p->setdocktype = 1;
     p->setstrut = 1;
     p->round_corners = 1;
@@ -586,7 +586,7 @@ panel_parse_global(xconf *xc)
     XCG(xc, "transparent", &p->transparent, enum, bool_enum);
     XCG(xc, "alpha", &p->alpha, int);
     XCG(xc, "tintcolor", &p->tintcolor_name, str);
-    XCG(xc, "maxiconsize", &p->max_icon_size, int);
+    XCG(xc, "maxelemheight", &p->max_elem_height, int);
     
     /* Sanity checks */
     if (!gdk_color_parse(p->tintcolor_name, &p->gtintcolor))
@@ -615,7 +615,8 @@ panel_parse_global(xconf *xc)
         else if (p->height > PANEL_HEIGHT_MAX)
             p->height = PANEL_HEIGHT_MAX;
     }
-    p->icon_size = MIN(p->height, p->max_icon_size);
+    if (p->max_elem_height > p->height)
+        p->max_elem_height = p->height;
     p->curdesk = get_net_current_desktop();
     p->desknum = get_net_number_of_desktops();
     //p->workarea = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_WORKAREA,

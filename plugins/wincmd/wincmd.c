@@ -181,9 +181,9 @@ wincmd_constructor(plugin_instance *p)
     
     if (p->panel->orientation == GTK_ORIENTATION_HORIZONTAL) {
         w = -1;
-        h = p->panel->icon_size;
+        h = p->panel->max_elem_height;
     } else {
-        w = p->panel->icon_size;
+        w = p->panel->max_elem_height;
         h = -1;
     }
     button = fb_button_new(iname, fname, w, h, 0x202020, NULL);
