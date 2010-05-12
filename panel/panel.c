@@ -615,7 +615,8 @@ panel_parse_global(xconf *xc)
         else if (p->height > PANEL_HEIGHT_MAX)
             p->height = PANEL_HEIGHT_MAX;
     }
-    if (p->max_elem_height > p->height)
+    if (p->max_elem_height > p->height ||
+            p->max_elem_height < PANEL_HEIGHT_MIN)
         p->max_elem_height = p->height;
     p->curdesk = get_net_current_desktop();
     p->desknum = get_net_number_of_desktops();
