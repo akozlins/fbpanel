@@ -10,9 +10,10 @@ New Features:
 * scrolling on panel changes desktops
 * dclock vertical layout was implemented. It still draws digits
   horizontaly if there is enough space
-* new global config MaxIconSize was added to limits icon size for
-  panel's  plugins
-  
+* new global config MaxEelemHeight was added to limit plugin elements
+  (eg icons, messages) height
+* 993836: add GTK frame to non-transparent chart plugins
+
 Fixed Bugs:
 * 2990621: add charging icons to battery plugin
 * 2993878: set menu icons size from panel config not from gtk rc
