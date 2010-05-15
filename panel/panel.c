@@ -309,8 +309,8 @@ panel_configure_event(GtkWidget *widget, GdkEventConfigure *e, panel *p)
  * otherwise it's far
  */
 
-#define GAP 30
-#define PERIOD 500
+#define GAP 2
+#define PERIOD 300
 
 static gboolean ah_state_visible(panel *p);
 static gboolean ah_state_waiting(panel *p);
@@ -334,8 +334,40 @@ mouse_watch(panel *p)
 
     ENTER;
     gdk_display_get_pointer(gdk_display_get_default(), NULL, &x, &y, NULL);
+    
+/*  Reduce sensitivity area
     p->ah_far = ((x < p->cx - GAP) || (x > p->cx + p->cw + GAP)
         || (y < p->cy - GAP) || (y > p->cy + p->ch + GAP));
+*/
+
+    gint cx, cy, cw, ch;
+
+    cx = p->cx;
+    cy = p->cy;
+    cw = p->aw;
+    ch = p->ah;
+
+    /* reduce area which will raise panel so it does not interfere with apps */
+    if (p->ah_state == ah_state_hidden) {
+        switch (p->edge) {
+        case EDGE_LEFT:
+            cw = GAP;
+            break;
+        case EDGE_RIGHT:
+            cx = cx + cw - GAP;
+            cw = GAP;
+            break;
+        case EDGE_TOP:
+            ch = GAP;
+            break;
+        case EDGE_BOTTOM:
+            cy = cy + ch - GAP;
+            ch = GAP;
+            break;
+       }
+    }
+    p->ah_far = ((x < cx) || (x > cx + cw) || (y < cy) || (y > cy + ch));
+
     p->ah_state(p);
     RET(TRUE);
 }
