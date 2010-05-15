@@ -47,6 +47,10 @@ panel_set_wm_strut(panel *p)
     ENTER;
     if (!GTK_WIDGET_MAPPED(p->topgwin))
         return;
+    /* most wm's tend to ignore struts of unmapped windows, and that's how
+     * fbpanel hides itself. so no reason to set it. */
+    if (p->autohide)
+        return;
     switch (p->edge) {
     case EDGE_LEFT:
         i = 0;
