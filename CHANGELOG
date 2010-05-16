@@ -25,6 +25,7 @@ Fixed Bugs:
 * 2990610: panel with autohide disappears when positioned at (0,0)
 * 2990620: fix dclock for vertical orientation
 * 2991081: do not autohide panel when menu is open
+* 3002021: reduce sensitive area of hidden panel
 
 6.0
 * adding xlogout script
