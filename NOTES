@@ -1,3 +1,13 @@
+6.1
+This release features major enhancements and bug fixes, namely:
+* new plugin - laptop battery monitor
+* new plugin - volume control
+* multiline placement of elements in taskbar and launchbar
+* digital clock in vertical layouts draws hours above minutes
+* fixed compilation issues in busybox environments
+* fixed locale/NLS issues in configure
+* autohide was improved
+
 6.0
 This release features minor enhancements and bug fixes, namely:
 * redesign of configuration engine to be faster and simpler
