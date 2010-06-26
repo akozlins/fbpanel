@@ -183,20 +183,21 @@ egg_tray_manager_new (void)
 
 static gboolean
 egg_tray_manager_plug_removed (GtkSocket       *socket,
-			       EggTrayManager  *manager)
+    EggTrayManager  *manager)
 {
-  Window *window;
+    Window *window;
 
-  window = g_object_get_data (G_OBJECT (socket), "egg-tray-child-window");
+    ENTER;
+    window = g_object_get_data (G_OBJECT (socket), "egg-tray-child-window");
 
-  g_hash_table_remove (manager->socket_table, GINT_TO_POINTER (*window));
-  g_object_set_data (G_OBJECT (socket), "egg-tray-child-window",
-		     NULL);
+    g_hash_table_remove (manager->socket_table, GINT_TO_POINTER (*window));
+    g_object_set_data (G_OBJECT (socket), "egg-tray-child-window",
+        NULL);
   
-  g_signal_emit (manager, manager_signals[TRAY_ICON_REMOVED], 0, socket);
+    g_signal_emit (manager, manager_signals[TRAY_ICON_REMOVED], 0, socket);
 
-  /* This destroys the socket. */
-  return FALSE;
+    /* This destroys the socket. */
+    RET(FALSE);
 }
 
 static gboolean
@@ -239,8 +240,8 @@ egg_tray_manager_socket_style_set (GtkWidget *widget,
 }
 
 static void
-egg_tray_manager_handle_dock_request (EggTrayManager       *manager,
-      XClientMessageEvent  *xevent)
+egg_tray_manager_handle_dock_request(EggTrayManager *manager,
+    XClientMessageEvent  *xevent)
 {
     GtkWidget *socket;
     Window *window;
@@ -257,6 +258,7 @@ egg_tray_manager_handle_dock_request (EggTrayManager       *manager,
           G_CALLBACK (egg_tray_manager_socket_exposed), NULL);
     g_signal_connect_after (socket, "style_set",
           G_CALLBACK (egg_tray_manager_socket_style_set), NULL);
+    gtk_widget_show (socket);
 
 
     /* We need to set the child window here
@@ -265,28 +267,38 @@ egg_tray_manager_handle_dock_request (EggTrayManager       *manager,
      */
     window = g_new (Window, 1);
     *window = xevent->data.l[2];
-      
-    g_object_set_data_full (G_OBJECT (socket),
-          "egg-tray-child-window",
-          window, g_free);
-    g_signal_emit (manager, manager_signals[TRAY_ICON_ADDED], 0,
-          socket);
-
+    DBG("plug window %lx\n", *window);
+    g_object_set_data_full (G_OBJECT (socket), "egg-tray-child-window",
+        window, g_free);
+    g_signal_emit(manager, manager_signals[TRAY_ICON_ADDED], 0,
+        socket);
     /* Add the socket only if it's been attached */
-    if (GTK_IS_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (socket)))) {
+    if (GTK_IS_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(socket)))) {
         GtkRequisition req;
+        XWindowAttributes wa;
+        
+        DBG("socket has window. going on\n");
+        gtk_socket_add_id(GTK_SOCKET (socket), xevent->data.l[2]);
+        g_signal_connect(socket, "plug_removed",
+              G_CALLBACK(egg_tray_manager_plug_removed), manager);
 
-        g_signal_connect (socket, "plug_removed",
-              G_CALLBACK (egg_tray_manager_plug_removed), manager);
-      
-        gtk_socket_add_id (GTK_SOCKET (socket), xevent->data.l[2]);
-
-        g_hash_table_insert (manager->socket_table, GINT_TO_POINTER (xevent->data.l[2]), socket);
+        gdk_error_trap_push();
+        XGetWindowAttributes(GDK_DISPLAY(), *window, &wa);
+        if (gdk_error_trap_pop()) {
+            ERR("can't embed window %lx\n", xevent->data.l[2]);
+            goto error;
+        }
+        g_hash_table_insert(manager->socket_table,
+            GINT_TO_POINTER(xevent->data.l[2]), socket);
         req.width = req.height = 1;
-        gtk_widget_size_request (socket, &req);
-
-    } else
-        gtk_widget_destroy (socket);
+        gtk_widget_size_request(socket, &req);
+        RET();
+    }
+error:    
+    DBG("socket has NO window. destroy it\n");
+    g_signal_emit(manager, manager_signals[TRAY_ICON_REMOVED], 0,
+        socket);
+    gtk_widget_destroy(socket);
     RET();
 }
 
