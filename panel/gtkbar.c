@@ -118,7 +118,7 @@ gtk_bar_size_request(GtkWidget *widget, GtkRequisition *requisition)
     GtkBar *bar = GTK_BAR(widget);;
     GtkBoxChild *child;
     GList *children;
-    gint nvis_children, rows, cols;
+    gint nvis_children, rows, cols, dim;
     
     nvis_children = 0;
     children = box->children;
@@ -141,12 +141,12 @@ gtk_bar_size_request(GtkWidget *widget, GtkRequisition *requisition)
         requisition->height = 2;
         return;
     }
-    
+    dim = MIN(bar->dimension, nvis_children);
     if (bar->orient == GTK_ORIENTATION_HORIZONTAL) {
-        rows = bar->dimension;
+        rows = dim;
         cols = (gint) ceilf((float) nvis_children / rows);
     } else {
-        cols = bar->dimension;
+        cols = dim;
         rows = (gint) ceilf((float) nvis_children / cols);
     }
     
@@ -165,7 +165,7 @@ gtk_bar_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
     GtkBoxChild *child;
     GList *children;
     GtkAllocation child_allocation;
-    gint nvis_children, tmp, rows, cols;
+    gint nvis_children, tmp, rows, cols, dim;
 
     ENTER;
     DBG("a.w=%d  a.h=%d\n", allocation->width, allocation->height);
@@ -183,13 +183,14 @@ gtk_bar_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
             nvis_children += 1;
     }
     gtk_widget_queue_draw(widget);
+    dim = MIN(bar->dimension, nvis_children);
     if (nvis_children == 0)
         RET();
     if (bar->orient == GTK_ORIENTATION_HORIZONTAL) {
-        rows = bar->dimension;
+        rows = dim;
         cols = (gint) ceilf((float) nvis_children / rows);
     } else {
-        cols = bar->dimension;
+        cols = dim;
         rows = (gint) ceilf((float) nvis_children / cols);
     }
     DBG("rows=%d cols=%d\n", rows, cols);
