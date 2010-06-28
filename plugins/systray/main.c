@@ -23,7 +23,23 @@ typedef struct {
     plugin_instance plugin;
     GtkWidget *box;
     EggTrayManager *tray_manager;
+    FbBg *bg;
+    gulong sid;
 } tray_priv;
+
+static void
+tray_bg_changed(FbBg *bg, GtkWidget *widget)
+{
+    ENTER;
+    gtk_widget_set_size_request(widget, widget->allocation.width,
+        widget->allocation.height);
+    gtk_widget_hide(widget);
+    if (gtk_events_pending())
+        gtk_main_iteration();
+    gtk_widget_show(widget);
+    gtk_widget_set_size_request(widget, -1, -1);
+    RET();
+}
 
 static void
 tray_added (EggTrayManager *manager, GtkWidget *icon, tray_priv *tr)
@@ -32,6 +48,7 @@ tray_added (EggTrayManager *manager, GtkWidget *icon, tray_priv *tr)
     gtk_box_pack_end(GTK_BOX(tr->box), icon, FALSE, FALSE, 0);
     gtk_widget_show(icon);
     gdk_display_sync(gtk_widget_get_display(icon));
+    tray_bg_changed(NULL, tr->plugin.pwid);
     RET();
 }
 
@@ -40,6 +57,7 @@ tray_removed (EggTrayManager *manager, GtkWidget *icon, tray_priv *tr)
 {
     ENTER;
     DBG("del icon\n");
+    tray_bg_changed(NULL, tr->plugin.pwid);
     RET();
 }
 
@@ -70,30 +88,12 @@ tray_destructor(plugin_instance *p)
     tray_priv *tr = (tray_priv *) p;
 
     ENTER;
+    g_signal_handler_disconnect(tr->bg, tr->sid);
+    g_object_unref(tr->bg);
     /* Make sure we drop the manager selection */
     if (tr->tray_manager)
         g_object_unref(G_OBJECT(tr->tray_manager));
     fixed_tip_hide();
-    RET();
-}
-
-static void
-tray_notify_style_event(GtkWidget *w, GParamSpec *arg1, GtkWidget *widget)
-{
-    ENTER;
-    /* generates expose event on plugged (reparented) windows */
-    gtk_widget_set_size_request(w, w->allocation.width, w->allocation.height);
-    gtk_widget_hide(widget);
-    if (gtk_events_pending())
-        gtk_main_iteration();
-    gtk_widget_show(widget);
-    gtk_widget_set_size_request(w, -1, -1);
-#if 0    
-    gtk_container_foreach(GTK_CONTAINER (widget),
-        (GtkCallback) gtk_widget_hide, NULL);
-    gtk_container_foreach(GTK_CONTAINER (widget),
-        (GtkCallback) gtk_widget_show, NULL);
-#endif
     RET();
 }
 
@@ -137,6 +137,9 @@ tray_constructor(plugin_instance *p)
     gtk_container_add(GTK_CONTAINER(ali), tr->box);
     gtk_container_set_border_width(GTK_CONTAINER (tr->box), 0);
     gtk_widget_show_all(ali);
+    tr->bg = fb_bg_get_for_display();
+    tr->sid = g_signal_connect(tr->bg, "changed",
+        G_CALLBACK(tray_bg_changed), p->pwid);
     
     screen = gtk_widget_get_screen(p->panel->topgwin);
     
