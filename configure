@@ -338,7 +338,6 @@ add_var mandir "man documentation" '$prefix/man'
 add_var infodir "info documentation" '$prefix/info'
 add_var localstatedir "modifiable single-machine data in DIR" '$prefix/var'
 add_var topdir "project's top directory" '`pwd`'
-add_var version "version" '`< version`'
 add_feature debug "debug build" disabled
 
 #########################
