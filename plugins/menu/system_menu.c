@@ -5,6 +5,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "panel.h"
 #include "xconf.h"
 
 //#define DEBUGPRN
@@ -20,18 +21,16 @@ typedef struct {
 } cat_info;
 
 static cat_info main_cats[] = {
-    { "AudioVideo", "applications-multimedia", "Audio & Video" },
-
-    //{ "Education",  "applications-education" },
-    { "Education",  "applications-other" },
-    { "Game",       "applications-games" },
-    { "Graphics",   "applications-graphics" },
-    { "Network",    "applications-internet" },
-    { "Office",     "applications-office" },
-    { "Settings",   "preferences-system" },
-    { "System",     "applications-system" },
-    { "Utility",    "applications-utilities" },
-    { "Development","applications-development" },
+    { "AudioVideo", "applications-multimedia", c_("Audio & Video") },
+    { "Education",  "applications-other", c_("Education") },
+    { "Game",       "applications-games", c_("Game") },
+    { "Graphics",   "applications-graphics", c_("Graphics") },
+    { "Network",    "applications-internet", c_("Network") },
+    { "Office",     "applications-office", c_("Office") },
+    { "Settings",   "preferences-system", c_("Settings") },
+    { "System",     "applications-system", c_("System") },
+    { "Utility",    "applications-utilities", c_("Utilities") },
+    { "Development","applications-development", c_("Development") },
 };
 
 static void
@@ -298,8 +297,7 @@ xconf_new_from_systemmenu()
         mxc = xconf_new("menu", NULL);
         xconf_append(xc, mxc);
 
-        tmp = xconf_new("name", main_cats[i].local_name ?
-            main_cats[i].local_name : main_cats[i].name);
+        tmp = xconf_new("name", _(main_cats[i].local_name));
         xconf_append(mxc, tmp);
         
         tmp = xconf_new("icon", main_cats[i].icon);

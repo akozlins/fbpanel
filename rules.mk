@@ -68,6 +68,15 @@ CLEANLIST += $(SRCS:.c=.o) $(SRCS:.c=.d)
 $(OBJS) : $(EXTRA_DEPS)
 endif
 
+ifneq (,$(PO))
+MO = $(PO:.po=.mo)
+all : $(MO)
+CLEANLIST += $(MO)
+%.mo : %.po
+	$(call summary,PO  ,$@)
+	$Qmsgfmt -o $@ $<
+endif
+
 
 %.o : %.c
 	$(call summary,CC  ,$@)

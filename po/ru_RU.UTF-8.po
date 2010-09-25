@@ -1,0 +1,67 @@
+# Russian translations for fbpanel package.
+# Copyright (C) 2010 THE fbpanel'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the fbpanel package.
+# Automatically generated, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: fbpanel 6.2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-09-25 02:50+0200\n"
+"PO-Revision-Date: 2010-09-25 02:50+0200\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: plugins/menu/system_menu.c:23
+msgid "Audio & Video"
+msgstr "Мультимедиа"
+
+#: plugins/menu/system_menu.c:24
+msgid "Education"
+msgstr "Образование"
+
+#: plugins/menu/system_menu.c:25
+msgid "Game"
+msgstr "Игры"
+
+#: plugins/menu/system_menu.c:26
+msgid "Graphics"
+msgstr "Графика"
+
+#: plugins/menu/system_menu.c:27
+msgid "Network"
+msgstr "Сеть"
+
+#: plugins/menu/system_menu.c:28
+msgid "Office"
+msgstr "Офис"
+
+#: plugins/menu/system_menu.c:29
+msgid "Settings"
+msgstr "Настройки"
+
+#: plugins/menu/system_menu.c:30
+msgid "System"
+msgstr "Система"
+
+#: plugins/menu/system_menu.c:31
+msgid "Utilities"
+msgstr "Утилиты"
+
+#: plugins/menu/system_menu.c:32
+msgid "Development"
+msgstr "Разработка"
+
+#: plugins/taskbar/taskbar.c:1267
+msgid "Raise"
+msgstr "Развернуть"
+
+#: plugins/taskbar/taskbar.c:1274
+msgid "Iconify"
+msgstr "Свернуть"

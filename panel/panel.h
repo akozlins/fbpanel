@@ -6,6 +6,10 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define c_(String) String
+
 #include "config.h"
 
 #include "bg.h"

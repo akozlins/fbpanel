@@ -1264,14 +1264,14 @@ taskbar_make_menu(taskbar_priv *tb)
     ENTER;
     menu = gtk_menu_new ();
 
-    mi = gtk_image_menu_item_new_with_label ("Raise");
+    mi = gtk_image_menu_item_new_with_label (_("Raise"));
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
           gtk_image_new_from_stock(GTK_STOCK_GO_UP, GTK_ICON_SIZE_MENU));
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
     g_signal_connect(G_OBJECT(mi), "activate", (GCallback)menu_raise_window, tb);
     gtk_widget_show (mi);
 
-    mi = gtk_image_menu_item_new_with_label ("Iconify");
+    mi = gtk_image_menu_item_new_with_label (_("Iconify"));
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi),
           gtk_image_new_from_stock(GTK_STOCK_UNDO, GTK_ICON_SIZE_MENU));
     gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
