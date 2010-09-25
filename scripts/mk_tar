@@ -1,29 +1,73 @@
 #!/bin/bash
 
-# This script creates brizpped tar archive of the project
-# with name NAME-VERSION.tbz2
-# NAME - environment variable NAME or TOPDIR's last component
-# VERSION - environment variable VERSION or content of TOPDIR/version file
 
-# Examples 
-# $ pwd
-# /home/aanatoly/src/fbpanel/trunk
-# cat version
-# 5.6
-# $ make tar
-# -rw-rw-r-- 1 aanatoly users 198372 2009-07-03 21:51 ../trunk-5.6.tbz2
-# $ make tar NAME=fbpanel VERSION=9.9
-# -rw-rw-r-- 1 aanatoly users 198372 2009-07-03 21:51 ../fbpanel-9.9.tbz2
+function info()
+{
+    cat <<EOF
+This script creates brizpped tar archive of the project
+EOF
+}
 
-n=${NAME:-`basename $PWD`}-${VERSION:-`cat version`}
-t=$n.tbz2
-pwd=`pwd`
-if [ -d .svn -a -n "`svn st`" ]; then
-    echo "SVN repository is not clean. Exiting."
-    svn st
+function help()
+{
+    cat <<EOF
+Parameters
+   package - package name
+   version - package version
+For example:
+   $0 --package=fbpanel --version=6.2
+EOF
+}
+
+
+function error ()
+{
+    echo "$@"
     exit 1
+}
+
+function check_var ()
+{
+    eval [ -z \"\$$1\" ] && error "parameter '$1' is not set"
+}
+
+while [ $# -gt 0 ]; do
+    if [ "$1" == "--help" ]; then
+        info
+        help
+        exit 0
+    fi
+    if [ "${1:0:2}" != "--" ]; then
+        error "$1 - not a parameter"
+    fi
+    tmp="${1:2}"
+    var=${tmp%%=*}
+    val=${tmp#*=}
+    if [ "$var" == "$val" ]; then
+        error "$1 - not a parameter"
+    fi
+    eval "$var=\"$val\""
+    shift
+done
+
+check_var package
+check_var version
+
+
+# Sanity checks
+# check that pwd is project's topdir
+[ -x ./configure -a -f rules.mk ] || error "Not a top dir"
+# check that there is no uncomitted changes
+if [ -d .svn -a -n "`svn st --no-ignore`" ]; then
+    svn st --no-ignore
+    error "SVN repository is not clean."
 fi
 
+n=${package}-${version}
+t=$n.tbz2
+
+# Create tarball
+pwd=`pwd`
 td=/tmp/$$
 mkdir $td || exit 1
 cd $td 
