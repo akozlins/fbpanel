@@ -10,9 +10,7 @@
 # Note 2: values will be evaluated in the same order they were added, so
 # if you want libdir's default value to be '$eprefix/lib', add it after prefix
 
-# Root File System for embedded or cross-compiler builds
-#add_var rfs "embedded RFS (root file system)" /nfsboot/rfs
-
+add_var package "name of a package, e.g fbpanel or mplayer" fbpanel
 
 # Custom
 add_feature dependency "disable dependency tracking" disabled

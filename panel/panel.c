@@ -861,8 +861,6 @@ int
 main(int argc, char *argv[])
 {
     setlocale(LC_CTYPE, "");
-    // FIXME: these defines should come from config.h
-#define PACKAGE "fbpanel"
     bindtextdomain(PACKAGE, LOCALEDIR);
     textdomain(PACKAGE);
 
