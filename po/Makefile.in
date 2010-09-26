@@ -1,14 +1,5 @@
 include %%topdir%%/config.mk
 
 PO = $(wildcard *.po)
-# FIXME: should ome from config.mk
-PACKAGE = fbpanel
 
-# to install your stuff edit the commands list
-install:
-	for i in $(MO); do \
-		l=$${i/.mo/}; \
-		mkdir -p $(DATADIR)/locale/$$l/LC_MESSAGES; \
-		cp $$i $(DATADIR)/locale/$$l/LC_MESSAGES/fbpanel.mo; \
-	done
 include %%topdir%%/rules.mk

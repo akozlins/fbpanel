@@ -75,6 +75,13 @@ CLEANLIST += $(MO)
 %.mo : %.po
 	$(call summary,PO  ,$@)
 	$Qmsgfmt -o $@ $<
+install_locale = $(MO:%.mo=%)
+.PHONY : $(install_locale)
+$(install_locale) :
+	@mkdir -p $(DATADIR)/locale/$@/LC_MESSAGES
+	cp $@.mo $(DATADIR)/locale/$@/LC_MESSAGES/$(PACKAGE).mo
+
+install : $(install_locale)	
 endif
 
 
