@@ -1,5 +1,4 @@
 include %%topdir%%/config.mk
 
-SUBDIRS = plugins panel data exec po scripts
 
 include %%topdir%%/rules.mk
