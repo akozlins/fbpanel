@@ -75,13 +75,14 @@ CLEANLIST += $(MO)
 %.mo : %.po
 	$(call summary,PO  ,$@)
 	$Qmsgfmt -o $@ $<
-install_locale = $(MO:%.mo=%)
-.PHONY : $(install_locale)
-$(install_locale) :
-	@mkdir -p $(DESTDIR)/$(DATADIR)/locale/$@/LC_MESSAGES
-	cp $@.mo $(DESTDIR)/$(DATADIR)/locale/$@/LC_MESSAGES/$(PACKAGE).mo
 
-install : $(install_locale)	
+ifneq ($(findstring install, $(MAKECMDGOALS)),)
+LOCALES = $(PO:%.po=%)
+.PHONY : $(LOCALES)
+$(LOCALES) :
+	$(install_locale) $@
+install : $(LOCALES)
+endif
 endif
 
 
@@ -215,3 +216,4 @@ tar :
 
 
 install=@$(TOPDIR)/scripts/install.sh
+install_locale=@$(TOPDIR)/scripts/install_locale.sh
