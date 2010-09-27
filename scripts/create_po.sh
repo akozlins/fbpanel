@@ -46,7 +46,6 @@ find . -name "*.c" -o -name "*.h" > $list
     --default-domain=$package --from-code=UTF-8 \
     --force-po -k_ -kc_ -f $list -o - |\
 sed '/^"Content-Type:/ s/CHARSET/UTF-8/' > $pot
-echo Created $pot
 
 # create language translation files, POs
 if [ -n "$update" ]; then
@@ -61,3 +60,4 @@ if [ -n "$update" ]; then
     rm $old
 fi
 echo Created $po
+rm $pot
