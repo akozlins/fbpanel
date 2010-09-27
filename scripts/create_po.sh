@@ -68,7 +68,7 @@ xgettext --package-name=$package --package-version=$version \
     --force-po -k_ -kc_ -f $list -o - |\
 sed '/^"Content-Type:/ s/CHARSET/UTF-8/' > $pot
 
-echo Created $package.pot
+echo Created $pot
 
 # create language translation files, POs
 msginit --no-translator --locale=$locale --input=$pot -o $destdir/$locale.po
