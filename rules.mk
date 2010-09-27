@@ -78,8 +78,8 @@ CLEANLIST += $(MO)
 install_locale = $(MO:%.mo=%)
 .PHONY : $(install_locale)
 $(install_locale) :
-	@mkdir -p $(DATADIR)/locale/$@/LC_MESSAGES
-	cp $@.mo $(DATADIR)/locale/$@/LC_MESSAGES/$(PACKAGE).mo
+	@mkdir -p $(DESTDIR)/$(DATADIR)/locale/$@/LC_MESSAGES
+	cp $@.mo $(DESTDIR)/$(DATADIR)/locale/$@/LC_MESSAGES/$(PACKAGE).mo
 
 install : $(install_locale)	
 endif
