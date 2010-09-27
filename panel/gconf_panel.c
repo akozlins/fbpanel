@@ -54,7 +54,7 @@ mk_effects_block(xconf *xc)
     /* label */
     w = gtk_label_new(NULL);
     gtk_misc_set_alignment(GTK_MISC(w), 0, 0.5);
-    gtk_label_set_markup(GTK_LABEL(w), "<b>Visual Effects</b>");
+    gtk_label_set_markup(GTK_LABEL(w), _("<b>Visual Effects</b>"));
     gconf_block_add(gl_block, w, TRUE);
 
     /* effects */
@@ -62,11 +62,11 @@ mk_effects_block(xconf *xc)
 
     /* transparency */
     w = gconf_edit_boolean(effects_block, xconf_get(xc, "transparent"),
-        "Transparency");
+        _("Transparency"));
     gconf_block_add(effects_block, w, TRUE);
 
     color_block = gconf_block_new(NULL, NULL, INDENT_2);
-    w = gtk_label_new("Color settings");
+    w = gtk_label_new(_("Color settings"));
     gconf_block_add(color_block, w, TRUE);
     w = gconf_edit_color(color_block, xconf_get(xc, "tintcolor"),
         xconf_get(xc, "alpha"));
@@ -76,34 +76,34 @@ mk_effects_block(xconf *xc)
 
     /* round corners */
     w = gconf_edit_boolean(effects_block, xconf_get(xc, "roundcorners"),
-        "Round corners");
+        _("Round corners"));
     gconf_block_add(effects_block, w, TRUE);
 
     corner_block = gconf_block_new(NULL, NULL, INDENT_2);
-    w = gtk_label_new("Radius is ");
+    w = gtk_label_new(_("Radius is "));
     gconf_block_add(corner_block, w, TRUE);
     w = gconf_edit_int(geom_block, xconf_get(xc, "roundcornersradius"), 0, 30);
     gconf_block_add(corner_block, w, FALSE);
-    w = gtk_label_new("pixels");
+    w = gtk_label_new(_("pixels"));
     gconf_block_add(corner_block, w, FALSE);
     gconf_block_add(effects_block, corner_block->main, TRUE);
 
     /* auto hide */
     w = gconf_edit_boolean(effects_block, xconf_get(xc, "autohide"),
-        "Autohide");
+        _("Autohide"));
     gconf_block_add(effects_block, w, TRUE);
 
     ah_block = gconf_block_new(NULL, NULL, INDENT_2);
-    w = gtk_label_new("Height when hidden is ");
+    w = gtk_label_new(_("Height when hidden is "));
     gconf_block_add(ah_block, w, TRUE);
     w = gconf_edit_int(ah_block, xconf_get(xc, "heightwhenhidden"), 0, 10);
     gconf_block_add(ah_block, w, FALSE);
-    w = gtk_label_new("pixels");
+    w = gtk_label_new(_("pixels"));
     gconf_block_add(ah_block, w, FALSE);
     gconf_block_add(effects_block, ah_block->main, TRUE);
     
     w = gconf_edit_int(effects_block, xconf_get(xc, "maxelemheight"), 0, 128);
-    gconf_block_add(effects_block, gtk_label_new("Max Element Height"), TRUE);
+    gconf_block_add(effects_block, gtk_label_new(_("Max Element Height")), TRUE);
     gconf_block_add(effects_block, w, FALSE);
     gconf_block_add(gl_block, effects_block->main, TRUE);
     
@@ -135,7 +135,7 @@ mk_prop_block(xconf *xc)
     /* label */
     w = gtk_label_new(NULL);
     gtk_misc_set_alignment(GTK_MISC(w), 0, 0.5);
-    gtk_label_set_markup(GTK_LABEL(w), "<b>Properties</b>");
+    gtk_label_set_markup(GTK_LABEL(w), _("<b>Properties</b>"));
     gconf_block_add(gl_block, w, TRUE);
 
     /* properties */
@@ -143,25 +143,25 @@ mk_prop_block(xconf *xc)
 
     /* strut */ 
     w = gconf_edit_boolean(prop_block, xconf_get(xc, "setpartialstrut"),
-        "Do not cover by maximized windows");
+        _("Do not cover by maximized windows"));
     gconf_block_add(prop_block, w, TRUE);
     
     w = gconf_edit_boolean(prop_block, xconf_get(xc, "setdocktype"),
-        "Set 'Dock' type");
+        _("Set 'Dock' type"));
     gconf_block_add(prop_block, w, TRUE);
     
     /* set layer */
     w = gconf_edit_boolean(prop_block, xconf_get(xc, "setlayer"),
-        "Set stacking layer");
+        _("Set stacking layer"));
     gconf_block_add(prop_block, w, TRUE);
 
     layer_block = gconf_block_new(NULL, NULL, INDENT_2);
-    w = gtk_label_new("Panel is ");
+    w = gtk_label_new(_("Panel is "));
     gconf_block_add(layer_block, w, TRUE);
     w = gconf_edit_enum(layer_block, xconf_get(xc, "layer"),
         layer_enum);
     gconf_block_add(layer_block, w, FALSE);
-    w = gtk_label_new("all windows");
+    w = gtk_label_new(_("all windows"));
     gconf_block_add(layer_block, w, FALSE);
     gconf_block_add(prop_block, layer_block->main, TRUE);
 
@@ -206,14 +206,14 @@ mk_geom_block(xconf *xc)
     /* label */
     w = gtk_label_new(NULL);
     gtk_misc_set_alignment(GTK_MISC(w), 0, 0.5);
-    gtk_label_set_markup(GTK_LABEL(w), "<b>Geometry</b>");
+    gtk_label_set_markup(GTK_LABEL(w), _("<b>Geometry</b>"));
     gconf_block_add(gl_block, w, TRUE);
 
     /* geometry */
     geom_block = gconf_block_new((GCallback)geom_changed, xc, 10);
     
     w = gconf_edit_int(geom_block, xconf_get(xc, "width"), 0, 2300);
-    gconf_block_add(geom_block, gtk_label_new("Width"), TRUE);
+    gconf_block_add(geom_block, gtk_label_new(_("Width")), TRUE);
     gconf_block_add(geom_block, w, FALSE);
     width_spin = w;
     
@@ -223,22 +223,22 @@ mk_geom_block(xconf *xc)
     width_opt = w;
     
     w = gconf_edit_int(geom_block, xconf_get(xc, "height"), 0, 300);
-    gconf_block_add(geom_block, gtk_label_new("Height"), TRUE);
+    gconf_block_add(geom_block, gtk_label_new(_("Height")), TRUE);
     gconf_block_add(geom_block, w, FALSE);
 
     w = gconf_edit_enum(geom_block, xconf_get(xc, "edge"),
         edge_enum);
-    gconf_block_add(geom_block, gtk_label_new("Edge"), TRUE);
+    gconf_block_add(geom_block, gtk_label_new(_("Edge")), TRUE);
     gconf_block_add(geom_block, w, FALSE);
 
     w = gconf_edit_enum(geom_block, xconf_get(xc, "allign"),
         allign_enum);
-    gconf_block_add(geom_block, gtk_label_new("Allignment"), TRUE);
+    gconf_block_add(geom_block, gtk_label_new(_("Allignment")), TRUE);
     gconf_block_add(geom_block, w, FALSE);
     allign_opt = w;
     
     w = gconf_edit_int(geom_block, xconf_get(xc, "margin"), 0, 300);
-    gconf_block_add(geom_block, gtk_label_new("Margin"), FALSE);
+    gconf_block_add(geom_block, gtk_label_new(_("Margin")), FALSE);
     gconf_block_add(geom_block, w, FALSE);
     margin_spin = w;
 
