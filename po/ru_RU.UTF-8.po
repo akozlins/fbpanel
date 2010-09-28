@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fbpanel 6.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-25 02:50+0200\n"
-"PO-Revision-Date: 2010-09-25 02:50+0200\n"
-"Last-Translator: Automatically generated\n"
+"POT-Creation-Date: 2010-09-28 01:20+0200\n"
+"PO-Revision-Date: 2010-09-28 01:20+0200\n"
+"Last-Translator: Automaticaly generated\n"
 "Language-Team: none\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -18,43 +18,127 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: plugins/menu/system_menu.c:23
+#: panel/gconf_panel.c:57
+msgid "<b>Visual Effects</b>"
+msgstr "<b>Внешний вид</b>"
+
+#: panel/gconf_panel.c:65
+msgid "Transparency"
+msgstr "Прозрачность"
+
+#: panel/gconf_panel.c:69
+msgid "Color settings"
+msgstr "Настройки цвета"
+
+#: panel/gconf_panel.c:79
+msgid "Round corners"
+msgstr "Закруглённые углы"
+
+#: panel/gconf_panel.c:83
+msgid "Radius is "
+msgstr "Радиус"
+
+#: panel/gconf_panel.c:87 panel/gconf_panel.c:101
+msgid "pixels"
+msgstr "точек"
+
+#: panel/gconf_panel.c:93
+msgid "Autohide"
+msgstr "Автоскрытие"
+
+#: panel/gconf_panel.c:97
+msgid "Height when hidden is "
+msgstr ""
+
+#: panel/gconf_panel.c:106
+msgid "Max Element Height"
+msgstr "Максимальная высота элементов"
+
+#: panel/gconf_panel.c:138
+msgid "<b>Properties</b>"
+msgstr "<b>Свойства</b>"
+
+#: panel/gconf_panel.c:146
+msgid "Do not cover by maximized windows"
+msgstr "Не закрывать другими окнами"
+
+#: panel/gconf_panel.c:150
+msgid "Set 'Dock' type"
+msgstr ""
+
+#: panel/gconf_panel.c:155
+msgid "Set stacking layer"
+msgstr ""
+
+#: panel/gconf_panel.c:159
+msgid "Panel is "
+msgstr "Панель"
+
+#: panel/gconf_panel.c:164
+msgid "all windows"
+msgstr "другими окнами"
+
+#: panel/gconf_panel.c:209
+msgid "<b>Geometry</b>"
+msgstr "<b>Размещение</b>"
+
+#: panel/gconf_panel.c:216
+msgid "Width"
+msgstr "Ширина"
+
+#: panel/gconf_panel.c:226
+msgid "Height"
+msgstr "Высота"
+
+#: panel/gconf_panel.c:231
+msgid "Edge"
+msgstr "Расположение"
+
+#: panel/gconf_panel.c:236
+msgid "Allignment"
+msgstr "Выравнивание"
+
+#: panel/gconf_panel.c:241
+msgid "Margin"
+msgstr "Отступ"
+
+#: plugins/menu/system_menu.c:24
 msgid "Audio & Video"
 msgstr "Мультимедиа"
 
-#: plugins/menu/system_menu.c:24
+#: plugins/menu/system_menu.c:25
 msgid "Education"
 msgstr "Образование"
 
-#: plugins/menu/system_menu.c:25
+#: plugins/menu/system_menu.c:26
 msgid "Game"
 msgstr "Игры"
 
-#: plugins/menu/system_menu.c:26
+#: plugins/menu/system_menu.c:27
 msgid "Graphics"
 msgstr "Графика"
 
-#: plugins/menu/system_menu.c:27
+#: plugins/menu/system_menu.c:28
 msgid "Network"
 msgstr "Сеть"
 
-#: plugins/menu/system_menu.c:28
+#: plugins/menu/system_menu.c:29
 msgid "Office"
 msgstr "Офис"
 
-#: plugins/menu/system_menu.c:29
+#: plugins/menu/system_menu.c:30
 msgid "Settings"
 msgstr "Настройки"
 
-#: plugins/menu/system_menu.c:30
+#: plugins/menu/system_menu.c:31
 msgid "System"
 msgstr "Система"
 
-#: plugins/menu/system_menu.c:31
+#: plugins/menu/system_menu.c:32
 msgid "Utilities"
 msgstr "Утилиты"
 
-#: plugins/menu/system_menu.c:32
+#: plugins/menu/system_menu.c:33
 msgid "Development"
 msgstr "Разработка"
 
