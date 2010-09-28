@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fbpanel 6.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-28 01:20+0200\n"
-"PO-Revision-Date: 2010-09-28 01:20+0200\n"
+"POT-Creation-Date: 2010-09-28 04:25+0200\n"
+"PO-Revision-Date: 2010-09-28 04:25+0200\n"
 "Last-Translator: Automaticaly generated\n"
 "Language-Team: none\n"
 "Language: ru\n"
@@ -38,7 +38,7 @@ msgstr "Закруглённые углы"
 msgid "Radius is "
 msgstr "Радиус"
 
-#: panel/gconf_panel.c:87 panel/gconf_panel.c:101
+#: panel/gconf_panel.c:87 panel/gconf_panel.c:101 panel/misc.c:89
 msgid "pixels"
 msgstr "точек"
 
@@ -101,6 +101,47 @@ msgstr "Выравнивание"
 #: panel/gconf_panel.c:241
 msgid "Margin"
 msgstr "Отступ"
+
+#: panel/misc.c:75 panel/misc.c:81
+msgid "left"
+msgstr "слева"
+
+#: panel/misc.c:76 panel/misc.c:82
+msgid "right"
+msgstr "справа"
+
+#: panel/misc.c:77
+msgid "center"
+msgstr "по центру"
+
+#: panel/misc.c:83
+msgid "top"
+msgstr "вверху"
+
+#: panel/misc.c:84
+msgid "bottom"
+msgstr "внизу"
+
+#: panel/misc.c:88
+msgid "dynamic"
+msgstr ""
+
+#: panel/misc.c:90
+#, c-format
+msgid "% of screen"
+msgstr "% экрана"
+
+#: panel/misc.c:94
+msgid "pixel"
+msgstr "точка"
+
+#: panel/misc.c:109
+msgid "above"
+msgstr "над"
+
+#: panel/misc.c:110
+msgid "below"
+msgstr "под"
 
 #: plugins/menu/system_menu.c:24
 msgid "Audio & Video"
