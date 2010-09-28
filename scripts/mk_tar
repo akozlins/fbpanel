@@ -20,36 +20,9 @@ EOF
 }
 
 
-function error ()
-{
-    echo "$@"
-    exit 1
-}
+source scripts/funcs.sh
 
-function check_var ()
-{
-    eval [ -z \"\$$1\" ] && error "parameter '$1' is not set"
-}
-
-while [ $# -gt 0 ]; do
-    if [ "$1" == "--help" ]; then
-        info
-        help
-        exit 0
-    fi
-    if [ "${1:0:2}" != "--" ]; then
-        error "$1 - not a parameter"
-    fi
-    tmp="${1:2}"
-    var=${tmp%%=*}
-    val=${tmp#*=}
-    if [ "$var" == "$val" ]; then
-        error "$1 - not a parameter"
-    fi
-    eval "$var=\"$val\""
-    shift
-done
-
+parse_argv "$@"
 check_var package
 check_var version
 
