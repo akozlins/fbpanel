@@ -131,7 +131,7 @@ gconf_edit_enum(gconf_block *b, xconf *xc, xconf_enum *e)
     while (e && e->str)
     {
         gtk_combo_box_insert_text(GTK_COMBO_BOX(w), e->num,
-            e->desc ? e->desc : e->str);
+            e->desc ? _(e->desc) : _(e->str));
         e++;
     }
     gtk_combo_box_set_active(GTK_COMBO_BOX(w), i);

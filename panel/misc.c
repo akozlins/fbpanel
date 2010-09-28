@@ -72,26 +72,26 @@ Atom a_NET_WM_ICON;
 Atom a_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR;
 
 xconf_enum allign_enum[] = {
-    { .num = ALLIGN_LEFT, .str = "left" },
-    { .num = ALLIGN_RIGHT, .str = "right" },
-    { .num = ALLIGN_CENTER, .str = "center"},
+    { .num = ALLIGN_LEFT, .str = c_("left") },
+    { .num = ALLIGN_RIGHT, .str = c_("right") },
+    { .num = ALLIGN_CENTER, .str = c_("center")},
     { .num = 0, .str = NULL },
 };
 xconf_enum edge_enum[] = {
-    { .num = EDGE_LEFT, .str = "left" },
-    { .num = EDGE_RIGHT, .str = "right" },
-    { .num = EDGE_TOP, .str = "top" },
-    { .num = EDGE_BOTTOM, .str = "bottom" },
+    { .num = EDGE_LEFT, .str = c_("left") },
+    { .num = EDGE_RIGHT, .str = c_("right") },
+    { .num = EDGE_TOP, .str = c_("top") },
+    { .num = EDGE_BOTTOM, .str = c_("bottom") },
     { .num = 0, .str = NULL },
 };
 xconf_enum widthtype_enum[] = {
-    { .num = WIDTH_REQUEST, .str = "request" , .desc = "dynamic" },
-    { .num = WIDTH_PIXEL, .str = "pixel" , .desc = "pixels" },
-    { .num = WIDTH_PERCENT, .str = "percent", .desc = "% of screen" },
+    { .num = WIDTH_REQUEST, .str = "request" , .desc = c_("dynamic") },
+    { .num = WIDTH_PIXEL, .str = "pixel" , .desc = c_("pixels") },
+    { .num = WIDTH_PERCENT, .str = "percent", .desc = c_("% of screen") },
     { .num = 0, .str = NULL },
 };
 xconf_enum heighttype_enum[] = {
-    { .num = HEIGHT_PIXEL, .str = "pixel" },
+    { .num = HEIGHT_PIXEL, .str = c_("pixel") },
     { .num = 0, .str = NULL },
 };
 xconf_enum bool_enum[] = {
@@ -106,8 +106,8 @@ xconf_enum pos_enum[] = {
     { .num = 0, .str = NULL},
 };
 xconf_enum layer_enum[] = {
-    { .num = LAYER_ABOVE, .str = "above" },
-    { .num = LAYER_BELOW, .str = "below" },
+    { .num = LAYER_ABOVE, .str = c_("above") },
+    { .num = LAYER_BELOW, .str = c_("below") },
     { .num = 0, .str = NULL},
 };
 
