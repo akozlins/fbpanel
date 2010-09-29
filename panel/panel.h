@@ -37,6 +37,7 @@ typedef struct _panel
     GtkWidget *lbox;              /* primary layout box */
     GtkWidget *bbox;              /* backgound box for box */
     GtkWidget *box;               /* box that contains all plugins */
+    GtkWidget *menu;              /* context menu */
     GtkRequisition requisition;
     GtkWidget *(*my_box_new) (gboolean, gint);
     GtkWidget *(*my_separator_new) ();

@@ -447,6 +447,54 @@ ah_stop(panel *p)
 /****************************************************
  *         panel creation                           *
  ****************************************************/
+void
+about()
+{
+    gchar *authors[] = { "Anatoly Asviyan <aanatoly@users.sf.net>", NULL };
+
+    ENTER;
+    gtk_show_about_dialog(NULL, 
+        "authors", authors,
+        "comments", "Lightweight GTK+ desktop panel", 
+        "license", "GPLv2",
+        "program-name", PACKAGE,
+        "version", VERSION,
+        "website", "http://fbpanel.sf.net",
+        "logo-icon-name", "logo",
+        "translator-credits", _("translator-credits"),
+        NULL);
+    RET();
+}
+
+static GtkWidget *
+panel_make_menu(panel *p)
+{
+    GtkWidget *mi, *menu;
+
+    ENTER;
+    menu = gtk_menu_new();
+
+    /* panel's preferences */
+    mi = gtk_image_menu_item_new_from_stock(GTK_STOCK_PREFERENCES, NULL);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
+    g_signal_connect_swapped(G_OBJECT(mi), "activate",
+        (GCallback)configure, p->xc);
+    gtk_widget_show (mi);
+
+    /* separator */
+    mi = gtk_separator_menu_item_new();
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
+    gtk_widget_show (mi);
+
+    /* about */
+    mi = gtk_image_menu_item_new_from_stock(GTK_STOCK_ABOUT, NULL);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menu), mi);
+    g_signal_connect(G_OBJECT(mi), "activate",
+        (GCallback)about, p);
+    gtk_widget_show (mi);
+    
+    RET(menu);
+}
 
 gboolean
 panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p)
@@ -455,7 +503,8 @@ panel_button_press_event(GtkWidget *widget, GdkEventButton *event, panel *p)
     if (event->type == GDK_BUTTON_PRESS && event->button == 3
           && event->state & GDK_CONTROL_MASK) {
         DBG("ctrl-btn3\n");
-        configure(p->xc);
+        gtk_menu_popup (GTK_MENU (p->menu), NULL, NULL, NULL,
+            NULL, event->button, event->time);
         RET(TRUE);
     }
     RET(FALSE);
@@ -561,6 +610,8 @@ panel_start_gui(panel *p)
     gtk_widget_show_all(p->topgwin);
     /* .. and hide it from user until everything is done */
     gtk_widget_hide(p->topgwin);
+
+    p->menu = panel_make_menu(p);
 
     if (p->setstrut)
         panel_set_wm_strut(p);
@@ -728,6 +779,7 @@ panel_stop(panel *p)
     gdk_window_remove_filter(gdk_get_default_root_window(),
           (GdkFilterFunc)panel_event_filter, p);
     gtk_widget_destroy(p->topgwin);
+    gtk_widget_destroy(p->menu);
     g_object_unref(fbev);
     //g_free(p->workarea);
     gdk_flush();
