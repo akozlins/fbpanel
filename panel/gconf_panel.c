@@ -282,8 +282,8 @@ mk_tab_profile(xconf *xc)
     page = gtk_vbox_new(FALSE, 1);
     gtk_container_set_border_width(GTK_CONTAINER(page), 10);
     
-    s1 = g_strdup_printf("You're using '<b>%s</b>' profile, stored at\n"
-        "<tt>%s</tt>", panel_get_profile(), panel_get_profile_file());
+    s1 = g_strdup_printf(_("You're using '<b>%s</b>' profile, stored at\n"
+            "<tt>%s</tt>"), panel_get_profile(), panel_get_profile_file());
     label = gtk_label_new(NULL);
     gtk_label_set_markup(GTK_LABEL(label), s1);
     gtk_box_pack_start(GTK_BOX(page), label, FALSE, TRUE, 0);
@@ -385,17 +385,17 @@ mk_dialog(xconf *oxc)
     gtk_container_add (GTK_CONTAINER (GTK_DIALOG(dialog)->vbox), nb);
 
     sw = mk_tab_global(xconf_get(xc, "global"));
-    label = gtk_label_new("Panel");
+    label = gtk_label_new(_("Panel"));
     gtk_misc_set_padding(GTK_MISC(label), 4, 1);
     gtk_notebook_append_page(GTK_NOTEBOOK(nb), sw, label);
 
     sw = mk_tab_plugins(xc);
-    label = gtk_label_new("Plugins");
+    label = gtk_label_new(_("Plugins"));
     gtk_misc_set_padding(GTK_MISC(label), 4, 1);
     gtk_notebook_append_page(GTK_NOTEBOOK(nb), sw, label);
 
     sw = mk_tab_profile(xc);
-    label = gtk_label_new("Profile");
+    label = gtk_label_new(_("Profile"));
     gtk_misc_set_padding(GTK_MISC(label), 4, 1);
     gtk_notebook_append_page(GTK_NOTEBOOK(nb), sw, label);
 
