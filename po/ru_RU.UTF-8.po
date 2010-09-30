@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fbpanel 6.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-28 04:25+0200\n"
-"PO-Revision-Date: 2010-09-28 04:25+0200\n"
+"POT-Creation-Date: 2010-09-30 02:02+0200\n"
+"PO-Revision-Date: 2010-09-30 02:02+0200\n"
 "Last-Translator: Automaticaly generated\n"
 "Language-Team: none\n"
 "Language: ru\n"
@@ -64,11 +64,11 @@ msgstr "Не закрывать другими окнами"
 
 #: panel/gconf_panel.c:150
 msgid "Set 'Dock' type"
-msgstr ""
+msgstr "Установить тип 'Dock' для окна панели"
 
 #: panel/gconf_panel.c:155
 msgid "Set stacking layer"
-msgstr ""
+msgstr "Установить уровень отображения"
 
 #: panel/gconf_panel.c:159
 msgid "Panel is "
@@ -101,6 +101,27 @@ msgstr "Выравнивание"
 #: panel/gconf_panel.c:241
 msgid "Margin"
 msgstr "Отступ"
+
+#: panel/gconf_panel.c:285
+#, c-format
+msgid ""
+"You're using '<b>%s</b>' profile, stored at\n"
+"<tt>%s</tt>"
+msgstr ""
+"Вы используете профиль '<b>%s</b>', храняшийся в \n"
+"<tt>%s</tt>"
+
+#: panel/gconf_panel.c:388
+msgid "Panel"
+msgstr "Панель"
+
+#: panel/gconf_panel.c:393
+msgid "Plugins"
+msgstr "Плагины"
+
+#: panel/gconf_panel.c:398
+msgid "Profile"
+msgstr "Профиль"
 
 #: panel/misc.c:75 panel/misc.c:81
 msgid "left"
@@ -142,6 +163,11 @@ msgstr "над"
 #: panel/misc.c:110
 msgid "below"
 msgstr "под"
+
+#: panel/panel.c:464
+msgid "translator-credits"
+msgstr ""
+"Anatoly Asviyan <aanatoly@users.sf.net>"
 
 #: plugins/menu/system_menu.c:24
 msgid "Audio & Video"
