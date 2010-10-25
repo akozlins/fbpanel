@@ -23,7 +23,7 @@ extern panel *the_panel;
 static GHashTable *class_ht;
 
 
-void 
+void
 class_register(plugin_class *p)
 {
     ENTER;
@@ -57,28 +57,28 @@ class_unregister(plugin_class *p)
     RET();
 }
 
-void 
+void
 class_put(char *name)
 {
-    GModule *m;    
+    GModule *m;
     gchar *s;
     plugin_class *tmp;
 
     ENTER;
     DBG("%s\n", name);
-    if (!(class_ht && (tmp = g_hash_table_lookup(class_ht, name)))) 
+    if (!(class_ht && (tmp = g_hash_table_lookup(class_ht, name))))
         RET();
     tmp->count--;
-    if (tmp->count || !tmp->dynamic) 
+    if (tmp->count || !tmp->dynamic)
         RET();
-    
+
     s = g_strdup_printf(LIBDIR "/fbpanel/%s.so", name);
     DBG("loading module %s\n", s);
-    m = g_module_open(s, G_MODULE_BIND_LAZY);                
+    m = g_module_open(s, G_MODULE_BIND_LAZY);
     g_free(s);
     if (m) {
         /* Close it twise to undo initial open in class_get */
-        g_module_close(m); 
+        g_module_close(m);
         g_module_close(m);
     }
     RET();
@@ -87,7 +87,7 @@ class_put(char *name)
 gpointer
 class_get(char *name)
 {
-    GModule *m;    
+    GModule *m;
     plugin_class *tmp;
     gchar *s;
 
@@ -100,7 +100,7 @@ class_get(char *name)
     }
     s = g_strdup_printf(LIBDIR "/fbpanel/%s.so", name);
     DBG("loading module %s\n", s);
-    m = g_module_open(s, G_MODULE_BIND_LAZY);                
+    m = g_module_open(s, G_MODULE_BIND_LAZY);
     g_free(s);
     if (m) {
         if (class_ht && (tmp = g_hash_table_lookup(class_ht, name))) {
@@ -140,7 +140,7 @@ void
 plugin_put(plugin_instance *this)
 {
     gchar *type;
-    
+
     ENTER;
     type = this->class->type;
     g_free(this);
