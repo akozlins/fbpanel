@@ -109,6 +109,7 @@ class_get(char *name)
             RET(tmp);
         }
     }
+    ERR("%s\n", g_module_error());
     RET(NULL);
 }
 
