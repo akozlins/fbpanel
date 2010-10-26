@@ -1,26 +1,8 @@
+
 /*
- * net usage plugin to fbpanel
- *
- * Copyright (C) 2004 by Alexandre Pereira da Silva <alexandre.pereira@poli.usp.br>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * 
+ * A little bug fixed by Mykola <mykola@2ka.mipt.ru>:)
+ * FreeBSD support is added by Eygene Ryabinkin <rea-fbsd@codelabs.ru>
  */
-/*A little bug fixed by Mykola <mykola@2ka.mipt.ru>:) */
-
-
 
 #include "../chart/chart.h"
 #include <stdlib.h>
@@ -29,10 +11,18 @@
 //#define DEBUGPRN
 #include "dbg.h"
 
+#if defined(__FreeBSD__)
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/sysctl.h>
+#include <sys/time.h>
+#include <net/if.h>
+#include <net/if_mib.h>
+#endif
+
 
 #define CHECK_PERIOD   2 /* second */
 
-/* net.c */
 struct net_stat {
     gulong tx, rx;
 };
@@ -42,6 +32,9 @@ typedef struct {
     struct net_stat net_prev;
     int timer;
     char *iface;
+#if defined(__FreeBSD__)
+    size_t ifmib_row;
+#endif
     gint max_tx;
     gint max_rx;
     gulong max;
@@ -102,6 +95,53 @@ end:
     RET(TRUE);
 
 }
+#elif defined(__FreeBSD__)
+static int
+net_get_load(net_priv *c)
+{
+    struct net_stat net, net_diff;
+    float total[2];
+    char buf[256];
+
+    ENTER;
+    memset(&net, 0, sizeof(net));
+    memset(&net_diff, 0, sizeof(net_diff));
+
+    if (c->ifmib_row != 0) {
+        int mib[6] = {
+            CTL_NET,
+            PF_LINK,
+            NETLINK_GENERIC,
+            IFMIB_IFDATA,
+            c->ifmib_row,
+            IFDATA_GENERAL
+        };
+        struct ifmibdata ifmd;
+        size_t len = sizeof(ifmd);
+
+        if (sysctl(mib, sizeof(mib)/sizeof(mib[0]), &ifmd, &len,
+                NULL, 0) != 0)
+            goto end;
+
+        net.tx = ifmd.ifmd_data.ifi_obytes;
+        net.rx = ifmd.ifmd_data.ifi_ibytes;
+
+        net_diff.tx = ((net.tx - c->net_prev.tx) >> 10) / CHECK_PERIOD;
+        net_diff.rx = ((net.rx - c->net_prev.rx) >> 10) / CHECK_PERIOD;
+    }
+
+end:
+    c->net_prev = net;
+    total[0] = (float)(net_diff.tx) / c->max;
+    total[1] = (float)(net_diff.rx) / c->max;
+    DBG("%f %f %ul %ul\n", total[0], total[1], net_diff.tx, net_diff.rx);
+    k->add_tick(&c->chart, total);
+    g_snprintf(buf, sizeof(buf), "<b>%s:</b>\nD %lu Kbs, U %lu Kbs",
+        c->iface, net_diff.rx, net_diff.tx);
+    gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, buf);
+    RET(TRUE);
+}
+
 #else
 
 static int
@@ -113,6 +153,38 @@ net_get_load(net_priv *c)
 
 #endif
 
+#if defined(__FreeBSD__)
+static void
+init_freebsd(net_priv *c)
+{
+    int mib[6] = {
+        CTL_NET,
+        PF_LINK,
+        NETLINK_GENERIC,
+        IFMIB_SYSTEM,
+        IFMIB_IFCOUNT
+    };
+    u_int count = 0;
+    struct ifmibdata ifmd;
+    size_t len = sizeof(count);
+
+    c->ifmib_row = 0;
+    if (sysctl(mib, 5, (void *)&count, &len, NULL, 0) != 0)
+        return;
+
+    mib[3] = IFMIB_IFDATA;
+    mib[5] = IFDATA_GENERAL;
+    len = sizeof(ifmd);
+    for (mib[4] = 1; mib[4] <= count; mib[4]++) {
+        if (sysctl(mib, 6, (void *)&ifmd, &len, NULL, 0) != 0)
+            continue;
+        if (strcmp(ifmd.ifmd_name, c->iface) == 0) {
+            c->ifmib_row = mib[4];
+            break;
+        }
+    }
+}
+#endif
 
 static int
 net_constructor(plugin_instance *p)
@@ -124,7 +196,7 @@ net_constructor(plugin_instance *p)
     if (!PLUGIN_CLASS(k)->constructor(p))
         RET(0);
     c = (net_priv *) p;
- 
+
     c->iface = "eth0";
     c->max_rx = 120;
     c->max_tx = 12;
@@ -135,6 +207,10 @@ net_constructor(plugin_instance *p)
     XCG(p->xc, "TxLimit", &c->max_tx, int);
     XCG(p->xc, "TxColor", &c->colors[0], str);
     XCG(p->xc, "RxColor", &c->colors[1], str);
+
+#if defined(__FreeBSD__)
+    init_freebsd(c);
+#endif
 
     c->max = c->max_rx + c->max_tx;
     k->set_rows(&c->chart, 2, c->colors);
