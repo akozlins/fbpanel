@@ -32,7 +32,7 @@ get_token_int(gchar *buf, gchar *token, gint *value)
     if (!(var = strstr(buf, token)))
         RET(FALSE);
     for (var = var + len; isspace(*var); var++) ;
-    if (sscanf(var, "%d", value) == 1) 
+    if (sscanf(var, "%d", value) == 1)
         RET(TRUE);
     RET(FALSE);
 }
@@ -40,13 +40,13 @@ get_token_int(gchar *buf, gchar *token, gint *value)
 static gboolean
 read_proc(battery_priv *c, GString *path)
 {
-    int len, dcap, rcap;
+    int len, lfcap, rcap;
     gchar *buf;
     gboolean ret, exist, charging;
 
     ENTER;
     len = path->len;
-    
+
     g_string_append(path, "/info");
     ret = g_file_get_contents(path->str, &buf, 0, NULL);
     DBG("reading %s %s\n", path->str, ret ? "ok" : "fail");
@@ -54,7 +54,8 @@ read_proc(battery_priv *c, GString *path)
     if (!ret)
         RET(FALSE);
     ret = get_token_eq(buf, "present:", "yes", &exist)
-        && exist && get_token_int(buf, "design capacity:", &dcap);
+        && exist && get_token_int(buf, "last full capacity:", &lfcap);
+
     g_free(buf);
     if (!ret)
         RET(FALSE);
@@ -72,29 +73,28 @@ read_proc(battery_priv *c, GString *path)
     g_free(buf);
     if (!ret)
         RET(FALSE);
-    DBG("battery=%s\ndesign capacity=%d\nremaining capacity=%d\n"
-        "charging=%d\n", 
-        path->str, dcap, rcap, charging);
+    DBG("battery=%s\nlast full capacity=%d\nremaining capacity=%d\n"
+        "charging=%d\n",
+        path->str, lfcap, rcap, charging);
 
-    if (!(dcap >= rcap && dcap > 0 && rcap >= 0))
+    if (!(lfcap >= rcap && lfcap > 0 && rcap >= 0))
         RET(FALSE);
-    
+
     c->exist = TRUE;
     c->charging = charging;
-    c->level = (int) ((gfloat) rcap * 100 / (gfloat) dcap);
+    c->level = (int) ((gfloat) rcap * 100 / (gfloat) lfcap);
     RET(TRUE);
 }
 
 static gboolean
 battery_update_os_proc(battery_priv *c)
 {
-    
     GString *path;
     int len;
     GDir *dir;
     gboolean ret = FALSE;
     const gchar *file;
-    
+
     ENTER;
     c->exist = FALSE;
     path = g_string_sized_new(200);
@@ -108,12 +108,12 @@ battery_update_os_proc(battery_priv *c)
         g_string_append(path, file);
         DBG("testing %s\n", path->str);
         ret = g_file_test(path->str, G_FILE_TEST_IS_DIR);
-        if (ret) 
+        if (ret)
             ret = read_proc(c, path);
         g_string_truncate(path, len);
-    }    
+    }
     g_dir_close(dir);
-        
+
 out:
     g_string_free(path, TRUE);
     RET(ret);
