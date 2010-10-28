@@ -187,7 +187,7 @@ msgstr "Графика"
 
 #: plugins/menu/system_menu.c:28
 msgid "Network"
-msgstr "Сеть"
+msgstr "Интернет"
 
 #: plugins/menu/system_menu.c:29
 msgid "Office"
