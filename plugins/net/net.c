@@ -48,114 +48,42 @@ static void net_destructor(plugin_instance *p);
 
 
 #if defined __linux__
+
+#define init_net_stats(x)
+
 static int
-net_get_load(net_priv *c)
+net_get_load_real(net_priv *c, struct net_stat *net)
 {
-    struct net_stat net, net_diff;
     FILE *stat;
-    float total[2];
     char buf[256], *s = NULL;
 
-    ENTER;
-    memset(&net, 0, sizeof(net));
-    memset(&net_diff, 0, sizeof(net_diff));
     stat = fopen("/proc/net/dev", "r");
     if(!stat)
-        goto end;
+        return -1;
     fgets(buf, 256, stat);
     fgets(buf, 256, stat);
 
-    while (!s && !feof(stat) && fgets(buf, 256, stat))  
+    while (!s && !feof(stat) && fgets(buf, 256, stat))
         s = g_strrstr(buf, c->iface);
     fclose(stat);
     if (!s)
-        goto end;
-    s = g_strrstr(s, ":");     
+        return -1;
+    s = g_strrstr(s, ":");
     if (!s)
-        goto end;
+        return -1;
     s++;
     if (sscanf(s,
             "%lu  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %lu",
-            &net.rx, &net.tx)!= 2) {
+            &net->rx, &net->tx)!= 2) {
         DBG("can't read %s statistics\n", c->iface);
-        goto end;
+        return -1;
     }
-    net_diff.tx = ((net.tx - c->net_prev.tx) >> 10) / CHECK_PERIOD;
-    net_diff.rx = ((net.rx - c->net_prev.rx) >> 10) / CHECK_PERIOD;
-end:
-    
-    c->net_prev = net;
-    total[0] = (float)(net_diff.tx) / c->max;
-    total[1] = (float)(net_diff.rx) / c->max;
-    DBG("%f %ul %ul\n", total, net_diff.tx, net_diff.rx);
-    k->add_tick(&c->chart, total);
-    g_snprintf(buf, sizeof(buf), "<b>%s:</b>\nD %lu Kbs, U %lu Kbs",
-        c->iface, net_diff.rx, net_diff.tx);
-    gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, buf);
-    RET(TRUE);
-
+    return 0;
 }
+
 #elif defined(__FreeBSD__)
-static int
-net_get_load(net_priv *c)
-{
-    struct net_stat net, net_diff;
-    float total[2];
-    char buf[256];
-
-    ENTER;
-    memset(&net, 0, sizeof(net));
-    memset(&net_diff, 0, sizeof(net_diff));
-
-    if (c->ifmib_row != 0) {
-        int mib[6] = {
-            CTL_NET,
-            PF_LINK,
-            NETLINK_GENERIC,
-            IFMIB_IFDATA,
-            c->ifmib_row,
-            IFDATA_GENERAL
-        };
-        struct ifmibdata ifmd;
-        size_t len = sizeof(ifmd);
-
-        if (sysctl(mib, sizeof(mib)/sizeof(mib[0]), &ifmd, &len,
-                NULL, 0) != 0)
-            goto end;
-
-        net.tx = ifmd.ifmd_data.ifi_obytes;
-        net.rx = ifmd.ifmd_data.ifi_ibytes;
-
-        net_diff.tx = ((net.tx - c->net_prev.tx) >> 10) / CHECK_PERIOD;
-        net_diff.rx = ((net.rx - c->net_prev.rx) >> 10) / CHECK_PERIOD;
-    }
-
-end:
-    c->net_prev = net;
-    total[0] = (float)(net_diff.tx) / c->max;
-    total[1] = (float)(net_diff.rx) / c->max;
-    DBG("%f %f %ul %ul\n", total[0], total[1], net_diff.tx, net_diff.rx);
-    k->add_tick(&c->chart, total);
-    g_snprintf(buf, sizeof(buf), "<b>%s:</b>\nD %lu Kbs, U %lu Kbs",
-        c->iface, net_diff.rx, net_diff.tx);
-    gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, buf);
-    RET(TRUE);
-}
-
-#else
-
-static int
-net_get_load(net_priv *c)
-{
-    ENTER;
-    RET(0);
-}
-
-#endif
-
-#if defined(__FreeBSD__)
 static void
-init_freebsd(net_priv *c)
+init_net_stats(net_priv *c)
 {
     int mib[6] = {
         CTL_NET,
@@ -184,7 +112,64 @@ init_freebsd(net_priv *c)
         }
     }
 }
+
+static int
+net_get_load_real(net_priv *c, struct net_stat *net)
+{
+    int mib[6] = {
+        CTL_NET,
+        PF_LINK,
+        NETLINK_GENERIC,
+        IFMIB_IFDATA,
+        c->ifmib_row,
+        IFDATA_GENERAL
+    };
+    struct ifmibdata ifmd;
+    size_t len = sizeof(ifmd);
+
+    if (!c->ifmib_row)
+        return -1;
+
+    if (sysctl(mib, sizeof(mib)/sizeof(mib[0]), &ifmd, &len, NULL, 0) != 0)
+        return -1;
+
+    net->tx = ifmd.ifmd_data.ifi_obytes;
+    net->rx = ifmd.ifmd_data.ifi_ibytes;
+    return 0;
+}
+
 #endif
+
+static int
+net_get_load(net_priv *c)
+{
+    struct net_stat net, net_diff;
+    float total[2];
+    char buf[256];
+
+    ENTER;
+    memset(&net, 0, sizeof(net));
+    memset(&net_diff, 0, sizeof(net_diff));
+    memset(&total, 0, sizeof(total));
+
+    if (net_get_load_real(c, &net))
+        goto end;
+
+    net_diff.tx = ((net.tx - c->net_prev.tx) >> 10) / CHECK_PERIOD;
+    net_diff.rx = ((net.rx - c->net_prev.rx) >> 10) / CHECK_PERIOD;
+
+    c->net_prev = net;
+    total[0] = (float)(net_diff.tx) / c->max;
+    total[1] = (float)(net_diff.rx) / c->max;
+
+end:
+    DBG("%f %f %ul %ul\n", total[0], total[1], net_diff.tx, net_diff.rx);
+    k->add_tick(&c->chart, total);
+    g_snprintf(buf, sizeof(buf), "<b>%s:</b>\nD %lu Kbs, U %lu Kbs",
+        c->iface, net_diff.rx, net_diff.tx);
+    gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, buf);
+    RET(TRUE);
+}
 
 static int
 net_constructor(plugin_instance *p)
@@ -208,9 +193,7 @@ net_constructor(plugin_instance *p)
     XCG(p->xc, "TxColor", &c->colors[0], str);
     XCG(p->xc, "RxColor", &c->colors[1], str);
 
-#if defined(__FreeBSD__)
-    init_freebsd(c);
-#endif
+    init_net_stats(c);
 
     c->max = c->max_rx + c->max_tx;
     k->set_rows(&c->chart, 2, c->colors);

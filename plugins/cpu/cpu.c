@@ -53,7 +53,7 @@ cpu_get_load_real(struct cpu_stat *cpu)
 }
 #elif defined __FreeBSD__
 static int
-cpu_get_load_real(struct cpu_stat *s)
+cpu_get_load_real(struct cpu_stat *cpu)
 {
     static int mib[2] = { -1, -1 }, init = 0;
     size_t j;
@@ -75,7 +75,7 @@ cpu_get_load_real(struct cpu_stat *s)
     cpu->n = ct[CP_NICE];
     cpu->s = ct[CP_SYS];
     cpu->i = ct[CP_IDLE];
-    cpu->wait = 0;
+    cpu->w = 0;
 
     return 0;
 }
@@ -93,11 +93,14 @@ cpu_get_load(cpu_priv *c)
 {
     gfloat a, b;
     struct cpu_stat cpu, cpu_diff;
-    float total;
+    float total[1];
     gchar buf[40];
 
     ENTER;
-    total = 0;
+    memset(&cpu, 0, sizeof(cpu));
+    memset(&cpu_diff, 0, sizeof(cpu_diff));
+    memset(&total, 0, sizeof(total));
+
     if (cpu_get_load_real(&cpu))
         goto end;
 
@@ -110,13 +113,13 @@ cpu_get_load(cpu_priv *c)
 
     a = cpu_diff.u + cpu_diff.n + cpu_diff.s;
     b = a + cpu_diff.i + cpu_diff.w;
-    total = b ?  a / b : 1.0;
+    total[0] = b ? a / b : 1.0;
 
 end:
-    DBG("total=%f a=%f b=%f\n", total, a, b);
-    g_snprintf(buf, sizeof(buf), "<b>Cpu:</b> %d%%", (int)(total * 100));
+    DBG("total=%f a=%f b=%f\n", total[0], a, b);
+    g_snprintf(buf, sizeof(buf), "<b>Cpu:</b> %d%%", (int)(total[0] * 100));
     gtk_widget_set_tooltip_markup(((plugin_instance *)c)->pwid, buf);
-    k->add_tick(&c->chart, &total);
+    k->add_tick(&c->chart, total);
     RET(TRUE);
 
 }
