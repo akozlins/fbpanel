@@ -1398,7 +1398,7 @@ taskbar_constructor(plugin_instance *p)
     tb->task_list         = g_hash_table_new(g_int_hash, g_int_equal);
     tb->focused_state     = GTK_STATE_ACTIVE;
     tb->normal_state      = GTK_STATE_NORMAL;
-    tb->spacing           = 1;
+    tb->spacing           = 0;
     tb->use_mouse_wheel   = 1;
     tb->use_urgency_hint  = 1;
 
