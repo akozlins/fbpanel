@@ -164,25 +164,6 @@ accept_net_wm_window_type(net_wm_window_type *nwwt)
 }
 
 
-static GtkWidget *taskbar_make_menu(taskbar_priv *tb);
-
-static void
-tb_update_desktops_names(GtkWidget *widget, taskbar_priv *tb)
-{
-    ENTER;
-    tb->desk_namesno = get_net_number_of_desktops();
-    if (tb->desk_names)
-        g_strfreev (tb->desk_names);
-    tb->desk_names = get_utf8_property_list(GDK_ROOT_WINDOW(),
-        a_NET_DESKTOP_NAMES, &(tb->desk_namesno));
-
-    if (tb->menu) {
-        gtk_widget_destroy(tb->menu);
-        tb->menu = taskbar_make_menu(tb);
-    }
-
-    RET();
-}
 
 static void
 tk_free_names(task *tk)
@@ -1093,7 +1074,6 @@ tb_net_number_of_desktops(GtkWidget *widget, taskbar_priv *tb)
 {
     ENTER;
     tb->desk_num = get_net_number_of_desktops();
-    tb_update_desktops_names(NULL, tb);
     tb_display(tb);
     RET();
 }
@@ -1285,7 +1265,7 @@ menu_iconify_window(GtkWidget *widget, taskbar_priv *tb)
         DefaultScreen(GDK_DISPLAY()));
     RET();
 }
-#define _NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT  4
+
 static void
 send_to_workspace(GtkWidget *widget, void *iii, taskbar_priv *tb)
 {
@@ -1300,10 +1280,22 @@ send_to_workspace(GtkWidget *widget, void *iii, taskbar_priv *tb)
     RET();
 }
 
-#define ALL_WORKSPACES       0xFFFFFFFF
+#define ALL_WORKSPACES  0xFFFFFFFF
 
-static GtkWidget *
-taskbar_make_menu(taskbar_priv *tb)
+static void
+tb_update_desktops_names(taskbar_priv *tb)
+{
+    ENTER;
+    tb->desk_namesno = get_net_number_of_desktops();
+    if (tb->desk_names)
+        g_strfreev(tb->desk_names);
+    tb->desk_names = get_utf8_property_list(GDK_ROOT_WINDOW(),
+        a_NET_DESKTOP_NAMES, &(tb->desk_namesno));
+    RET();
+}
+
+static void
+tb_make_menu(GtkWidget *widget, taskbar_priv *tb)
 {
     GtkWidget *mi, *menu, *submenu;
     gchar *buf;
@@ -1328,9 +1320,11 @@ taskbar_make_menu(taskbar_priv *tb)
         (GCallback)menu_iconify_window, tb);
     gtk_widget_show (mi);
 
+    tb_update_desktops_names(tb);
     submenu = gtk_menu_new();
-    for (i = 0; i < MIN(tb->desk_num, tb->desk_namesno); i++) {
-        buf = g_strdup_printf("%d : %s", i+1, tb->desk_names[i]);
+    for (i = 0; i < tb->desk_num; i++) {
+        buf = g_strdup_printf("%d  %s", i + 1,
+            (i < tb->desk_namesno) ? tb->desk_names[i] : "");
         mi = gtk_image_menu_item_new_with_label (buf);
         g_object_set_data(G_OBJECT(mi), "num", GINT_TO_POINTER(i));
         gtk_menu_shell_append (GTK_MENU_SHELL (submenu), mi);
@@ -1364,7 +1358,9 @@ taskbar_make_menu(taskbar_priv *tb)
         (GCallback)menu_close_window, tb);
     gtk_widget_show (mi);
 
-    RET(menu);
+    if (tb->menu)
+        gtk_widget_destroy(tb->menu);
+    tb->menu = menu;
 }
 
 static void
@@ -1419,13 +1415,16 @@ taskbar_build_gui(plugin_instance *p)
     g_signal_connect (G_OBJECT (fbev), "client_list",
           G_CALLBACK (tb_net_client_list), (gpointer) tb);
     g_signal_connect (G_OBJECT (fbev), "desktop_names",
-          G_CALLBACK (tb_update_desktops_names), (gpointer) tb);
+          G_CALLBACK (tb_make_menu), (gpointer) tb);
+    g_signal_connect (G_OBJECT (fbev), "number_of_desktops",
+          G_CALLBACK (tb_make_menu), (gpointer) tb);
     
     tb->desk_num = get_net_number_of_desktops();
     tb->cur_desk = get_net_current_desktop();
     tb->focused = NULL;
-    tb_update_desktops_names(NULL, tb);
-    tb->menu = taskbar_make_menu(tb);
+    tb->menu = NULL;
+    
+    tb_make_menu(NULL, tb);
     gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 0);
     gtk_widget_show_all(tb->bar);
     RET();
