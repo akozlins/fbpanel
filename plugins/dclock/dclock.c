@@ -76,6 +76,7 @@ dclock_create_calendar()
     gtk_window_set_skip_taskbar_hint(GTK_WINDOW(win), TRUE);
     gtk_window_set_skip_pager_hint(GTK_WINDOW(win), TRUE);
     gtk_window_set_position(GTK_WINDOW(win), GTK_WIN_POS_MOUSE);
+    gtk_window_set_title(GTK_WINDOW(win), "calendar");
     gtk_window_stick(GTK_WINDOW(win));
           
     calendar = gtk_calendar_new();
