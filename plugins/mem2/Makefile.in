@@ -2,7 +2,6 @@ include %%topdir%%/config.mk
 
 SRCS = mem2.c 
 LIBTARGET = mem2.so
-CFLAGS += -I%%topdir%%/plugins/chart -I%%topdir%%/plugins/mem
 
 install:
 	$(install) 755 $(LIBDIR)/fbpanel 755 $(LIBTARGET)

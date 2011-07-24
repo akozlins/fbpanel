@@ -6,7 +6,7 @@
  * bercik-rrp@users.sf.net
  */
 
-#include "chart.h"
+#include "../chart/chart.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -37,7 +37,7 @@ typedef struct {
 #undef MT_ADD
 #define MT_ADD(x) MT_ ## x,
 enum {
-#include "mt.h"
+#include "../mem/mt.h"
     MT_NUM
 };
 
@@ -45,7 +45,7 @@ enum {
 #define MT_ADD(x) { #x, 0, 0 },
 mem_type_t mt[] =
 {
-#include "mt.h"
+#include "../mem/mt.h"
 };
 
 static gboolean
