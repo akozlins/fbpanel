@@ -75,6 +75,8 @@ void xconf_del(xconf *x, gboolean sons_only)
     GSList *s;
     xconf *x2;
     
+    if (!x)
+        return;
     DBG("%s %s\n", x->name, x->value);
     for (s = x->sons; s; s = g_slist_delete_link(s, s))
     {
