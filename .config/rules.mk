@@ -262,6 +262,10 @@ install:
 		modules_install $(out)
 endef
 
+% : %.in
+	@echo "TEXT    $@"
+	$Q$(TOPDIR)/repl.py < $^ > $@
+
 
 targets = $(filter %_type,$(.VARIABLES))
 $(foreach t,$(targets),$(eval $(call $(strip $($(t)))_rules,$(t:_type=))))

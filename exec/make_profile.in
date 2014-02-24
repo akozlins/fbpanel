@@ -6,7 +6,7 @@ npdir=~/.config/fbpanel
 # old profile directory
 opdir=~/.fbpanel
 # system profile directory
-spdir=%%datadir%%/fbpanel
+spdir=@datadir@
 # if profile name was not set, use  'default'
 profile=${1:-default}
 
