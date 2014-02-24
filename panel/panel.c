@@ -17,7 +17,7 @@
 #include "gtkbgbox.h"
 
 
-static gchar version[] = VERSION;
+static gchar version[] = PROJECT_VERSION;
 static gchar *profile = "default";
 static gchar *profile_file;
 
@@ -457,8 +457,8 @@ about()
         "authors", authors,
         "comments", "Lightweight GTK+ desktop panel", 
         "license", "GPLv2",
-        "program-name", PACKAGE,
-        "version", VERSION,
+        "program-name", PROJECT_NAME,
+        "version", PROJECT_VERSION,
         "website", "http://fbpanel.sf.net",
         "logo-icon-name", "logo",
         "translator-credits", _("translator-credits"),
@@ -913,8 +913,8 @@ int
 main(int argc, char *argv[])
 {
     setlocale(LC_CTYPE, "");
-    bindtextdomain(PACKAGE, LOCALEDIR);
-    textdomain(PACKAGE);
+    bindtextdomain(PROJECT_NAME, LOCALEDIR);
+    textdomain(PROJECT_NAME);
 
     gtk_set_locale();
     gtk_init(&argc, &argv);

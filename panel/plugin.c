@@ -72,7 +72,7 @@ class_put(char *name)
     if (tmp->count || !tmp->dynamic)
         RET();
 
-    s = g_strdup_printf(LIBDIR "/fbpanel/%s.so", name);
+    s = g_strdup_printf(LIBDIR "/fbpanel/lib%s.so", name);
     DBG("loading module %s\n", s);
     m = g_module_open(s, G_MODULE_BIND_LAZY);
     g_free(s);
@@ -98,7 +98,7 @@ class_get(char *name)
         tmp->count++;
         RET(tmp);
     }
-    s = g_strdup_printf(LIBDIR "/fbpanel/%s.so", name);
+    s = g_strdup_printf(LIBDIR "/fbpanel/lib%s.so", name);
     DBG("loading module %s\n", s);
     m = g_module_open(s, G_MODULE_BIND_LAZY);
     g_free(s);

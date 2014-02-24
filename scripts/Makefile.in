@@ -1,4 +1,0 @@
-include %%topdir%%/config.mk
-
-
-include %%topdir%%/rules.mk

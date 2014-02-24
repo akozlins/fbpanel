@@ -1,5 +1,0 @@
-include %%topdir%%/config.mk
-
-PO = $(wildcard *.po)
-
-include %%topdir%%/rules.mk
