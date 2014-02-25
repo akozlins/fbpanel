@@ -46,6 +46,19 @@ if args.debug:
 
 ##################################################
 # main
+def my_check_output(*popenargs, **kwargs):  
+    if 'stdout' in kwargs:
+        raise ValueError('stdout argument not allowed, it will be overridden.')
+    cmd = kwargs.get("args")
+    if cmd is None:
+        cmd = popenargs[0]
+    x.debug("exec: %s", cmd)
+    process = sp.Popen(stdout=sp.PIPE, *popenargs, **kwargs)
+    output, unused_err = process.communicate()
+    retcode = process.poll()
+    if retcode:
+        raise sp.CalledProcessError(retcode, cmd, output=output)
+    return output
 
 def svn_is_used():
     f = open('/dev/null', 'w')
@@ -55,15 +68,10 @@ def svn_is_used():
 
 
 def svn_get_file_list():
-    p = sp.Popen('svn info -R'.split(), stdout = sp.PIPE)
-    p.wait()
-    if p.returncode:
-        return []
+    text = my_check_output('svn info -R'.split())
     files = []
-    text = p.stdout.read()
     tre = '(?m)^Path: (?P<path>.*)$(.|\s)*?^Node Kind: (?P<type>.*)$'
     for m in re.finditer(tre, text):
-        x.debug('%s %s', m.group('path'), m.group('type'))
         if m.group('type') == 'file':
             files.append(m.group('path'))
     return files
@@ -132,7 +140,6 @@ x.debug('tar %s, nv %s', tar, nv)
 
 files = [ nv + '/' + f for f in get_file_list() ]
 files = '\n'.join(files)
-x.debug('%s', files)
 tdir = tempfile.mkdtemp()
 odir = os.path.abspath('.')
 os.chdir(tdir)
