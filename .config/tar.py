@@ -76,6 +76,18 @@ def svn_get_file_list():
             files.append(m.group('path'))
     return files
 
+def git_is_used():
+    f = open('/dev/null', 'w')
+    p = sp.Popen('git status'.split(), stdout = f, stderr = f)
+    p.wait()
+    return p.returncode == 0
+
+
+def git_get_file_list():
+    text = my_check_output('git ls-tree --name-only -r HEAD'.split())
+    files = text.split('\n')
+    return files
+
 def none_is_used():
     f = open('/dev/null', 'w')
     p = sp.Popen('make -n distclean'.split(), stdout = f, stderr = f)
@@ -104,6 +116,11 @@ vcs = [
         'is_used' : svn_is_used,
         'get_file_list' : svn_get_file_list
     },
+    {
+        'name' : 'git',
+        'is_used' : git_is_used,
+        'get_file_list' : git_get_file_list
+    },
     
     # must be last entry
     {
@@ -123,8 +140,11 @@ def get_file_list():
         if ret:
             x.info('VCS: %s', v['name'])
             files = v['get_file_list']()
+            # remove duplicates, if any
+            files = list(set(files))
+            files.remove('')
             files.sort()
-            x.info('File list:\n  %s', '\n  '.join(files))
+            x.debug('File list: %s', files)
             if not files:
                 x.error('No files. Aborting')
                 exit(2)
@@ -140,6 +160,7 @@ x.debug('tar %s, nv %s', tar, nv)
 
 files = [ nv + '/' + f for f in get_file_list() ]
 files = '\n'.join(files)
+x.debug('%s', files)
 tdir = tempfile.mkdtemp()
 odir = os.path.abspath('.')
 os.chdir(tdir)
