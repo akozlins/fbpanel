@@ -2,12 +2,12 @@
 
 TOPDIR := ../..
 
-systray_src = egg-marshal.c \
+tray_src = egg-marshal.c \
     eggtraymanager.c \
     fixedtip.c \
     main.c
-systray_cflags = $(GTK2_CFLAGS) 
-systray_libs = $(GTK2_LIBS) 
-systray_type = lib 
+tray_cflags = -DPLUGIN $(GTK2_CFLAGS) 
+tray_libs = $(GTK2_LIBS) 
+tray_type = lib 
 
 include $(TOPDIR)/.config/rules.mk

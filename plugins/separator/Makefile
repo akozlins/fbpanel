@@ -3,7 +3,7 @@
 TOPDIR := ../..
 
 separator_src = separator.c
-separator_cflags = $(GTK2_CFLAGS) 
+separator_cflags = -DPLUGIN $(GTK2_CFLAGS) 
 separator_libs = $(GTK2_LIBS) 
 separator_type = lib 
 

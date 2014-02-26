@@ -3,7 +3,7 @@
 TOPDIR := ../..
 
 launchbar_src = launchbar.c
-launchbar_cflags = $(GTK2_CFLAGS) 
+launchbar_cflags = -DPLUGIN $(GTK2_CFLAGS) 
 launchbar_libs = $(GTK2_LIBS) 
 launchbar_type = lib 
 

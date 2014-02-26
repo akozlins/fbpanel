@@ -3,7 +3,7 @@
 TOPDIR := ../..
 
 icons_src = icons.c
-icons_cflags = $(GTK2_CFLAGS) 
+icons_cflags = -DPLUGIN $(GTK2_CFLAGS) 
 icons_libs = $(GTK2_LIBS) 
 icons_type = lib 
 

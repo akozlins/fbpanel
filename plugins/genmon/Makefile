@@ -3,7 +3,7 @@
 TOPDIR := ../..
 
 genmon_src = genmon.c
-genmon_cflags = $(GTK2_CFLAGS) 
+genmon_cflags = -DPLUGIN $(GTK2_CFLAGS) 
 genmon_libs = $(GTK2_LIBS) 
 genmon_type = lib 
 

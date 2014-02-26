@@ -3,7 +3,7 @@
 TOPDIR := ../..
 
 space_src = space.c
-space_cflags = $(GTK2_CFLAGS) 
+space_cflags = -DPLUGIN $(GTK2_CFLAGS) 
 space_libs = $(GTK2_LIBS) 
 space_type = lib 
 

@@ -3,7 +3,7 @@
 TOPDIR := ../..
 
 chart_src = chart.c
-chart_cflags = $(GTK2_CFLAGS) 
+chart_cflags = -DPLUGIN $(GTK2_CFLAGS) 
 chart_libs = $(GTK2_LIBS) 
 chart_type = lib 
 

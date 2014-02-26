@@ -3,7 +3,7 @@
 TOPDIR := ../..
 
 image_src = image.c
-image_cflags = $(GTK2_CFLAGS) 
+image_cflags = -DPLUGIN $(GTK2_CFLAGS) 
 image_libs = $(GTK2_LIBS) 
 image_type = lib 
 

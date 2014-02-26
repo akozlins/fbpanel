@@ -3,7 +3,7 @@
 TOPDIR := ../..
 
 net_src = net.c
-net_cflags = $(GTK2_CFLAGS) 
+net_cflags = -DPLUGIN $(GTK2_CFLAGS) 
 net_libs = $(GTK2_LIBS) 
 net_type = lib 
 

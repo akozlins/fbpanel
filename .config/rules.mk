@@ -216,7 +216,7 @@ lib$(1).so :  $($(1)_obj)
 ifeq ($($(1)_install),)
 install : $(1)_install
 $(1)_install :
-	$Qinstall -D -m 755 -T lib$(1).a $(DESTDIR)$(LIBDIR)/lib$(1).so
+	$Qinstall -D -m 755 -T lib$(1).so $(DESTDIR)$(LIBDIR)/lib$(1).so
 endif
 endef
 

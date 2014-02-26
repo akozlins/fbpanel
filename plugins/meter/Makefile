@@ -3,7 +3,7 @@
 TOPDIR := ../..
 
 meter_src = meter.c
-meter_cflags = $(GTK2_CFLAGS) 
+meter_cflags = -DPLUGIN $(GTK2_CFLAGS) 
 meter_libs = $(GTK2_LIBS) 
 meter_type = lib 
 

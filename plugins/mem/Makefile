@@ -3,7 +3,7 @@
 TOPDIR := ../..
 
 mem_src = mem.c
-mem_cflags = $(GTK2_CFLAGS) 
+mem_cflags = -DPLUGIN $(GTK2_CFLAGS) 
 mem_libs = $(GTK2_LIBS) 
 mem_type = lib 
 

@@ -3,7 +3,7 @@
 TOPDIR := ../..
 
 wincmd_src = wincmd.c
-wincmd_cflags = $(GTK2_CFLAGS) 
+wincmd_cflags = -DPLUGIN $(GTK2_CFLAGS) 
 wincmd_libs = $(GTK2_LIBS) 
 wincmd_type = lib 
 

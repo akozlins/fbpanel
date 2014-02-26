@@ -3,7 +3,7 @@
 TOPDIR := ../..
 
 dclock_src = dclock.c
-dclock_cflags = $(GTK2_CFLAGS) 
+dclock_cflags = -DPLUGIN $(GTK2_CFLAGS) 
 dclock_libs = $(GTK2_LIBS) 
 dclock_type = lib 
 

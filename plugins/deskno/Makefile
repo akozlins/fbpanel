@@ -3,7 +3,7 @@
 TOPDIR := ../..
 
 deskno_src = deskno.c
-deskno_cflags = $(GTK2_CFLAGS) 
+deskno_cflags = -DPLUGIN $(GTK2_CFLAGS) 
 deskno_libs = $(GTK2_LIBS) 
 deskno_type = lib 
 
