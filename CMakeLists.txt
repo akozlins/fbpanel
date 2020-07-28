@@ -89,6 +89,24 @@ install(
     DESTINATION lib/fbpanel/
 )
 
+set(datadir "${CMAKE_INSTALL_PREFIX}/share/fbpanel")
+configure_file(exec/make_profile.in ${CMAKE_BINARY_DIR}/libexec/fbpanel/make_profile @ONLY)
+configure_file(exec/xlogout ${CMAKE_BINARY_DIR}/libexec/fbpanel/xlogout @ONLY)
+install(
+    DIRECTORY ${CMAKE_BINARY_DIR}/libexec
+    DESTINATION .
+# TODO: set executable
+)
+
+set(DATADIR "${CMAKE_INSTALL_PREFIX}/share/fbpanel")
+configure_file(data/man/fbpanel.1.in ${CMAKE_BINARY_DIR}/man/fbpanel.1 @ONLY)
+install(
+    FILES ${CMAKE_BINARY_DIR}/man/fbpanel.1
+    DESTINATION man
+)
+
+configure_file(data/config/default.in ${CMAKE_BINARY_DIR}/share/fbpanel/default @ONLY)
+configure_file(data/config/pager.in ${CMAKE_BINARY_DIR}/share/fbpanel/pager @ONLY)
 file(COPY data/images DESTINATION ${CMAKE_BINARY_DIR}/share/fbpanel)
 install(
     DIRECTORY ${CMAKE_BINARY_DIR}/share/fbpanel
