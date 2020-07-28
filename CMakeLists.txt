@@ -12,7 +12,10 @@ file(GLOB FBPANEL_SOURCES
 )
 
 add_executable(fbpanel ${FBPANEL_SOURCES})
-set_target_properties(fbpanel PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(fbpanel PROPERTIES
+    LINKER_LANGUAGE C
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
 
 find_package(X11 REQUIRED)
 
@@ -55,6 +58,10 @@ foreach(PLUGIN ${PLUGINS})
     )
 
     add_library(${PLUGIN} SHARED ${PLUGIN_SOURCES})
+    set_target_properties(${PLUGIN} PROPERTIES
+        LINKER_LANGUAGE C
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/fbpanel"
+    )
 
     target_include_directories(${PLUGIN}
         PUBLIC
@@ -82,8 +89,8 @@ install(
     DESTINATION lib/fbpanel/
 )
 
+file(COPY data/images DESTINATION ${CMAKE_BINARY_DIR}/share/fbpanel)
 install(
-    DIRECTORY data/images
-    DESTINATION share/fbpanel/
-    FILES_MATCHING PATTERN "*.png"
+    DIRECTORY ${CMAKE_BINARY_DIR}/share/fbpanel
+    DESTINATION share
 )
