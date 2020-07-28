@@ -71,3 +71,19 @@ foreach(PLUGIN ${PLUGINS})
     )
 
 endforeach()
+
+install(
+    TARGETS fbpanel
+    DESTINATION bin/
+)
+
+install(
+    TARGETS ${PLUGINS}
+    DESTINATION lib/fbpanel/
+)
+
+install(
+    DIRECTORY data/images
+    DESTINATION share/fbpanel/
+    FILES_MATCHING PATTERN "*.png"
+)
