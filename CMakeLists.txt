@@ -31,7 +31,16 @@ target_include_directories(fbpanel
         ${MODULES_INCLUDE_DIRS}
 )
 
-set(PLUGINS "taskbar")
+set(PLUGINS "")
+FILE(GLOB FILES
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/plugins
+    plugins/*
+)
+foreach(FILE ${FILES})
+    if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins/${FILE})
+        list(APPEND PLUGINS ${FILE})
+    endif()
+endforeach()
 
 foreach(PLUGIN ${PLUGINS})
 
