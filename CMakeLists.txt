@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.8)
 
-project(fbpanel)
+project(fbpanel VERSION 7.0)
+
+configure_file(
+    config.h.in ${CMAKE_BINARY_DIR}/include/config.h
+)
 
 file(GLOB FBPANEL_SOURCES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -17,6 +21,7 @@ pkg_check_modules(MODULES REQUIRED gtk+-2.0 gmodule-2.0)
 
 target_include_directories(fbpanel
     PUBLIC
+        ${CMAKE_BINARY_DIR}/include
         panel .
 )
 target_link_libraries(fbpanel
@@ -53,6 +58,7 @@ foreach(PLUGIN ${PLUGINS})
 
     target_include_directories(${PLUGIN}
         PUBLIC
+            ${CMAKE_BINARY_DIR}/include
             panel .
     )
     target_link_libraries(${PLUGIN}
