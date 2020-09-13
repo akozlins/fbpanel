@@ -30,44 +30,11 @@ target_include_directories(fbpanel SYSTEM PUBLIC
     ${MODULES_INCLUDE_DIRS}
 )
 
-set(PLUGINS "")
-FILE(GLOB FILES
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/plugins
-    ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*
-)
-foreach(FILE ${FILES})
-    if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins/${FILE})
-        list(APPEND PLUGINS ${FILE})
-    endif()
-endforeach()
-
-foreach(PLUGIN ${PLUGINS})
-
-    file(GLOB PLUGIN_SOURCES
-        plugins/${PLUGIN}/*.c
-    )
-
-    add_library(${PLUGIN} SHARED ${PLUGIN_SOURCES})
-    set_target_properties(${PLUGIN} PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/fbpanel"
-    )
-
-    target_link_libraries(${PLUGIN} PRIVATE
-        fbpanel
-    )
-    target_compile_options(${PLUGIN} PRIVATE
-        -DPLUGIN
-    )
-
-endforeach()
-
 install(TARGETS fbpanel
     DESTINATION bin
 )
 
-install(TARGETS ${PLUGINS}
-    DESTINATION lib/fbpanel
-)
+add_subdirectory(plugins)
 
 set(datadir "${CMAKE_INSTALL_PREFIX}/share/fbpanel")
 configure_file(exec/make_profile.in ${CMAKE_BINARY_DIR}/libexec/fbpanel/make_profile @ONLY)
