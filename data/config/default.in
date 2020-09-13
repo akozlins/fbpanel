@@ -176,7 +176,7 @@ Plugin {
             item {
                 name = logout
                 icon = gnome-session-logout
-                action = @libexecdir@/xlogout
+                action = @LIBEXECDIR@/xlogout
             }
         }
     }

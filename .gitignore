@@ -1,9 +1,4 @@
+#
 
-*.o
-*.d
-*.so
-
-config.mk
-config.h
-repl.py
-.config/*.pyc
+/.git/
+/cmake-build*/

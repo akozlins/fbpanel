@@ -36,7 +36,9 @@ install(TARGETS fbpanel
 
 add_subdirectory(plugins)
 
-set(datadir "${CMAKE_INSTALL_PREFIX}/share/fbpanel")
+set(LIBEXECDIR "${CMAKE_INSTALL_PREFIX}/libexec/fbpanel")
+set(DATADIR "${CMAKE_INSTALL_PREFIX}/share/fbpanel")
+
 configure_file(exec/make_profile.in ${CMAKE_BINARY_DIR}/libexec/fbpanel/make_profile @ONLY)
 configure_file(exec/xlogout ${CMAKE_BINARY_DIR}/libexec/fbpanel/xlogout @ONLY)
 install(
@@ -45,7 +47,6 @@ install(
 # TODO: set executable
 )
 
-set(DATADIR "${CMAKE_INSTALL_PREFIX}/share/fbpanel")
 configure_file(data/man/fbpanel.1.in ${CMAKE_BINARY_DIR}/man/fbpanel.1 @ONLY)
 install(
     FILES ${CMAKE_BINARY_DIR}/man/fbpanel.1
