@@ -11,7 +11,6 @@ file(GLOB FBPANEL_SOURCES
 
 add_executable(fbpanel ${FBPANEL_SOURCES})
 set_target_properties(fbpanel PROPERTIES
-    LINKER_LANGUAGE C
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
     ENABLE_EXPORTS TRUE
 )
@@ -23,20 +22,18 @@ target_include_directories(fbpanel PUBLIC
     ${CMAKE_BINARY_DIR}/include
     panel .
 )
-target_link_libraries(fbpanel PRIVATE
+target_link_libraries(fbpanel PUBLIC
     -lm
-    ${X11_LIBRARIES}
     ${MODULES_LIBRARIES}
 )
-target_include_directories(fbpanel SYSTEM PRIVATE
-    ${X11_INCLUDE_DIRS}
+target_include_directories(fbpanel SYSTEM PUBLIC
     ${MODULES_INCLUDE_DIRS}
 )
 
 set(PLUGINS "")
 FILE(GLOB FILES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/plugins
-    plugins/*
+    ${CMAKE_CURRENT_SOURCE_DIR}/plugins/*
 )
 foreach(FILE ${FILES})
     if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins/${FILE})
@@ -47,40 +44,28 @@ endforeach()
 foreach(PLUGIN ${PLUGINS})
 
     file(GLOB PLUGIN_SOURCES
-        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
         plugins/${PLUGIN}/*.c
     )
 
     add_library(${PLUGIN} SHARED ${PLUGIN_SOURCES})
     set_target_properties(${PLUGIN} PROPERTIES
-        LINKER_LANGUAGE C
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/fbpanel"
     )
 
-    target_include_directories(${PLUGIN} PUBLIC
-        ${CMAKE_BINARY_DIR}/include
-        panel .
+    target_link_libraries(${PLUGIN} PRIVATE
+        fbpanel
     )
     target_compile_options(${PLUGIN} PRIVATE
         -DPLUGIN
     )
 
-    target_link_libraries(${PLUGIN} PRIVATE
-        ${MODULES_LIBRARIES}
-    )
-    target_include_directories(${PLUGIN} SYSTEM PRIVATE
-        ${MODULES_INCLUDE_DIRS}
-    )
-
 endforeach()
 
-install(
-    TARGETS fbpanel
+install(TARGETS fbpanel
     DESTINATION bin
 )
 
-install(
-    TARGETS ${PLUGINS}
+install(TARGETS ${PLUGINS}
     DESTINATION lib/fbpanel
 )
 
@@ -88,8 +73,8 @@ set(datadir "${CMAKE_INSTALL_PREFIX}/share/fbpanel")
 configure_file(exec/make_profile.in ${CMAKE_BINARY_DIR}/libexec/fbpanel/make_profile @ONLY)
 configure_file(exec/xlogout ${CMAKE_BINARY_DIR}/libexec/fbpanel/xlogout @ONLY)
 install(
-    DIRECTORY ${CMAKE_BINARY_DIR}/libexec
-    DESTINATION .
+    DIRECTORY ${CMAKE_BINARY_DIR}/libexec/fbpanel
+    DESTINATION libexec
 # TODO: set executable
 )
 
