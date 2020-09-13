@@ -59,3 +59,5 @@ install(
     DIRECTORY ${CMAKE_BINARY_DIR}/share/fbpanel
     DESTINATION share
 )
+
+add_subdirectory(www)
