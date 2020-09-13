@@ -13,6 +13,7 @@ add_executable(fbpanel ${FBPANEL_SOURCES})
 set_target_properties(fbpanel PROPERTIES
     LINKER_LANGUAGE C
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    ENABLE_EXPORTS TRUE
 )
 
 find_package(PkgConfig REQUIRED)
@@ -59,6 +60,9 @@ foreach(PLUGIN ${PLUGINS})
     target_include_directories(${PLUGIN} PUBLIC
         ${CMAKE_BINARY_DIR}/include
         panel .
+    )
+    target_compile_options(${PLUGIN} PRIVATE
+        -DPLUGIN
     )
 
     target_link_libraries(${PLUGIN} PRIVATE
