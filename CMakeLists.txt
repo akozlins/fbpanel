@@ -2,9 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 
 project(fbpanel VERSION 7.0)
 
-configure_file(
-    config.h.in ${CMAKE_BINARY_DIR}/include/config.h
-)
+configure_file(config.h.in ${CMAKE_BINARY_DIR}/include/config.h @ONLY)
 
 file(GLOB FBPANEL_SOURCES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -17,26 +15,21 @@ set_target_properties(fbpanel PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-find_package(X11 REQUIRED)
-
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(MODULES REQUIRED gtk+-2.0 gmodule-2.0)
+pkg_check_modules(MODULES REQUIRED x11 gtk+-2.0 gmodule-2.0)
 
-target_include_directories(fbpanel
-    PUBLIC
-        ${CMAKE_BINARY_DIR}/include
-        panel .
+target_include_directories(fbpanel PUBLIC
+    ${CMAKE_BINARY_DIR}/include
+    panel .
 )
-target_link_libraries(fbpanel
-    PRIVATE
-        -lm
-        ${X11_LIBRARIES}
-        ${MODULES_LIBRARIES}
+target_link_libraries(fbpanel PRIVATE
+    -lm
+    ${X11_LIBRARIES}
+    ${MODULES_LIBRARIES}
 )
-target_include_directories(fbpanel
-    SYSTEM PRIVATE
-        ${X11_INCLUDE_DIRS}
-        ${MODULES_INCLUDE_DIRS}
+target_include_directories(fbpanel SYSTEM PRIVATE
+    ${X11_INCLUDE_DIRS}
+    ${MODULES_INCLUDE_DIRS}
 )
 
 set(PLUGINS "")
@@ -63,30 +56,28 @@ foreach(PLUGIN ${PLUGINS})
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/fbpanel"
     )
 
-    target_include_directories(${PLUGIN}
-        PUBLIC
-            ${CMAKE_BINARY_DIR}/include
-            panel .
+    target_include_directories(${PLUGIN} PUBLIC
+        ${CMAKE_BINARY_DIR}/include
+        panel .
     )
-    target_link_libraries(${PLUGIN}
-        PRIVATE
-            ${MODULES_LIBRARIES}
+
+    target_link_libraries(${PLUGIN} PRIVATE
+        ${MODULES_LIBRARIES}
     )
-    target_include_directories(${PLUGIN}
-        SYSTEM PRIVATE
-            ${MODULES_INCLUDE_DIRS}
+    target_include_directories(${PLUGIN} SYSTEM PRIVATE
+        ${MODULES_INCLUDE_DIRS}
     )
 
 endforeach()
 
 install(
     TARGETS fbpanel
-    DESTINATION bin/
+    DESTINATION bin
 )
 
 install(
     TARGETS ${PLUGINS}
-    DESTINATION lib/fbpanel/
+    DESTINATION lib/fbpanel
 )
 
 set(datadir "${CMAKE_INSTALL_PREFIX}/share/fbpanel")
