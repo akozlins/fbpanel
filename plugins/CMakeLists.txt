@@ -1,4 +1,5 @@
 
+# generate list of plugins
 set(PLUGINS "")
 FILE(GLOB FILES
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}

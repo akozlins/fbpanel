@@ -1,11 +1,11 @@
 
-file(GLOB FBPANEL_SOURCES
+file(GLOB SOURCES
     *.h *.c
 )
 
 configure_file(config.h.in config.h @ONLY)
 
-add_executable(fbpanel ${FBPANEL_SOURCES})
+add_executable(fbpanel ${SOURCES})
 set_target_properties(fbpanel PROPERTIES
     ENABLE_EXPORTS TRUE
 )

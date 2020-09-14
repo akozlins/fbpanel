@@ -1,3 +1,4 @@
+# CHANGELOG
 
 ## Version: 7.0
 Date: 2015-12-05 08:25:36

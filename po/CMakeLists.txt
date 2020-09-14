@@ -1,4 +1,5 @@
 
+# generate .pot files from *.c and *.h files
 function(add_pot NAME)
     file(GLOB_RECURSE SOURCES
         ../*.c ../*.h
@@ -16,6 +17,7 @@ function(add_pot NAME)
     )
 endfunction()
 
+# merge current .po and .pot files
 function(add_po NAME)
     add_custom_command(OUTPUT ${NAME}.po
         COMMAND
@@ -25,6 +27,7 @@ function(add_po NAME)
     )
 endfunction()
 
+# generate .mo files
 function(add_mo NAME)
     add_custom_command(OUTPUT ${NAME}.mo
         COMMAND
