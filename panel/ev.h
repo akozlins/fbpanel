@@ -21,7 +21,7 @@
  *
  * Authors:
  *      Ian McKellar <yakk@yakk.net>
- *	Mark McLoughlin <mark@skynet.ie>
+ *      Mark McLoughlin <mark@skynet.ie>
  */
 
 #ifndef __FB_EV_H__
@@ -38,18 +38,18 @@
 
 #define FB_TYPE_EV         (fb_ev_get_type ())
 #define FB_EV(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o),      \
-					       FB_TYPE_EV,        \
-					       FbEv))
+                           FB_TYPE_EV,        \
+                           FbEv))
 #define FB_EV_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST ((k),         \
-					       FB_TYPE_EV,        \
-					       FbEvClass))
+                           FB_TYPE_EV,        \
+                           FbEvClass))
 #define FB_IS_EV(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o),      \
-					       FB_TYPE_EV))
+                           FB_TYPE_EV))
 #define FB_IS_EV_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k),         \
-					       FB_TYPE_EV))
+                           FB_TYPE_EV))
 #define FB_EV_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o),       \
-					       FB_TYPE_EV,        \
-					       FbEvClass))
+                           FB_TYPE_EV,        \
+                           FbEvClass))
 
 typedef struct _FbEvClass FbEvClass;
 typedef struct _FbEv      FbEv;

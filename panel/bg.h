@@ -21,7 +21,7 @@
  *
  * Authors:
  *      Ian McKellar <yakk@yakk.net>
- *	Mark McLoughlin <mark@skynet.ie>
+ *      Mark McLoughlin <mark@skynet.ie>
  */
 
 #ifndef __FB_BG_H__
@@ -39,18 +39,18 @@
 
 #define FB_TYPE_BG         (fb_bg_get_type ())
 #define FB_BG(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o),      \
-					       FB_TYPE_BG,        \
-					       FbBg))
+                           FB_TYPE_BG,        \
+                           FbBg))
 #define FB_BG_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST ((k),         \
-					       FB_TYPE_BG,        \
-					       FbBgClass))
+                           FB_TYPE_BG,        \
+                           FbBgClass))
 #define FB_IS_BG(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o),      \
-					       FB_TYPE_BG))
+                           FB_TYPE_BG))
 #define FB_IS_BG_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k),         \
-					       FB_TYPE_BG))
+                           FB_TYPE_BG))
 #define FB_BG_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o),       \
-					       FB_TYPE_BG,        \
-					       FbBgClass))
+                           FB_TYPE_BG,        \
+                           FbBgClass))
 
 typedef struct _FbBgClass FbBgClass;
 typedef struct _FbBg      FbBg;

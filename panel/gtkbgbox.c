@@ -81,13 +81,13 @@ gtk_bgbox_get_type (void)
         static const GTypeInfo bgbox_info =
             {
                 sizeof (GtkBgboxClass),
-                NULL,		/* base_init */
-                NULL,		/* base_finalize */
+                NULL,   /* base_init */
+                NULL,   /* base_finalize */
                 (GClassInitFunc) gtk_bgbox_class_init,
-                NULL,		/* class_finalize */
-                NULL,		/* class_data */
+                NULL,   /* class_finalize */
+                NULL,   /* class_data */
                 sizeof (GtkBgbox),
-                0,		/* n_preallocs */
+                0,      /* n_preallocs */
                 (GInstanceInitFunc) gtk_bgbox_init,
             };
 

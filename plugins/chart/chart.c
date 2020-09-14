@@ -81,7 +81,7 @@ chart_draw(chart_priv *c)
         y = c->h-2;
         for (j = 0; j < c->rows; j++) {
             int val;
-	
+
             val = c->ticks[j][(i + c->pos) % c->w];
             if (val)
                 gdk_draw_line(c->da->window, c->gc_cpu[j], i, y, i, y - val);

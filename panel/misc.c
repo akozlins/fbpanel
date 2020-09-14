@@ -949,8 +949,8 @@ fb_image_icon_theme_changed(GtkIconTheme *icon_theme, GtkWidget *image)
     for (i = 0; i < PIXBBUF_NUM; i++)
         if (conf->pix[i]) {
             g_object_unref(G_OBJECT(conf->pix[i]));
-	    conf->pix[i] = NULL;
-	}
+            conf->pix[i] = NULL;
+        }
     conf->pix[0] = fb_pixbuf_new(conf->iname, conf->fname,
             conf->width, conf->height, TRUE);
     conf->pix[1] = fb_pixbuf_make_back_image(conf->pix[0], conf->hicolor);
@@ -1027,8 +1027,8 @@ fb_button_cross(GtkImage *widget, GdkEventCrossing *event)
         gtk_image_set_from_pixbuf(GTK_IMAGE(widget), conf->pix[i]);
     }
     DBG("%s/%s - %s - pix[%d]=%p\n", conf->iname, conf->fname,
-	(event->type == GDK_LEAVE_NOTIFY) ? "out" : "in",
-	conf->i, conf->pix[conf->i]);
+        (event->type == GDK_LEAVE_NOTIFY) ? "out" : "in",
+        conf->i, conf->pix[conf->i]);
     RET(TRUE);
 }
 

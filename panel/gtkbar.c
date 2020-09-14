@@ -49,13 +49,13 @@ gtk_bar_get_type (void)
         static const GTypeInfo bar_info =
             {
                 sizeof (GtkBarClass),
-                NULL,		/* base_init */
-                NULL,		/* base_finalize */
+                NULL,   /* base_init */
+                NULL,   /* base_finalize */
                 (GClassInitFunc) gtk_bar_class_init,
-                NULL,		/* class_finalize */
-                NULL,		/* class_data */
+                NULL,   /* class_finalize */
+                NULL,   /* class_data */
                 sizeof (GtkBar),
-                0,		/* n_preallocs */
+                0,      /* n_preallocs */
                 NULL
             };
 
@@ -126,7 +126,7 @@ gtk_bar_size_request(GtkWidget *widget, GtkRequisition *requisition)
         child = children->data;
         children = children->next;
 
-        if (GTK_WIDGET_VISIBLE(child->widget))	{
+        if (GTK_WIDGET_VISIBLE(child->widget)) {
             GtkRequisition child_requisition;
 
             /* Do not remove child request !!! Label's proper layout depends

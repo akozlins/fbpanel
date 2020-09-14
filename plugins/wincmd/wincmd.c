@@ -40,7 +40,7 @@ toggle_shaded(wincmd_priv *wc, guint32 action)
     win = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST,
         XA_WINDOW, &num);
     if (!win)
-	RET();
+        RET();
     if (!num)
         goto end;
     //tmp = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CURRENT_DESKTOP,
@@ -90,7 +90,7 @@ toggle_iconify(wincmd_priv *wc)
     win = get_xaproperty (GDK_ROOT_WINDOW(), a_NET_CLIENT_LIST_STACKING,
             XA_WINDOW, &num);
     if (!win)
-	RET();
+        RET();
     if (!num)
         goto end;
     awin = g_new(Window, num);

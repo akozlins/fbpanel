@@ -147,17 +147,17 @@ drag_data_received_cb (GtkWidget *widget,
     {
         gchar *utf8, *tmp;
         
-	utf8 = g_utf16_to_utf8((gunichar2 *) sd->data, (glong) sd->length,
+        utf8 = g_utf16_to_utf8((gunichar2 *) sd->data, (glong) sd->length,
               NULL, NULL, NULL);
         tmp = utf8 ? strchr(utf8, '\n') : NULL;
-	if (!tmp)
+        if (!tmp)
         {
             ERR("Invalid UTF16 from text/x-moz-url target");
             g_free(utf8);
             gtk_drag_finish(context, FALSE, FALSE, time);
             RET();
-	}
-	*tmp = '\0';
+        }
+        *tmp = '\0';
         tmp = g_strdup_printf("%s %s", b->action, utf8);
         g_spawn_command_line_async(tmp, NULL);
         DBG("%s %s\n", b->action, utf8);

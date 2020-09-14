@@ -147,15 +147,15 @@ Plugin {
         }
         separator {
         }
-	menu {  
-	    name = Computer
-	    icon = computer
+        menu {
+            name = Computer
+            icon = computer
             
-	    item {
-		name = Terminal
-		icon = terminal
-		action = x-terminal
-	    }
+            item {
+                name = Terminal
+                icon = terminal
+                action = x-terminal
+            }
             item {
                 name = Lock Display
                 icon = gnome-lockscreen
@@ -205,11 +205,11 @@ Plugin {
             tooltip = Terminal
             action = x-terminal
         }
-	button {
+        button {
             icon = web-browser
             tooltip = Web Browser
             action = x-www-browser
-    	}
+        }
     }
 }
 
@@ -255,9 +255,9 @@ Plugin {
 
 Plugin {
     type = space
-	config {
-	   size = 15
-	}
+    config {
+       size = 15
+    }
 }
 
 Plugin {

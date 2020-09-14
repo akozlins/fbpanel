@@ -295,7 +295,7 @@ ics_event_filter( XEvent *xev, GdkEvent *event, icons_priv *ics)
     ENTER;
     g_assert(ics != NULL);
     if (xev->type == PropertyNotify)
-	ics_propertynotify(ics, xev);
+        ics_propertynotify(ics, xev);
     RET(GDK_FILTER_CONTINUE);
 }
 
@@ -316,7 +316,7 @@ do_net_client_list(icons_priv *ics)
     ics->wins = get_xaproperty (GDK_ROOT_WINDOW(),
         a_NET_CLIENT_LIST, XA_WINDOW, &ics->win_num);
     if (!ics->wins) 
-	RET();
+        RET();
     DBG("alloc ics->wins\n");
     for (i = 0; i < ics->win_num; i++)
     {
@@ -362,7 +362,7 @@ ics_propertynotify(icons_priv *ics, XEvent *ev)
     DBG("win=%lx at=%ld\n", win, at);
     if (win != GDK_ROOT_WINDOW())
     {
-	task *tk = find_task(ics, win);
+        task *tk = find_task(ics, win);
 
         if (!tk) 
             RET();

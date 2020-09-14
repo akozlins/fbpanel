@@ -2,7 +2,7 @@
 #ifndef ___egg_marshal_MARSHAL_H__
 #define ___egg_marshal_MARSHAL_H__
 
-#include	<glib-object.h>
+#include <glib-object.h>
 
 G_BEGIN_DECLS
 

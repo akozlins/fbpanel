@@ -73,15 +73,15 @@ egg_tray_manager_get_type (void)
     {
       static const GTypeInfo our_info =
       {
-	sizeof (EggTrayManagerClass),
-	(GBaseInitFunc) NULL,
-	(GBaseFinalizeFunc) NULL,
-	(GClassInitFunc) egg_tray_manager_class_init,
-	NULL, /* class_finalize */
-	NULL, /* class_data */
-	sizeof (EggTrayManager),
-	0,    /* n_preallocs */
-	(GInstanceInitFunc) egg_tray_manager_init
+        sizeof (EggTrayManagerClass),
+        (GBaseInitFunc) NULL,
+        (GBaseFinalizeFunc) NULL,
+        (GClassInitFunc) egg_tray_manager_class_init,
+        NULL, /* class_finalize */
+        NULL, /* class_data */
+        sizeof (EggTrayManager),
+        0,    /* n_preallocs */
+        (GInstanceInitFunc) egg_tray_manager_init
       };
 
       our_type = g_type_register_static (G_TYPE_OBJECT, "EggTrayManager", &our_info, 0);
@@ -311,7 +311,7 @@ pending_message_free (PendingMessage *message)
 
 static void
 egg_tray_manager_handle_message_data (EggTrayManager       *manager,
-				       XClientMessageEvent  *xevent)
+                                      XClientMessageEvent  *xevent)
 {
   GList *p;
   int len;
@@ -324,39 +324,39 @@ egg_tray_manager_handle_message_data (EggTrayManager       *manager,
       PendingMessage *msg = p->data;
 
       if (xevent->window == msg->window)
-	{
-	  /* Append the message */
-	  len = MIN (msg->remaining_len, 20);
+        {
+          /* Append the message */
+          len = MIN (msg->remaining_len, 20);
 
-	  memcpy ((msg->str + msg->len - msg->remaining_len),
-		  &xevent->data, len);
-	  msg->remaining_len -= len;
+          memcpy ((msg->str + msg->len - msg->remaining_len),
+                  &xevent->data, len);
+          msg->remaining_len -= len;
 
-	  if (msg->remaining_len == 0)
-	    {
-	      GtkSocket *socket;
+          if (msg->remaining_len == 0)
+            {
+              GtkSocket *socket;
 
-	      socket = g_hash_table_lookup (manager->socket_table, GINT_TO_POINTER (msg->window));
+              socket = g_hash_table_lookup (manager->socket_table, GINT_TO_POINTER (msg->window));
 
-	      if (socket)
-		{
-		  g_signal_emit (manager, manager_signals[MESSAGE_SENT], 0,
-				 socket, msg->str, msg->id, msg->timeout);
-		}
-	      manager->messages = g_list_remove_link (manager->messages,
-						      p);
-	      
-	      pending_message_free (msg);
-	    }
+              if (socket)
+                {
+                  g_signal_emit (manager, manager_signals[MESSAGE_SENT], 0,
+                                 socket, msg->str, msg->id, msg->timeout);
+                }
+              manager->messages = g_list_remove_link (manager->messages,
+                                                      p);
 
-	  return;
-	}
+              pending_message_free (msg);
+            }
+
+          return;
+        }
     }
 }
 
 static void
 egg_tray_manager_handle_begin_message (EggTrayManager       *manager,
-				       XClientMessageEvent  *xevent)
+                                       XClientMessageEvent  *xevent)
 {
   GList *p;
   PendingMessage *msg;
@@ -369,13 +369,13 @@ egg_tray_manager_handle_begin_message (EggTrayManager       *manager,
       PendingMessage *msg = p->data;
 
       if (xevent->window == msg->window &&
-	  xevent->data.l[4] == msg->id)
-	{
-	  /* Hmm, we found it, now remove it */
-	  pending_message_free (msg);
-	  manager->messages = g_list_remove_link (manager->messages, p);
-	  break;
-	}
+          xevent->data.l[4] == msg->id)
+        {
+          /* Hmm, we found it, now remove it */
+          pending_message_free (msg);
+          manager->messages = g_list_remove_link (manager->messages, p);
+          break;
+        }
     }
 
   /* Now add the new message to the queue */
@@ -392,7 +392,7 @@ egg_tray_manager_handle_begin_message (EggTrayManager       *manager,
 
 static void
 egg_tray_manager_handle_cancel_message (EggTrayManager       *manager,
-					XClientMessageEvent  *xevent)
+                                        XClientMessageEvent  *xevent)
 {
   GtkSocket *socket;
   
@@ -401,13 +401,13 @@ egg_tray_manager_handle_cancel_message (EggTrayManager       *manager,
   if (socket)
     {
       g_signal_emit (manager, manager_signals[MESSAGE_CANCELLED], 0,
-		     socket, xevent->data.l[2]);
+                     socket, xevent->data.l[2]);
     }
 }
 
 static GdkFilterReturn
 egg_tray_manager_handle_event (EggTrayManager       *manager,
-			       XClientMessageEvent  *xevent)
+                               XClientMessageEvent  *xevent)
 {
   switch (xevent->data.l[1])
     {
@@ -438,14 +438,14 @@ egg_tray_manager_window_filter (GdkXEvent *xev, GdkEvent *event, gpointer data)
   if (xevent->type == ClientMessage)
     {
       if (xevent->xclient.message_type == manager->opcode_atom)
-	{
-	  return egg_tray_manager_handle_event (manager, (XClientMessageEvent *)xevent);
-	}
+        {
+          return egg_tray_manager_handle_event (manager, (XClientMessageEvent *)xevent);
+        }
       else if (xevent->xclient.message_type == manager->message_data_atom)
-	{
-	  egg_tray_manager_handle_message_data (manager, (XClientMessageEvent *)xevent);
-	  return GDK_FILTER_REMOVE;
-	}
+        {
+          egg_tray_manager_handle_message_data (manager, (XClientMessageEvent *)xevent);
+          return GDK_FILTER_REMOVE;
+        }
     }
   else if (xevent->type == SelectionClear)
     {
@@ -506,7 +506,7 @@ egg_tray_manager_manage_xscreen (EggTrayManager *manager, Screen *xscreen)
     return FALSE;
 #endif
   screen = gdk_display_get_screen (gdk_x11_lookup_xdisplay (DisplayOfScreen (xscreen)),
-				   XScreenNumberOfScreen (xscreen));
+                                   XScreenNumberOfScreen (xscreen));
   
   invisible = gtk_invisible_new_for_screen (screen);
   gtk_widget_realize (invisible);
@@ -514,14 +514,14 @@ egg_tray_manager_manage_xscreen (EggTrayManager *manager, Screen *xscreen)
   gtk_widget_add_events (invisible, GDK_PROPERTY_CHANGE_MASK | GDK_STRUCTURE_MASK);
 
   selection_atom_name = g_strdup_printf ("_NET_SYSTEM_TRAY_S%d",
-					 XScreenNumberOfScreen (xscreen));
+                                         XScreenNumberOfScreen (xscreen));
   manager->selection_atom = XInternAtom (DisplayOfScreen (xscreen), selection_atom_name, False);
 
   g_free (selection_atom_name);
   
   timestamp = gdk_x11_get_server_time (invisible->window);
   XSetSelectionOwner (DisplayOfScreen (xscreen), manager->selection_atom,
-		      GDK_WINDOW_XWINDOW (invisible->window), timestamp);
+                      GDK_WINDOW_XWINDOW (invisible->window), timestamp);
 
   /* Check if we were could set the selection owner successfully */
   if (XGetSelectionOwner (DisplayOfScreen (xscreen), manager->selection_atom) ==
@@ -537,23 +537,23 @@ egg_tray_manager_manage_xscreen (EggTrayManager *manager, Screen *xscreen)
       xev.data.l[0] = timestamp;
       xev.data.l[1] = manager->selection_atom;
       xev.data.l[2] = GDK_WINDOW_XWINDOW (invisible->window);
-      xev.data.l[3] = 0;	/* manager specific data */
-      xev.data.l[4] = 0;	/* manager specific data */
+      xev.data.l[3] = 0;    /* manager specific data */
+      xev.data.l[4] = 0;    /* manager specific data */
 
       XSendEvent (DisplayOfScreen (xscreen),
-		  RootWindowOfScreen (xscreen),
-		  False, StructureNotifyMask, (XEvent *)&xev);
+                  RootWindowOfScreen (xscreen),
+                  False, StructureNotifyMask, (XEvent *)&xev);
 
       manager->invisible = invisible;
       g_object_ref (G_OBJECT (manager->invisible));
       
       manager->opcode_atom = XInternAtom (DisplayOfScreen (xscreen),
-					  "_NET_SYSTEM_TRAY_OPCODE",
-					  False);
+                                          "_NET_SYSTEM_TRAY_OPCODE",
+                                          False);
 
       manager->message_data_atom = XInternAtom (DisplayOfScreen (xscreen),
-						"_NET_SYSTEM_TRAY_MESSAGE_DATA",
-						False);
+                                                "_NET_SYSTEM_TRAY_MESSAGE_DATA",
+                                                False);
 
       /* Add a window filter */
       gdk_window_add_filter (invisible->window, egg_tray_manager_window_filter, manager);
@@ -569,13 +569,13 @@ egg_tray_manager_manage_xscreen (EggTrayManager *manager, Screen *xscreen)
 
 gboolean
 egg_tray_manager_manage_screen (EggTrayManager *manager,
-				GdkScreen      *screen)
+                                GdkScreen      *screen)
 {
   g_return_val_if_fail (GDK_IS_SCREEN (screen), FALSE);
   g_return_val_if_fail (manager->screen == NULL, FALSE);
 
   return egg_tray_manager_manage_xscreen (manager, 
-					  GDK_SCREEN_XSCREEN (screen));
+                                          GDK_SCREEN_XSCREEN (screen));
 }
 
 static gboolean
@@ -585,7 +585,7 @@ egg_tray_manager_check_running_xscreen (Screen *xscreen)
   char *selection_atom_name;
 
   selection_atom_name = g_strdup_printf ("_NET_SYSTEM_TRAY_S%d",
-					 XScreenNumberOfScreen (xscreen));
+                                         XScreenNumberOfScreen (xscreen));
   selection_atom = XInternAtom (DisplayOfScreen (xscreen), selection_atom_name, False);
   g_free (selection_atom_name);
 
@@ -605,7 +605,7 @@ egg_tray_manager_check_running (GdkScreen *screen)
 
 char *
 egg_tray_manager_get_child_title (EggTrayManager *manager,
-				  EggTrayManagerChild *child)
+                                  EggTrayManagerChild *child)
 {
   Window *child_window;
   Atom utf8_string, atom, type;

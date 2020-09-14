@@ -8,7 +8,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -44,7 +44,7 @@ extern "C" {
 #define GTK_IS_BGBOX_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), GTK_TYPE_BGBOX))
 #define GTK_BGBOX_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS ((obj), GTK_TYPE_BGBOX, GtkBgboxClass))
 
-typedef struct _GtkBgbox	  GtkBgbox;
+typedef struct _GtkBgbox       GtkBgbox;
 typedef struct _GtkBgboxClass  GtkBgboxClass;
 
 struct _GtkBgbox
@@ -59,7 +59,7 @@ struct _GtkBgboxClass
 
 enum { BG_NONE, BG_STYLE, BG_ROOT, BG_INHERIT, BG_LAST };
 
-GType	   gtk_bgbox_get_type (void) G_GNUC_CONST;
+GType      gtk_bgbox_get_type (void) G_GNUC_CONST;
 GtkWidget* gtk_bgbox_new (void);
 void gtk_bgbox_set_background (GtkWidget *widget, int bg_type, guint32 tintcolor, gint alpha);
 
