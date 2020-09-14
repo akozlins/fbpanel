@@ -34,23 +34,31 @@ function(add_mo NAME)
 endfunction()
 
 add_pot(fr_FR.UTF-8)
+add_pot(it_IT.UTF-8)
 add_pot(ru_RU.UTF-8)
 
 add_po(fr_FR.UTF-8)
+add_po(it_IT.UTF-8)
 add_po(ru_RU.UTF-8)
 
 add_mo(fr_FR.UTF-8)
+add_mo(it_IT.UTF-8)
 add_mo(ru_RU.UTF-8)
 
 add_custom_target(po ALL
     DEPENDS
-        fr_FR.UTF-8.po ru_RU.UTF-8.po
-        fr_FR.UTF-8.mo ru_RU.UTF-8.mo
+        fr_FR.UTF-8.po it_IT.UTF-8.po ru_RU.UTF-8.po
+        fr_FR.UTF-8.mo it_IT.UTF-8.mo ru_RU.UTF-8.mo
 )
 
 install(
     FILES ${CMAKE_CURRENT_BINARY_DIR}/fr_FR.UTF-8.mo
     DESTINATION share/locale/fr/LC_MESSAGES
+    RENAME ${PROJECT_NAME}.mo
+)
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/it_IT.UTF-8.mo
+    DESTINATION share/locale/it/LC_MESSAGES
     RENAME ${PROJECT_NAME}.mo
 )
 install(
