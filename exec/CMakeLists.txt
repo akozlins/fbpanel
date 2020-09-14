@@ -5,6 +5,6 @@ install(
     FILES
         ${CMAKE_CURRENT_BINARY_DIR}/make_profile
         ${CMAKE_CURRENT_BINARY_DIR}/xlogout
-    DESTINATION lib/fbpanel/fbpanel
+    DESTINATION lib/fbpanel
 # TODO: set executable
 )

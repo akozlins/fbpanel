@@ -176,7 +176,7 @@ Plugin {
             item {
                 name = logout
                 icon = gnome-session-logout
-                action = @LIBDIR@/fbpanel/xlogout
+                action = @LIBDIR@/xlogout
             }
         }
     }
@@ -369,7 +369,7 @@ Plugin {
 Plugin {
     type = icons
     config {
-        DefaultIcon = %%datadir%%/fbpanel/images/default.xpm
+        DefaultIcon = @DATADIR@/images/default.xpm
         application {
             icon = gnome-terminal
             ClassName = XTerm

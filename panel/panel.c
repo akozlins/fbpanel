@@ -923,7 +923,7 @@ ensure_profile()
     {
         return;
     }
-    cmd = g_strdup_printf("%s %s", LIBDIR "/fbpanel/make_profile",
+    cmd = g_strdup_printf("%s %s", LIBDIR "/make_profile",
         profile);
     g_spawn_command_line_sync(cmd, NULL, NULL, NULL, NULL);
     g_free(cmd);
