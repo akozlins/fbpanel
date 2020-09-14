@@ -69,7 +69,7 @@ static int
 meter_constructor(plugin_instance *p)
 {
     meter_priv *m;
-    
+
     ENTER;
     m = (meter_priv *) p;
     m->meter = gtk_image_new();

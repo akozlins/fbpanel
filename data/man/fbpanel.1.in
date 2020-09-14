@@ -8,8 +8,8 @@ fbpanel \- a NETWM compliant lightweight GTK2-based panel for UNIX desktop.
 .br
 .SH DESCRIPTION
 .PP
-fbpanel is desktop panel which provides graphical information and feedback about 
-desktop activity and allows interaction with the window manager. 
+fbpanel is desktop panel which provides graphical information and feedback about
+desktop activity and allows interaction with the window manager.
 It features:
 .HP
 \(bu taskbar \- shows a list of the managed windows (tasks)
@@ -18,7 +18,7 @@ It features:
 .HP
 \(bu launchbar \- buttons to quickly launch applications
 .HP
-\(bu show desktop \- button to iconify or shade all windows 
+\(bu show desktop \- button to iconify or shade all windows
 .HP
 \(bu image \- display an image
 .HP
@@ -26,7 +26,7 @@ It features:
 .HP
 \(bu system tray \- tray for XEMBED icons (aka docklets)
 .PP
-fbpanel requires NETWM (www.freedesktop.org) compliant window manager. 
+fbpanel requires NETWM (www.freedesktop.org) compliant window manager.
 You can run many instances of fbpanel each with its own configuration
 (see \fBOPTIONS\fR below).
 
@@ -47,21 +47,21 @@ http://fbpanel.sf.net/
 \fB\--configure\fR
 \-- open configuration dialog
 .TP
-\fB\--profile <name>\fR 
-\-- use specified profile. The profile is loaded from the file ~/.fbpanel/<name>. 
-If that fails, fbpanel will load @DATADIR@/<name>. 
+\fB\--profile <name>\fR
+\-- use specified profile. The profile is loaded from the file ~/.fbpanel/<name>.
+If that fails, fbpanel will load @DATADIR@/<name>.
 No -p option is equivalent to -p default
 .TP
-\fB\-h\fR 
+\fB\-h\fR
 \-- same as --help
 .TP
-\fB\-p\fR 
+\fB\-p\fR
 \-- same as --profile
 .TP
-\fB\-v\fR 
+\fB\-v\fR
 \-- same as --version
 .TP
-\fB\-C\fR 
+\fB\-C\fR
 \-- same as --configure
 
 .SH CUSTOMIZATION

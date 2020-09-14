@@ -40,7 +40,7 @@ do_app_file(GHashTable *ht, const gchar *file)
     gchar *name, *icon, *action,*dot;
     gchar **cats, **tmp;
     xconf *ixc, *vxc, *mxc;
-    
+
     ENTER;
     DBG("desktop: %s\n", file);
     /* get values */
@@ -95,8 +95,8 @@ do_app_file(GHashTable *ht, const gchar *file)
         *dot = '\0';
     }
     DBG("icon: %s\n", icon);
-    
-    for (mxc = NULL, tmp = cats; *tmp; tmp++) 
+
+    for (mxc = NULL, tmp = cats; *tmp; tmp++)
         if ((mxc = g_hash_table_lookup(ht, *tmp)))
             break;
     if (!mxc)
@@ -104,7 +104,7 @@ do_app_file(GHashTable *ht, const gchar *file)
         DBG("\tUnknown categories\n");
         goto out;
     }
-    
+
     ixc = xconf_new("item", NULL);
     xconf_append(mxc, ixc);
     if (icon)
@@ -145,9 +145,9 @@ do_app_dir_real(GHashTable *ht, const gchar *dir)
         ERR("can't open dir %s\n", dir);
         goto out;
     }
-    
+
     while ((name = g_dir_read_name(d)))
-    {    
+    {
         if (g_file_test(name, G_FILE_TEST_IS_DIR))
         {
             do_app_dir_real(ht, name);
@@ -157,7 +157,7 @@ do_app_dir_real(GHashTable *ht, const gchar *dir)
             continue;
         do_app_file(ht, name);
     }
-    
+
 out:
     if (d)
         g_dir_close(d);
@@ -171,7 +171,7 @@ do_app_dir(GHashTable *ht, const gchar *dir)
 {
     gchar *cwd;
 
-    ENTER;    
+    ENTER;
     cwd = g_get_current_dir();
     DBG("%s\n", dir);
     if (g_hash_table_lookup(ht, dir))
@@ -199,7 +199,7 @@ xconf_cmp_names(gpointer a, gpointer b)
     xconf *aa = a, *bb = b;
     gchar *s1 = NULL, *s2 = NULL;
     int ret;
-    
+
     ENTER;
     XCG(aa, "name", &s1, str);
     XCG(bb, "name", &s2, str);
@@ -216,7 +216,7 @@ dir_changed(const gchar *dir, time_t btime)
     const gchar *name;
     gboolean ret = FALSE;
     struct stat buf;
-    
+
     ENTER;
     DBG("%s\n", dir);
     if (g_stat(dir, &buf))
@@ -224,7 +224,7 @@ dir_changed(const gchar *dir, time_t btime)
     DBG("dir=%s ct=%lu mt=%lu\n", dir, buf.st_ctime, buf.st_mtime);
     if ((ret = buf.st_mtime > btime))
         return TRUE;
-    
+
     cwd = g_get_current_dir();
     if (g_chdir(dir))
     {
@@ -236,7 +236,7 @@ dir_changed(const gchar *dir, time_t btime)
         ERR("can't open dir %s\n", dir);
         goto out;
     }
-    
+
     while (!ret && (name = g_dir_read_name(d)))
     {
         if (g_file_test(name, G_FILE_TEST_IS_DIR))
@@ -262,7 +262,7 @@ systemmenu_changed(time_t btime)
     const gchar * const * dirs;
     gboolean ret = FALSE;
     gchar *cwd = g_get_current_dir();
-    
+
     for (dirs = g_get_system_data_dirs(); *dirs && !ret; dirs++)
     {
         g_chdir(*dirs);
@@ -299,7 +299,7 @@ xconf_new_from_systemmenu()
 
         tmp = xconf_new("name", _(main_cats[i].local_name));
         xconf_append(mxc, tmp);
-        
+
         tmp = xconf_new("icon", main_cats[i].icon);
         xconf_append(mxc, tmp);
 
@@ -311,7 +311,7 @@ xconf_new_from_systemmenu()
     for (dirs = g_get_system_data_dirs(); *dirs; dirs++)
         do_app_dir(ht, *dirs);
     do_app_dir(ht, g_get_user_data_dir());
-  
+
     /* Delete empty categories */
 retry:
     for (w = xc->sons; w; w = g_slist_next(w))

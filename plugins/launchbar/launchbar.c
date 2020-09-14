@@ -99,8 +99,8 @@ launchbar_destructor(plugin_instance *p)
 
     ENTER;
     gtk_widget_destroy(lb->box);
-    for (i = 0; i < lb->btn_num; i++) 
-        g_free(lb->btns[i].action);     
+    for (i = 0; i < lb->btn_num; i++)
+        g_free(lb->btns[i].action);
 
     RET();
 }
@@ -146,7 +146,7 @@ drag_data_received_cb (GtkWidget *widget,
     else if (info == TARGET_MOZ_URL)
     {
         gchar *utf8, *tmp;
-        
+
         utf8 = g_utf16_to_utf8((gunichar2 *) sd->data, (glong) sd->length,
               NULL, NULL, NULL);
         tmp = utf8 ? strchr(utf8, '\n') : NULL;
@@ -173,7 +173,7 @@ read_button(plugin_instance *p, xconf *xc)
     launchbar_priv *lb = (launchbar_priv *) p;
     gchar *iname, *fname, *tooltip, *action;
     GtkWidget *button;
-    
+
     ENTER;
     if (lb->btn_num >= MAXBUTTONS)
     {
@@ -203,7 +203,7 @@ read_button(plugin_instance *p, xconf *xc)
     gtk_drag_dest_set (GTK_WIDGET(button),
         GTK_DEST_DEFAULT_ALL, //GTK_DEST_DEFAULT_HIGHLIGHT,
         target_table, G_N_ELEMENTS (target_table),
-        GDK_ACTION_COPY);    
+        GDK_ACTION_COPY);
     g_signal_connect (G_OBJECT(button), "drag_data_received",
         G_CALLBACK (drag_data_received_cb),
         (gpointer) &lb->btns[lb->btn_num]);
@@ -211,11 +211,11 @@ read_button(plugin_instance *p, xconf *xc)
     gtk_box_pack_start(GTK_BOX(lb->box), button, FALSE, FALSE, 0);
     gtk_widget_show(button);
 
-    if (p->panel->transparent) 
+    if (p->panel->transparent)
         gtk_bgbox_set_background(button, BG_INHERIT,
             p->panel->tintcolor, p->panel->alpha);
     gtk_widget_set_tooltip_markup(button, tooltip);
-    
+
     g_free(fname);
     //g_free(iname);
     DBG("here\n");
@@ -223,7 +223,7 @@ read_button(plugin_instance *p, xconf *xc)
     lb->btns[lb->btn_num].action = action;
     lb->btns[lb->btn_num].lb     = lb;
     lb->btn_num++;
-    
+
     RET(1);
 }
 
@@ -234,7 +234,7 @@ launchbar_size_alloc(GtkWidget *widget, GtkAllocation *a,
     int dim;
 
     ENTER;
-    if (lb->plugin.panel->orientation == GTK_ORIENTATION_HORIZONTAL) 
+    if (lb->plugin.panel->orientation == GTK_ORIENTATION_HORIZONTAL)
         dim = a->height / lb->iconsize;
     else
         dim = a->width / lb->iconsize;
@@ -243,11 +243,11 @@ launchbar_size_alloc(GtkWidget *widget, GtkAllocation *a,
     gtk_bar_set_dimension(GTK_BAR(lb->box), dim);
     RET();
 }
-                                      
+
 static int
 launchbar_constructor(plugin_instance *p)
 {
-    launchbar_priv *lb; 
+    launchbar_priv *lb;
     int i;
     xconf *pxc;
     GtkWidget *ali;
@@ -259,7 +259,7 @@ launchbar_constructor(plugin_instance *p)
         "GtkButton::default-outside-border = { 0, 0, 0, 0 }\n"
         "}\n"
         "widget '*' style 'launchbar-style'";
-   
+
     ENTER;
     lb = (launchbar_priv *) p;
     lb->iconsize = p->panel->max_elem_height;
@@ -278,7 +278,7 @@ launchbar_constructor(plugin_instance *p)
     gtk_container_add(GTK_CONTAINER(ali), lb->box);
     gtk_container_set_border_width(GTK_CONTAINER (lb->box), 0);
     gtk_widget_show_all(ali);
-    
+
     for (i = 0; (pxc = xconf_find(p->xc, "button", i)); i++)
         read_button(p, pxc);
     RET(1);

@@ -29,9 +29,9 @@ h5 {
     font-size: 100%;
 }
 
-h2, h3, h4 {    
-    padding: 0em 0em;    
-    margin: 0em;     
+h2, h3, h4 {
+    padding: 0em 0em;
+    margin: 0em;
 }
 
 blockquote {
@@ -48,10 +48,10 @@ pre {
 }
 
 img {
-        border: 0px;
+    border: 0px;
 }
 
 img.logo {
-	display: inline;
-	padding: 0.1em;
+    display: inline;
+    padding: 0.1em;
 }

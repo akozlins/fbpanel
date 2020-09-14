@@ -32,14 +32,14 @@ space_constructor(plugin_instance *p)
     ENTER;
     size = 1;
     XCG(p->xc, "size", &size, int);
-    
+
     if (p->panel->orientation == GTK_ORIENTATION_HORIZONTAL) {
         h = 2;
         w = size;
     } else {
         w = 2;
         h = size;
-    } 
+    }
     gtk_widget_set_size_request(p->pwid, w, h);
     RET(1);
 }

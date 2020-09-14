@@ -13,7 +13,7 @@ static int
 separator_constructor(plugin_instance *p)
 {
     GtkWidget *sep;
-      
+
     ENTER;
     sep = p->panel->my_separator_new();
     gtk_container_add(GTK_CONTAINER(p->pwid), sep);
@@ -24,7 +24,7 @@ separator_constructor(plugin_instance *p)
 static void
 separator_destructor(plugin_instance *p)
 {
-    ENTER; 
+    ENTER;
     RET();
 }
 

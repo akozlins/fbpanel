@@ -67,7 +67,7 @@ message_sent (EggTrayManager *manager, GtkWidget *icon, const char *text,
 {
     /* FIXME multihead */
     int x, y;
-    
+
     ENTER;
     gdk_window_get_origin (icon->window, &x, &y);
     fixed_tip_show (0, x, y, FALSE, gdk_screen_height () - 50, text);
@@ -106,7 +106,7 @@ tray_size_alloc(GtkWidget *widget, GtkAllocation *a,
 
     ENTER;
     size = tr->plugin.panel->max_elem_height;
-    if (tr->plugin.panel->orientation == GTK_ORIENTATION_HORIZONTAL) 
+    if (tr->plugin.panel->orientation == GTK_ORIENTATION_HORIZONTAL)
         dim = a->height / size;
     else
         dim = a->width / size;
@@ -115,7 +115,7 @@ tray_size_alloc(GtkWidget *widget, GtkAllocation *a,
     gtk_bar_set_dimension(GTK_BAR(tr->box), dim);
     RET();
 }
-  
+
 
 static int
 tray_constructor(plugin_instance *p)
@@ -123,7 +123,7 @@ tray_constructor(plugin_instance *p)
     tray_priv *tr;
     GdkScreen *screen;
     GtkWidget *ali;
-    
+
     ENTER;
     tr = (tray_priv *) p;
     class_get("tray");
@@ -140,9 +140,9 @@ tray_constructor(plugin_instance *p)
     tr->bg = fb_bg_get_for_display();
     tr->sid = g_signal_connect(tr->bg, "changed",
         G_CALLBACK(tray_bg_changed), p->pwid);
-    
+
     screen = gtk_widget_get_screen(p->panel->topgwin);
-    
+
     if (egg_tray_manager_check_running(screen)) {
         tr->tray_manager = NULL;
         ERR("tray: another systray already running\n");
@@ -151,7 +151,7 @@ tray_constructor(plugin_instance *p)
     tr->tray_manager = egg_tray_manager_new ();
     if (!egg_tray_manager_manage_screen (tr->tray_manager, screen))
         g_printerr("tray: can't get the system tray manager selection\n");
-    
+
     g_signal_connect(tr->tray_manager, "tray_icon_added",
         G_CALLBACK(tray_added), tr);
     g_signal_connect(tr->tray_manager, "tray_icon_removed",
@@ -160,7 +160,7 @@ tray_constructor(plugin_instance *p)
         G_CALLBACK(message_sent), tr);
     g_signal_connect(tr->tray_manager, "message_cancelled",
         G_CALLBACK(message_cancelled), tr);
-    
+
     gtk_widget_show_all(tr->box);
     RET(1);
 

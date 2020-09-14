@@ -41,14 +41,14 @@ image_constructor(plugin_instance *p)
     GdkPixbuf *gp, *gps;
     GtkWidget *wid;
     GError *err = NULL;
-    
+
     ENTER;
     img = (image_priv *) p;
     tooltip = fname = 0;
     XCG(p->xc, "image", &fname, str);
     XCG(p->xc, "tooltip", &tooltip, str);
     fname = expand_tilda(fname);
-    
+
     img->mainw = gtk_event_box_new();
     gtk_widget_show(img->mainw);
     //g_signal_connect(G_OBJECT(img->mainw), "expose_event",
@@ -59,7 +59,7 @@ image_constructor(plugin_instance *p)
         wid = gtk_label_new("?");
     } else {
         float ratio;
-                  
+
         ratio = (p->panel->orientation == GTK_ORIENTATION_HORIZONTAL) ?
             (float) (p->panel->ah - 2) / (float) gdk_pixbuf_get_height(gp)
             : (float) (p->panel->aw - 2) / (float) gdk_pixbuf_get_width(gp);

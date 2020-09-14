@@ -78,16 +78,16 @@ dclock_create_calendar()
     gtk_window_set_position(GTK_WINDOW(win), GTK_WIN_POS_MOUSE);
     gtk_window_set_title(GTK_WINDOW(win), "calendar");
     gtk_window_stick(GTK_WINDOW(win));
-          
+
     calendar = gtk_calendar_new();
     gtk_calendar_display_options(
         GTK_CALENDAR(calendar),
         GTK_CALENDAR_SHOW_WEEK_NUMBERS | GTK_CALENDAR_SHOW_DAY_NAMES
         | GTK_CALENDAR_SHOW_HEADING);
     gtk_container_add(GTK_CONTAINER(win), GTK_WIDGET(calendar));
- 
+
     return win;
-}  
+}
 
 static gboolean
 clicked(GtkWidget *widget, GdkEventButton *event, dclock_priv *dc)
@@ -124,7 +124,7 @@ clock_update(dclock_priv *dc)
     time_t now;
     struct tm * detail;
     int i, x, y;
-    
+
     ENTER;
     time(&now);
     detail = localtime(&now);
@@ -170,10 +170,10 @@ clock_update(dclock_priv *dc)
         DBG("\n");
         gtk_widget_queue_draw(dc->main);
     }
-    
+
     if (dc->calendar_window || !strftime(output, sizeof(output),
             dc->tfmt, detail))
-        output[0] = 0;    
+        output[0] = 0;
     if (strcmp(dc->tstr, output))
     {
         strcpy(dc->tstr, output);
@@ -184,7 +184,7 @@ clock_update(dclock_priv *dc)
             g_free(utf8);
         }
         else
-            gtk_widget_set_tooltip_markup(dc->plugin.pwid, NULL);        
+            gtk_widget_set_tooltip_markup(dc->plugin.pwid, NULL);
     }
     RET(TRUE);
 }
@@ -195,7 +195,7 @@ dclock_set_color(GdkPixbuf *glyphs, guint32 color)
     guchar *p1, *p2;
     int w, h;
     guint r, g, b;
-    
+
     ENTER;
     p1 = gdk_pixbuf_get_pixels(glyphs);
     h = gdk_pixbuf_get_height(glyphs);
@@ -226,7 +226,7 @@ dclock_create_pixbufs(dclock_priv *dc)
 {
     int width, height;
     GdkPixbuf *ch, *cv;
-    
+
     ENTER;
     width = height = SHADOW;
     width += COLON_WIDTH + 4 * DIGIT_WIDTH;
@@ -275,7 +275,7 @@ dclock_constructor(plugin_instance *p)
     gchar *color_str;
     dclock_priv *dc;
     //int width;
-    
+
     ENTER;
     DBG("dclock: use 'tclock' plugin for text version of a time and date\n");
     dc = (dclock_priv *) p;
@@ -309,7 +309,7 @@ dclock_constructor(plugin_instance *p)
     if (color_str)
     {
         GdkColor color;
-        if (gdk_color_parse (color_str, &color)) 
+        if (gdk_color_parse (color_str, &color))
             dc->color = gcolor2rgb24(&color);
     }
     if (dc->hours_view == DC_24H)
@@ -319,7 +319,7 @@ dclock_constructor(plugin_instance *p)
     dclock_create_pixbufs(dc);
     if (dc->color != 0xff000000)
         dclock_set_color(dc->glyphs, dc->color);
-  
+
     dc->main = gtk_image_new_from_pixbuf(dc->clock);
     gtk_misc_set_alignment(GTK_MISC(dc->main), 0.5, 0.5);
     gtk_misc_set_padding(GTK_MISC(dc->main), 1, 1);
@@ -330,7 +330,7 @@ dclock_constructor(plugin_instance *p)
     gtk_widget_show_all(dc->main);
     dc->timer = g_timeout_add(1000, (GSourceFunc) clock_update, (gpointer)dc);
     clock_update(dc);
-    
+
     RET(1);
 }
 

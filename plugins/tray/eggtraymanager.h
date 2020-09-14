@@ -44,7 +44,7 @@ struct _EggTrayManager
   Atom opcode_atom;
   Atom selection_atom;
   Atom message_data_atom;
-  
+
   GtkWidget *invisible;
   GdkScreen *screen;
 
@@ -66,7 +66,7 @@ struct _EggTrayManagerClass
                               const gchar         *message,
                               glong                id,
                               glong                timeout);
-  
+
   void (* message_cancelled) (EggTrayManager      *manager,
                               EggTrayManagerChild *child,
                               glong                id);

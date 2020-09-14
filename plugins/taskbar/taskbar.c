@@ -110,7 +110,7 @@ static gchar *taskbar_rc = "style 'taskbar-style'\n"
 static gboolean use_net_active=FALSE;
 
 #define DRAG_ACTIVE_DELAY       1000
- 
+
 
 
 #define TASK_WIDTH_MAX   200
@@ -958,7 +958,7 @@ tk_build_gui(taskbar_priv *tb, task *tk)
     gtk_box_pack_start(GTK_BOX(tb->bar), tk->button, FALSE, TRUE, 0);
     GTK_WIDGET_UNSET_FLAGS (tk->button, GTK_CAN_FOCUS);
     GTK_WIDGET_UNSET_FLAGS (tk->button, GTK_CAN_DEFAULT);
-    
+
     gtk_widget_show_all(tk->button);
     if (!task_visible(tb, tk)) {
         gtk_widget_hide(tk->button);
@@ -1415,12 +1415,12 @@ taskbar_build_gui(plugin_instance *p)
           G_CALLBACK (tb_make_menu), (gpointer) tb);
     g_signal_connect (G_OBJECT (fbev), "number_of_desktops",
           G_CALLBACK (tb_make_menu), (gpointer) tb);
-    
+
     tb->desk_num = get_net_number_of_desktops();
     tb->cur_desk = get_net_current_desktop();
     tb->focused = NULL;
     tb->menu = NULL;
-    
+
     tb_make_menu(NULL, tb);
     gtk_container_set_border_width(GTK_CONTAINER(p->pwid), 0);
     gtk_widget_show_all(tb->bar);

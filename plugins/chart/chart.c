@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- * 
+ *
  */
 /*A little bug fixed by Mykola <mykola@2ka.mipt.ru>:) */
 
@@ -58,7 +58,7 @@ chart_add_tick(chart_priv *c, float *val)
     for (i = 0; i < c->rows; i++) {
         if (val[i] < 0)
             val[i] = 0;
-        if (val[i] > 1)        
+        if (val[i] > 1)
             val[i] = 1;
         c->ticks[i][c->pos] = val[i] * c->h;
         DBG("new wval = %uld\n", c->ticks[i][c->pos]);
@@ -138,10 +138,10 @@ chart_expose_event(GtkWidget *widget, GdkEventExpose *event, chart_priv *c)
         &c->area, widget, "frame", c->fx, c->fy, c->fw, c->fh);
 
 #if 0
-    gdk_draw_rectangle(widget->window, 
+    gdk_draw_rectangle(widget->window,
         widget->style->bg_gc[GTK_STATE_NORMAL],
         FALSE, 0, 0, c->w-1, c->h-1);
-#endif    
+#endif
     RET(FALSE);
 }
 
@@ -156,7 +156,7 @@ chart_alloc_ticks(chart_priv *c)
     c->ticks = g_new0(gint *, c->rows);
     for (i = 0; i < c->rows; i++) {
         c->ticks[i] = g_new0(gint, c->w);
-        if (!c->ticks[i]) 
+        if (!c->ticks[i])
             DBG2("can't alloc mem: %p %d\n", c->ticks[i], c->w);
     }
     c->pos = 0;
@@ -172,7 +172,7 @@ chart_free_ticks(chart_priv *c)
     ENTER;
     if (!c->ticks)
         RET();
-    for (i = 0; i < c->rows; i++) 
+    for (i = 0; i < c->rows; i++)
         g_free(c->ticks[i]);
     g_free(c->ticks);
     c->ticks = NULL;
@@ -183,7 +183,7 @@ chart_free_ticks(chart_priv *c)
 static void
 chart_alloc_gcs(chart_priv *c, gchar *colors[])
 {
-    int i;  
+    int i;
     GdkColor color;
 
     ENTER;
@@ -206,12 +206,12 @@ chart_alloc_gcs(chart_priv *c, gchar *colors[])
 static void
 chart_free_gcs(chart_priv *c)
 {
-    int i;  
+    int i;
 
     ENTER;
     if (c->gc_cpu) {
-        for (i = 0; i < c->rows; i++) 
-            g_object_unref(c->gc_cpu[i]);            
+        for (i = 0; i < c->rows; i++)
+            g_object_unref(c->gc_cpu[i]);
         g_free(c->gc_cpu);
         c->gc_cpu = NULL;
     }
@@ -221,7 +221,7 @@ chart_free_gcs(chart_priv *c)
 
 static void
 chart_set_rows(chart_priv *c, int num, gchar *colors[])
-{    
+{
     ENTER;
     g_assert(num > 0 && num < 10);
     chart_free_ticks(c);
@@ -236,7 +236,7 @@ static int
 chart_constructor(plugin_instance *p)
 {
     chart_priv *c;
-    
+
     ENTER;
     /* must be allocated by caller */
     c = (chart_priv *) p;
@@ -252,7 +252,7 @@ chart_constructor(plugin_instance *p)
 
     g_signal_connect_after (G_OBJECT (p->pwid), "expose-event",
           G_CALLBACK (chart_expose_event), (gpointer) c);
-    
+
     RET(1);
 }
 

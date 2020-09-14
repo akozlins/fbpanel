@@ -33,7 +33,7 @@ typedef struct _task{
     struct _icons *ics;
     Window win;
     int refcount;
-    XClassHint ch;    
+    XClassHint ch;
 } task;
 
 typedef struct _icons{
@@ -42,7 +42,7 @@ typedef struct _icons{
     int win_num;
     GHashTable  *task_list;
     int num_tasks;
-    wmpix_t *wmpix; 
+    wmpix_t *wmpix;
     wmpix_t *dicon;
 } icons_priv;
 
@@ -57,7 +57,7 @@ static void
 free_task(icons_priv *ics, task *tk, int hdel)
 {
     ENTER;
-    ics->num_tasks--; 
+    ics->num_tasks--;
     if (hdel)
         g_hash_table_remove(ics->task_list, &tk->win);
     if (tk->ch.res_class)
@@ -122,7 +122,7 @@ get_wmclass(task *tk)
         XFree(tk->ch.res_name);
     if (tk->ch.res_class)
         XFree(tk->ch.res_class);
-    if (!XGetClassHint (gdk_display, tk->win, &tk->ch)) 
+    if (!XGetClassHint (gdk_display, tk->win, &tk->ch))
         tk->ch.res_class = tk->ch.res_name = NULL;
     DBG("name=%s class=%s\n", tk->ch.res_name, tk->ch.res_class);
     RET();
@@ -152,7 +152,7 @@ static int task_has_icon(task *tk)
         XFree(data);
         RET(1);
     }
-    
+
     hints = XGetWMHints(GDK_DISPLAY(), tk->win);
     if (hints)
     {
@@ -179,7 +179,7 @@ get_user_icon(icons_priv *ics, task *tk)
         tk->ch.res_name);
 
     for (tmp = ics->wmpix; tmp; tmp = tmp->next)
-    { 
+    {
         DBG("tmp.res_class=[%s] tmp.res_name=[%s]\n", tmp->ch.res_class,
             tmp->ch.res_name);
         mc = !tmp->ch.res_class || !strcmp(tmp->ch.res_class, tk->ch.res_class);
@@ -212,20 +212,20 @@ pixbuf2argb (GdkPixbuf *pixbuf, int *size)
     height = gdk_pixbuf_get_height (pixbuf);
     stride = gdk_pixbuf_get_rowstride (pixbuf);
     n_channels = gdk_pixbuf_get_n_channels (pixbuf);
-      
+
     *size += 2 + width * height;
     p = data = g_malloc (*size * sizeof (gulong));
     *p++ = width;
     *p++ = height;
-    
+
     pixels = gdk_pixbuf_get_pixels (pixbuf);
-    
+
     for (y = 0; y < height; y++)
     {
         for (x = 0; x < width; x++)
         {
             guchar r, g, b, a;
-            
+
             r = pixels[y*stride + x*n_channels + 0];
             g = pixels[y*stride + x*n_channels + 1];
             b = pixels[y*stride + x*n_channels + 2];
@@ -233,7 +233,7 @@ pixbuf2argb (GdkPixbuf *pixbuf, int *size)
                 a = pixels[y*stride + x*n_channels + 3];
             else
                 a = 255;
-            
+
             *p++ = a << 24 | r << 16 | g << 8 | b ;
         }
     }
@@ -258,7 +258,7 @@ set_icon_maybe (icons_priv *ics, task *tk)
         if (task_has_icon(tk))
             RET();
         pix = ics->dicon;
-    } 
+    }
     if (!pix)
         RET();
 
@@ -291,7 +291,7 @@ task_remove_stale(Window *win, task *tk)
 static GdkFilterReturn
 ics_event_filter( XEvent *xev, GdkEvent *event, icons_priv *ics)
 {
-    
+
     ENTER;
     g_assert(ics != NULL);
     if (xev->type == PropertyNotify)
@@ -305,7 +305,7 @@ do_net_client_list(icons_priv *ics)
 {
     int i;
     task *tk;
-    
+
     ENTER;
     if (ics->wins)
     {
@@ -315,7 +315,7 @@ do_net_client_list(icons_priv *ics)
     }
     ics->wins = get_xaproperty (GDK_ROOT_WINDOW(),
         a_NET_CLIENT_LIST, XA_WINDOW, &ics->win_num);
-    if (!ics->wins) 
+    if (!ics->wins)
         RET();
     DBG("alloc ics->wins\n");
     for (i = 0; i < ics->win_num; i++)
@@ -331,7 +331,7 @@ do_net_client_list(icons_priv *ics)
             ics->num_tasks++;
             tk->win = ics->wins[i];
             tk->ics = ics;
-            
+
             if (!FBPANEL_WIN(tk->win))
             {
                 XSelectInput(GDK_DISPLAY(), tk->win,
@@ -342,7 +342,7 @@ do_net_client_list(icons_priv *ics)
             g_hash_table_insert(ics->task_list, &tk->win, tk);
         }
     }
-    
+
     /* remove windows that arn't in the NET_CLIENT_LIST anymore */
     g_hash_table_foreach_remove(ics->task_list,
         (GHRFunc) task_remove_stale, NULL);
@@ -355,7 +355,7 @@ ics_propertynotify(icons_priv *ics, XEvent *ev)
     Atom at;
     Window win;
 
-    
+
     ENTER;
     win = ev->xproperty.window;
     at = ev->xproperty.atom;
@@ -364,7 +364,7 @@ ics_propertynotify(icons_priv *ics, XEvent *ev)
     {
         task *tk = find_task(ics, win);
 
-        if (!tk) 
+        if (!tk)
             RET();
         if (at == XA_WM_CLASS)
         {

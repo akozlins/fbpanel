@@ -42,7 +42,7 @@ typedef struct
 {
   long id, len;
   long remaining_len;
-  
+
   long timeout;
   Window window;
   char *str;
@@ -101,12 +101,12 @@ static void
 egg_tray_manager_class_init (EggTrayManagerClass *klass)
 {
     GObjectClass *gobject_class;
-  
+
     parent_class = g_type_class_peek_parent (klass);
     gobject_class = (GObjectClass *)klass;
 
     gobject_class->finalize = egg_tray_manager_finalize;
-  
+
     manager_signals[TRAY_ICON_ADDED] =
         g_signal_new ("tray_icon_added",
               G_OBJECT_CLASS_TYPE (klass),

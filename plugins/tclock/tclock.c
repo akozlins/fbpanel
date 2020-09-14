@@ -92,7 +92,7 @@ clock_update(gpointer data)
                 dc->lastDay = detail->tm_mday;
 
                 rc = strftime(output, sizeof(output), dc->tfmt, detail) ;
-                if (rc && 
+                if (rc &&
                     (utf8 = g_locale_to_utf8(output, -1, NULL, NULL, NULL))) {
                     gtk_widget_set_tooltip_markup(dc->main, utf8);
                     g_free(utf8);

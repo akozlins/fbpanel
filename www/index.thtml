@@ -1,5 +1,5 @@
 fbpanel is a lightweight, <a href="http://www.freedesktop.org/Standards/wm-spec">NETWM</a> compliant desktop panel.
-It works with any <a href="http://www.freedesktop.org/Standards/wm-spec">NETWM</a> compliant window manager (eg 
+It works with any <a href="http://www.freedesktop.org/Standards/wm-spec">NETWM</a> compliant window manager (eg
 <a href="http://xfce.org/">xfwm4</a>,
 <a href="http://sawmill.sourceforge.net/">sawfish</a>,
 <a href="http://www.icculus.org/openbox/">openbox</a>,
@@ -44,7 +44,7 @@ It provides
 It's written in C and uses the <a href="http://www.gtk.org">GTK+</a> library
 only.<br/>
 
-<p>Latest version is 
+<p>Latest version is
 <a href="http://sourceforge.net/project/showfiles.php?group_id=66031">
 6.0</a>
 </p>

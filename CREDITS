@@ -3,7 +3,7 @@ and some pieces were used in fbpanel. Correct for version 3.0,
 systray code and wm icon code were copied from GNOME
 
 Credits to all people who contributed by writing code and solving
-bugs. 
+bugs.
     PCMan          <pcman.tw at gmail.com>
         Urgency hint implementation
         Raise window when drag target is over its name in taskbar
