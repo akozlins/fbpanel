@@ -4,7 +4,7 @@
 #define PREFIX          "@CMAKE_INSTALL_PREFIX@"
 #define LIBDIR          "@CMAKE_INSTALL_PREFIX@/lib/fbpanel"
 #define DATADIR         "@CMAKE_INSTALL_PREFIX@/share/fbpanel"
-#define LOCALEDIR       "@CMAKE_INSTALL_PREFIX@/share/fbpanel/locale"
+#define LOCALEDIR       "@CMAKE_INSTALL_PREFIX@/share/locale"
 #define PROJECT_NAME    "@CMAKE_PROJECT_NAME@"
 #define PROJECT_VERSION "@CMAKE_PROJECT_VERSION@"
 
