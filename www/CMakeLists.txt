@@ -20,6 +20,5 @@ add_custom_command(OUTPUT shots.thtml
 )
 
 add_custom_target(www
-    ALL
     DEPENDS docs.html index.html plugins.html shots.html
 )

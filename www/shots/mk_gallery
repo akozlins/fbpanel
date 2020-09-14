@@ -1,6 +1,6 @@
 #!/bin/sh
 
-function help ()
+help ()
 {
     echo "Usage: mk_gallery <file>"
     echo "Creates HTML for screen shot gallery nd saves it in <file>"
