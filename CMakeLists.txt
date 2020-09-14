@@ -11,5 +11,10 @@ add_subdirectory(data)
 add_subdirectory(exec)
 add_subdirectory(panel)
 add_subdirectory(plugins)
-add_subdirectory(po)
+
+find_program(MSGFMT msgfmt)
+if(MSGFMT)
+    add_subdirectory(po)
+endif()
+
 add_subdirectory(www)

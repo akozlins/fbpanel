@@ -18,12 +18,17 @@ target_include_directories(fbpanel PUBLIC
     .
 )
 target_link_libraries(fbpanel PUBLIC
-    -lm
     ${MODULES_LIBRARIES}
 )
 target_include_directories(fbpanel SYSTEM PUBLIC
     ${MODULES_INCLUDE_DIRS}
 )
+
+include(CheckLibraryExists)
+check_library_exists(m ceilf "" LIBM)
+if(LIBM)
+    target_link_libraries(fbpanel PUBLIC -lm)
+endif()
 
 install(TARGETS fbpanel
     DESTINATION bin
