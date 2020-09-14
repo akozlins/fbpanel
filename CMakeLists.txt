@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.8)
 
 project(fbpanel VERSION 7.0)
 
+include(GNUInstallDirs)
+
 set(LIBDIR "${CMAKE_INSTALL_PREFIX}/lib/fbpanel")
 set(DATADIR "${CMAKE_INSTALL_PREFIX}/share/fbpanel")
 
