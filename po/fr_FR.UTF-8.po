@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fbpanel 7.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-30 02:07+0200\n"
+"POT-Creation-Date: 2020-09-14 17:01+0200\n"
 "PO-Revision-Date: 2010-09-30 02:07+0200\n"
 "Last-Translator: Automaticaly generated\n"
 "Language-Team: none\n"
@@ -98,10 +98,16 @@ msgid "Allignment"
 msgstr "Alignement"
 
 #: panel/gconf_panel.c:241
-msgid "Margin"
+#, fuzzy
+msgid "X Margin"
 msgstr "Marge"
 
-#: panel/gconf_panel.c:285
+#: panel/gconf_panel.c:246
+#, fuzzy
+msgid "Y Margin"
+msgstr "Marge"
+
+#: panel/gconf_panel.c:290
 #, c-format
 msgid ""
 "You're using '<b>%s</b>' profile, stored at\n"
@@ -110,17 +116,18 @@ msgstr ""
 "Vous utilisez le profil '<b>%s</b>', situé dans\n"
 "<tt>%s</tt>"
 
-#: panel/gconf_panel.c:388
+#: panel/gconf_panel.c:393
 msgid "Panel"
 msgstr ""
 
-#: panel/gconf_panel.c:393
+#: panel/gconf_panel.c:398
 msgid "Plugins"
 msgstr ""
 
-#: panel/gconf_panel.c:398
+#: panel/gconf_panel.c:403
 msgid "Profile"
 msgstr "Profil"
+
 #: panel/misc.c:75 panel/misc.c:81
 msgid "left"
 msgstr "gauche"
@@ -162,7 +169,7 @@ msgstr "au-dessus"
 msgid "below"
 msgstr "en-dessous"
 
-#: panel/panel.c:464
+#: panel/panel.c:478
 msgid "translator-credits"
 msgstr "Calimero <calimeroteknik@users.sf.net>"
 
@@ -206,11 +213,18 @@ msgstr "Utilitaires"
 msgid "Development"
 msgstr "Développement"
 
-#: plugins/taskbar/taskbar.c:1267
+#: plugins/taskbar/taskbar.c:1304
 msgid "Raise"
 msgstr "Restaurer"
 
-#: plugins/taskbar/taskbar.c:1274
+#: plugins/taskbar/taskbar.c:1312
 msgid "Iconify"
 msgstr "Icônifier"
 
+#: plugins/taskbar/taskbar.c:1332
+msgid "All workspaces"
+msgstr ""
+
+#: plugins/taskbar/taskbar.c:1339
+msgid "Move to workspace"
+msgstr ""

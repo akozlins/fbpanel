@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fbpanel 7.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-30 02:02+0200\n"
+"POT-Creation-Date: 2020-09-14 17:01+0200\n"
 "PO-Revision-Date: 2010-09-30 02:02+0200\n"
 "Last-Translator: Automaticaly generated\n"
 "Language-Team: none\n"
@@ -99,10 +99,16 @@ msgid "Allignment"
 msgstr "Выравнивание"
 
 #: panel/gconf_panel.c:241
-msgid "Margin"
+#, fuzzy
+msgid "X Margin"
 msgstr "Отступ"
 
-#: panel/gconf_panel.c:285
+#: panel/gconf_panel.c:246
+#, fuzzy
+msgid "Y Margin"
+msgstr "Отступ"
+
+#: panel/gconf_panel.c:290
 #, c-format
 msgid ""
 "You're using '<b>%s</b>' profile, stored at\n"
@@ -111,15 +117,15 @@ msgstr ""
 "Вы используете профиль '<b>%s</b>', храняшийся в \n"
 "<tt>%s</tt>"
 
-#: panel/gconf_panel.c:388
+#: panel/gconf_panel.c:393
 msgid "Panel"
 msgstr "Панель"
 
-#: panel/gconf_panel.c:393
+#: panel/gconf_panel.c:398
 msgid "Plugins"
 msgstr "Плагины"
 
-#: panel/gconf_panel.c:398
+#: panel/gconf_panel.c:403
 msgid "Profile"
 msgstr "Профиль"
 
@@ -164,10 +170,9 @@ msgstr "над"
 msgid "below"
 msgstr "под"
 
-#: panel/panel.c:464
+#: panel/panel.c:478
 msgid "translator-credits"
-msgstr ""
-"Anatoly Asviyan <aanatoly@users.sf.net>"
+msgstr "Anatoly Asviyan <aanatoly@users.sf.net>"
 
 #: plugins/menu/system_menu.c:24
 msgid "Audio & Video"
@@ -209,10 +214,18 @@ msgstr "Утилиты"
 msgid "Development"
 msgstr "Разработка"
 
-#: plugins/taskbar/taskbar.c:1267
+#: plugins/taskbar/taskbar.c:1304
 msgid "Raise"
 msgstr "Развернуть"
 
-#: plugins/taskbar/taskbar.c:1274
+#: plugins/taskbar/taskbar.c:1312
 msgid "Iconify"
 msgstr "Свернуть"
+
+#: plugins/taskbar/taskbar.c:1332
+msgid "All workspaces"
+msgstr ""
+
+#: plugins/taskbar/taskbar.c:1339
+msgid "Move to workspace"
+msgstr ""
