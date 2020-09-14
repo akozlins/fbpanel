@@ -2,8 +2,6 @@
 #define __FBPANEL_CONFIG_H__
 
 #define PREFIX          "@CMAKE_INSTALL_PREFIX@"
-#define SBINDIR         "@CMAKE_INSTALL_PREFIX@/sbin"
-#define LIBEXECDIR      "@CMAKE_INSTALL_PREFIX@/libexec/fbpanel"
 #define LIBDIR          "@CMAKE_INSTALL_PREFIX@/lib/fbpanel"
 #define DATADIR         "@CMAKE_INSTALL_PREFIX@/share/fbpanel"
 #define LOCALEDIR       "@CMAKE_INSTALL_PREFIX@/share/fbpanel/locale"
