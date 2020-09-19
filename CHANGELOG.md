@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## ...
+
+- full `cmake` build and install
+    - generate `config.h`
+    - generate `po/*.mo` files
+- update `*.po` files
+- convert `www` docs to markdown (`about.md` and `docs.md`)
+    - remove screen shots of old versions
+- remove old build scripts
+
 
 ## Version: 7.0 (2015-12-05)
 
