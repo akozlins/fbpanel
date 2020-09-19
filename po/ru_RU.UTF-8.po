@@ -95,7 +95,7 @@ msgid "Edge"
 msgstr "Расположение"
 
 #: panel/gconf_panel.c:236
-msgid "Allignment"
+msgid "Alignment"
 msgstr "Выравнивание"
 
 #: panel/gconf_panel.c:241

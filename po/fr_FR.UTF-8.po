@@ -94,7 +94,7 @@ msgid "Edge"
 msgstr "Bord écran"
 
 #: panel/gconf_panel.c:236
-msgid "Allignment"
+msgid "Alignment"
 msgstr "Alignement"
 
 #: panel/gconf_panel.c:241

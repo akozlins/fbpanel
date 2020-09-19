@@ -67,7 +67,7 @@ The full variable list is:
   Legal values are `left`, `right`, `top` or `bottom`.  
   Default is `bottom`.
 
-- **`Allign`** - alignment of a panel.  
+- **`Align`** - alignment of a panel.  
   Legal values are `left`, `right` or `center`.  
   Default is `center`.
 
@@ -146,7 +146,7 @@ For example:
 ```
 Global {
     Edge = bottom
-    Allign = center
+    Align = center
     Margin = 0
     WidthType = percent
     Width = 92

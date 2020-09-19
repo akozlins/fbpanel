@@ -4,7 +4,7 @@
 
 Global {
     edge = right
-    allign = right
+    align = right
     margin = 50
     widthtype = request
     height = 58

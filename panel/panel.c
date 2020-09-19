@@ -645,7 +645,7 @@ panel_parse_global(xconf *xc)
 {
     ENTER;
     /* Set default values */
-    p->allign = ALLIGN_CENTER;
+    p->align = ALIGN_CENTER;
     p->edge = EDGE_BOTTOM;
     p->widthtype = WIDTH_PERCENT;
     p->width = 100;
@@ -668,7 +668,13 @@ panel_parse_global(xconf *xc)
     /* Read config */
     /* geometry */
     XCG(xc, "edge", &p->edge, enum, edge_enum);
-    XCG(xc, "allign", &p->allign, enum, allign_enum);
+    // migrate from 'allign' to 'align'
+    if(!xconf_find(xc, "align", 0)) {
+        // if new conf is not found, then find old conf and rename it
+        xconf* align = xconf_find(xc, "allign", 0);
+        if(align) strcpy(align->name, "align");
+    }
+    XCG(xc, "align", &p->align, enum, align_enum);
     XCG(xc, "widthtype", &p->widthtype, enum, widthtype_enum);
     XCG(xc, "heighttype", &p->heighttype, enum, heighttype_enum);
     XCG(xc, "width", &p->width, int);

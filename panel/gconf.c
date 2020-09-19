@@ -60,7 +60,7 @@ gconf_block_add(gconf_block *b, GtkWidget *w, gboolean new_row)
         s = gtk_vbox_new(FALSE, 0);
         gtk_box_pack_end(GTK_BOX(hbox), s, TRUE, TRUE, 0);
 
-        /* allign first elem */
+        /* align first elem */
         if (GTK_IS_MISC(w))
         {
             DBG("misc \n");
