@@ -101,7 +101,7 @@
 # Plugin {
 #     type = wincmd
 #     config {
-#         image = ~/.fbpanel/images/Desktop2.png
+#         image = ~/.config/fbpanel/images/Desktop2.png
 #         tooltip = Left click to iconify all windows. Middle click to shade them.
 #     }
 # }
