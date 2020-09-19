@@ -16,5 +16,3 @@ find_program(MSGFMT msgfmt)
 if(MSGFMT)
     add_subdirectory(po)
 endif()
-
-add_subdirectory(www)

@@ -9,7 +9,6 @@ This is a fork of <http://aanatoly.github.io/fbpanel>.
 - full cmake build and install
     - generate `config.h`
     - generate `po/*.mo` files
-    - generate `www/*.html` files
 - updated `*.po` files
 - remove old build scripts
 
