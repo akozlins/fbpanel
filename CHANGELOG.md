@@ -48,7 +48,7 @@ New Features:
 * multiline launchbar: row height is MaxIconSize
 * scrolling on panel changes desktops
 * dclock vertical layout was implemented. It still draws digits
-  horizontaly if there is enough space
+  horizontally if there is enough space
 * new global config MaxEelemHeight was added to limit plugin elements
   (eg icons, messages) height
 * 993836: add GTK frame to non-transparent chart plugins
@@ -96,7 +96,7 @@ This release features major enhancements and bug fixes, namely:
 * fixed 'toggle iconfig all' algorithm
 * 2863566: Allow seconds in dclock plugin
 * 2972256: rebuild code upon makefile changes
-* 2965428: fbpanel dissapears when configuring via GUI
+* 2965428: fbpanel disappears when configuring via GUI
 * 2958238: 5.6 has bugs in configure script and fails to load plugins
 * 2953357: Crashes when staring Opera
 
@@ -142,7 +142,7 @@ This release features minor enhancements and bug fixes, namely:
 
 ## Version: 5.5
 
-* adding static build option for debugin purposes e.g to use with valgrind
+* adding static build option for debugging purposes e.g to use with valgrind
 * ability to set CFLAGS from command line was added. 
   make CFLAGS=bla-bla works correctly
 * fixing memory leaks in taskbar, menu and icons plugin
@@ -158,21 +158,21 @@ This release features minor enhancements and bug fixes, namely:
 
 ## Version: 5.3
 
-* when no icon exists in a theme, missing-image icon is substituted. theme-avare
+* when no icon exists in a theme, missing-image icon is substituted. theme-aware
 * prevent duplicate entries in menu
 * menu plugin uses simple icons, and rebuild entire menu upon theme change, 
   rather then creating many heavy theme-aware icons, and let them update
 * cpu, net plugins: linux specific code was put into ifdefs and stub for another
-  case wwas created
+  case was created
 * system menu icon was renamed to logo.png from star.png
-* strip moved to separete target and not done automatically after compile
+* strip moved to separate target and not done automatically after compile
 * by default make leaves output as is, to see summaries only run 'make Q=1'
-* enbling dependency checking by default
+* enabling dependency checking by default
 * adding svn ebuild fbpanel-2009.ebuild
 * adding tooltips to cpu and net plugins
 * BgBox use BG_STYLE by default
 * close_profile function was added to group relevant stuff
-* autohide was simplified. Now it hides completly and ignoress heightWhenHidden
+* autohide was simplified. Now it hides completely and ignores heightWhenHidden
 
 
 ## Version: 5.2
@@ -202,8 +202,8 @@ New Features:
 * support for "above all" and "below all" layering states. Global section
   was added string variable
       Layer = None | Above | Below
-* to speed start-up, panel does not have window icon, only configuator window has
-* Control-Button3 click launches configureation dialog
+* to speed start-up, panel does not have window icon, only configurator window has
+* Control-Button3 click launches configuration dialog
 * taskbar was changed to propagate Control-Button3 clicks to parent window i.e to panel
 * launchbar was changed to propagate Control-Button3 clicks to parent window
 * pager was changed to propagate Control-Button3 clicks to parent window
@@ -261,7 +261,7 @@ New Fetures:
 
 Fixed Bugs:
 
-* menu: forgoten g_free's were added
+* menu: forgotten g_free's were added
 * 1723786: linkage problems with --as-needed flag
 * 1724852: crash if root bg is not set
 * WM_STATE usage is dropped. NET_WM_STATE is used instead. affected plugins are
@@ -309,7 +309,7 @@ New Features
 
 * [ 1295234 ] Detect Window "Urgency".
 * Raise window when drag target is over its name in taskbar
-* fixing meory leaks from XGetWindowProperty.
+* fixing memory leaks from XGetWindowProperty.
 * fix urgency code to catch up urgency of new windows
 * taskbar: correct position of task's label
 * taskbar: remove extra spaces
@@ -325,7 +325,7 @@ New Features
 Fixed bugs
 
 * Makefile.common overwrite/ignore CFLAGS and LDFLAGS env. variables
-* rebuild dependancy Makefiles (*.dep) if their prerequisits were changed
+* rebuild dependency Makefiles (*.dep) if their prerequisites were changed
 * fixing gcc-4.1 compile warnings about signess
 * removing tar from make's recursive goals
 * fixing NET_WM_STRUT code to work on 64 bit platforms
@@ -360,7 +360,7 @@ New Feature
 
 Fixed Bugs
 
-* deskno can't be staticaly compiled
+* deskno can't be statically compiled
 * typo fixes
 * Makefile errors for shared and static plugin build
 
@@ -379,9 +379,9 @@ Fixed Bugs
 New Feature
 
 * New code for panel's buttons. Affected plugins are wincmd, launchbar and menu
-* Depreceted option menu widget was replaced by combo box
+* Deprecated option menu widget was replaced by combo box
 * sys tray is packed into shadowed in frame
-* pad is inserted betwean tasks in a taskbar
+* pad is inserted between tasks in a taskbar
 * clock was made flat
 
 
@@ -497,7 +497,7 @@ New Features
 * X11 memory leacher was fixed
 * taskbar can be set to show only mapped/iconified and wins from other desktops
 * transparency initial support
-* gtkbar was ported to gtk2, so fbpanel is compiled with GTK_DISABLE_DEPRECETED
+* gtkbar was ported to gtk2, so fbpanel is compiled with GTK_DISABLE_DEPRECATED
 * initial dll support
 
 
@@ -518,7 +518,7 @@ New Features
 
 * Drag-n-Drop for launchbar
 * menu plugin
-* removed limith for max task size in taskbar
+* removed limit for max task size in taskbar
 
 
 ## Version: 3.4
@@ -544,9 +544,9 @@ New Features
 
 ## Version: 3.1
 
-* improving icon quility in taskbar
+* improving icon quality in taskbar
 * system tray (aka notification area) support
-* NET_WM_STRUT_PARTIAL and NET_WM_STRUT were implmented
+* NET_WM_STRUT_PARTIAL and NET_WM_STRUT were implemented
 * taskbar update icon image on every icon change
 
 
@@ -603,7 +603,7 @@ New Features
 
 * parsing engine was rewritten
 * modules' static variables were converted to mallocs
-* configurable size and postion of a panel
+* configurable size and position of a panel
 * ability to specify what modules to load
 * '~' is accepted in config files
 
@@ -636,5 +636,5 @@ New Features
 * improved EWMH/NETWM support
 * added openbox support
 * added clock customization (thanks to Tooar tooar@gmx.net)
-* README was rewrited
+* README was rewritten
 * bug fixes

@@ -8,7 +8,7 @@ It works with any [`NetWM`] compliant window manager
 [`xfwm4`]: https://xfce.org/
 [`sawfish`]: https://sawfish.fandom.com
 [`openbox`]: http://openbox.org
-[`metacity`]: http://www.gnome.org/softwaremap/projects/metacity/
+[`metacity`]: https://wiki.gnome.org/Projects/Metacity
 [`KDE WM`]: https://kde.org/
 
 It provides

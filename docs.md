@@ -20,7 +20,7 @@ sudo make install                               # install
 
 ## Running
 
-Simple like that...
+Simple like that ...
 
 ```
 fbpanel& # use default profile
@@ -57,7 +57,7 @@ The syntax is following:
 - Section starts by its type (`Global` or `Plugin`) and '`{`' on a same line,
   then inner variables and sections, and ends with '`}`' on separate line.
 
-### Global section
+### `Global` section
 
 It describes global panel parameters like position, size and some `NetWM` settings.
 If variable has default value, it can be omitted.
@@ -73,27 +73,27 @@ The full variable list is:
 
 - **`WidthType`** - units of width.  
   Legal values are
-  - `pixel` - width is number of pixels
-  - `percent` - width is percent of an edge
-  - `request` - follow widgets' size requests. can shrink or grow dynamically
+  - `pixel` - width is number of pixels,
+  - `percent` - width is percent of an edge,
+  - `request` - follow widgets' size requests, can shrink or grow dynamically.
   Default is `percent`.
 
 - **`Width`** - panel width in `WidthType` units.  
   Legal values are numbers.  
-  Default is 100.
+  Default is `100`.
 
 - **`HeightType`** - units of height
   Legal values are
-    - pixel - height is number of pixels
+  - `pixel` - height is number of pixels.
   Default is pixel.
 
 - **`Height`** - panel height in `HeightType` units.  
   Legal values are numbers.  
-  Default is 26.
+  Default is `26`.
 
 - **`Margin`** - margin from screen edge for left or right alignment.  
   Legal values are numbers.  
-  Default is 0.  
+  Default is `0`.
 
 - **`SetDockType`** - set panel's `NetWM` window type to Dock.  
   Legal values are `true` or `false`.  
@@ -112,8 +112,8 @@ The full variable list is:
   Default is `white`.
 
 - **`Alpha`** - transparency of the tint color.  
-  Legal values are numbers from 0 to 255.  
-  Default is 127.
+  Legal values are numbers from `0` to `255`.  
+  Default is `127`.
 
 - **`Autohide`** - hide panel when mouse is far enough.  
   Legal values are `true` or `false`.  
@@ -124,48 +124,49 @@ The full variable list is:
   Default is `true`.
 
 - **`RoundCornersRadius`** - radius of rounded corners.  
-  Legal values are numbers from 0 to 25.  
-  Default is 7.
+  Legal values are numbers from `0` to `25`.  
+  Default is `7`.
 
 - **`Layer`** - stacking layer of a panel.  
   Legal values are `above` or `below`.  
   Default is `above`.
 
-- **`SetLayer`** - set or not stacking layer of panel. If not, default WM policy is used.  
+- **`SetLayer`** - set or not stacking layer of panel.
+  If not, default WM policy is used.  
   Legal values are `true` or `false`.  
   Default is `false`.
 
 - **`MaxElemHeight`** - maximal height of plugins' elements, like icons, messages etc.  
   If plugin has more space, it can place elements in multiple rows.
-  Legal values are numbers from 10 to 200.  
-  Default is 200.
+  Legal values are numbers from `10` to `200`.  
+  Default is `200`.
 
 For example:
 
 ```
 Global {
-    edge = bottom
-    allign = center
-    margin = 0
-    widthtype = percent
-    width = 92
-    height = 48
-    transparent = true
-    tintcolor = #ffffff
-    alpha = 32
-    setdocktype = true
-    setpartialstrut = true
-    autohide = false
-    heightWhenHidden = 2
-    roundcorners = false
-    roundcornersradius = 7
-    layer = above
-    setlayer = false
-    maxelemheight = 24
+    Edge = bottom
+    Allign = center
+    Margin = 0
+    WidthType = percent
+    Width = 92
+    Height = 48
+    Transparent = true
+    TintColor = #ffffff
+    Alpha = 32
+    SetDockType = true
+    SetPartialStrut = true
+    Autohide = false
+    HeightWhenHidden = 2
+    RoundCorners = false
+    RoundCornersRadius = 7
+    Layer = above
+    SetLayer = false
+    MaxElemHeight = 24
 }
 ```
 
-### Plugin section
+### `Plugin` section
 
 It describes which plugin to load, how to position it
 and has plugin specific configuration section.
@@ -185,7 +186,7 @@ The full variable list is:
 
 - **`padding`** - padding around plugin in pixels.  
   Legal values are numbers.  
-  Default is 0.
+  Default is `0`.
 
 - **`config`** - a section with plugin specific configuration.
 
@@ -211,7 +212,7 @@ Plugin {
 #### `cpu`
 
 - **`color`** - chart color.  
-  Legal values are colors eg `0xRRGGBB` or `red`, `black` etc.  
+  Legal values are colors e.g. `0xRRGGBB` or `red`, `black` etc.  
   Default is green.
 
 For example:
@@ -220,7 +221,7 @@ For example:
 Plugin {
     type = cpu
     config {
-        Color = green
+        color = green
     }
 }
 ```
@@ -242,12 +243,12 @@ Plugin {
 - **`TxLimit`** - Tx limit of the connection, in KB/s.
   Used to scale chart properly.  
   Legal values are numbers.  
-  Default is 12.
+  Default is `12`.
 
 - **`RxLimit`** - Rx limit of the connection, in KB/s.
   Used to scale chart properly.  
   Legal values are numbers.  
-  Default is 120.
+  Default is `120`.
 
 For example:
 
@@ -276,7 +277,7 @@ For example:
 Plugin {
     type = pager
     config {
-        showwallpaper = true
+        ShowWallpaper = true
     }
 }
 ```
@@ -285,7 +286,7 @@ Plugin {
 
 - **`size`** - size of space to occupy in pixels.  
   Legal values are numbers.  
-  Default is 1.
+  Default is `1`.
 
 For example:
 
@@ -322,8 +323,8 @@ Plugin {
   Default is `false`.
 
 - **`HoursView`** - 24h or 12h hours view.  
-  Legal values are 12 or 24.  
-  Default is 24.
+  Legal values are `12` or `24`.  
+  Default is `24`.
 
 - **`TooltipFmt`** - tooltip content.  
   Legal values are `strftime` formats.  
@@ -334,7 +335,7 @@ Plugin {
   Default is `none`.
 
 - **`Color`** - digits color.  
-  Legal values are colors, eg `0xRRGGBB` or `red`, `black` etc.  
+  Legal values are colors, e.g. `0xRRGGBB` or `red`, `black` etc.  
   Default is `blue`.
 
 
