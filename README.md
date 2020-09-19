@@ -1,18 +1,18 @@
-# fbpanel
+# `fbpanel`
 
-A lightweight gtk2 panel for Linux desktop.
+A lightweight `gtk2` panel for Linux desktop.
 
-This is a fork of <http://aanatoly.github.io/fbpanel>.
+This is a fork of <https://github.com/aanatoly/fbpanel>.
 
-# Changes
+## Changes
 
-- full cmake build and install
+- full `cmake` build and install
     - generate `config.h`
     - generate `po/*.mo` files
 - updated `*.po` files
 - remove old build scripts
 
-# Install
+## Install
 
 ```
 git clone https://github.com/akozlins/fbpanel
