@@ -1,15 +1,15 @@
 # CHANGELOG
 
-## Version: 7.0
-Date: 2015-12-05 08:25:36
 
- * [#12] fix menu position for top panel
- * [#11] new plugin: user menu with gravatar icon
- * [#8] Fix for issue #5 (make battery plugin work with /sys)
- * [#6] Rounded corners don't work with widthtype=request
- * [#5] make battery plugin work with /sys
- * [#4] update README
- * [#2] Include option for vertical (y) and horizontal (x) margin
+## Version: 7.0 (2015-12-05)
+
+* [#12] fix menu position for top panel
+* [#11] new plugin: user menu with gravatar icon
+* [#8] Fix for issue #5 (make battery plugin work with /sys)
+* [#6] Rounded corners don't work with widthtype=request
+* [#5] make battery plugin work with /sys
+* [#4] update README
+* [#2] Include option for vertical (y) and horizontal (x) margin
 
 [#12]: https://github.com/aanatoly/fbpanel/issues/12
 [#11]: https://github.com/aanatoly/fbpanel/issues/11
@@ -19,11 +19,13 @@ Date: 2015-12-05 08:25:36
 [#4]: https://github.com/aanatoly/fbpanel/issues/4
 [#2]: https://github.com/aanatoly/fbpanel/issues/2
 
-## 6.2
+
+## Version: 6.2
 
 * 3367953: 'move to desktop' item in taskbar menu
 
-## 6.1
+
+## Version: 6.1
 
 New Features:
 
@@ -67,7 +69,8 @@ This release features major enhancements and bug fixes, namely:
 * fixed locale/NLS issues in configure
 * autohide was improved
 
-## 6.0
+
+## Version: 6.0
 
 * adding xlogout script
 * fixing cpu and net plugins to recover after /proc read errors
@@ -98,7 +101,8 @@ This release features minor enhancements and bug fixes, namely:
 * usage of current icon theme was ensured and private icons were
   removed from package
 
-## 5.8
+
+## Version: 5.8
 
 * moving config dir ~/.config
 * automatic new profile creation
@@ -111,33 +115,38 @@ This release features minor enhancements and bug fixes, namely:
 * drag and drop fix in launchbar
 * Fixed "2891558: widthtype=request does not work"
 
-## 5.7
+
+## Version: 5.7
 
 * XRandR support (dynamic desktop geometry changes)
 * Fixed "2891558: widthtype=request does not work"
 * configurator redraws panel on global changes
 * fixing 'toggle iconify all' algorithm
 
-## 5.6
+
+## Version: 5.6
 
 * genmon plugin - displays command output in a panel
 * CFLAGS propagation fix
 
-## 5.5
+
+## Version: 5.5
 
 * adding static build option for debugin purposes e.g to use with valgrind
 * ability to set CFLAGS from command line was added. 
   make CFLAGS=bla-bla works correctly
 * fixing memory leaks in taskbar, menu and icons plugin
 
-## 5.4
+
+## Version: 5.4
 
 * fb_image and icon loading code refactoring
 * chart: making frame around a chart more distinguishable
 * taskbar: enable tooltips in IconsOnly mode
 * taskbar: build tooltips from text rather then from markup
 
-## 5.3
+
+## Version: 5.3
 
 * when no icon exists in a theme, missing-image icon is substituted. theme-avare
 * prevent duplicate entries in menu
@@ -155,7 +164,8 @@ This release features minor enhancements and bug fixes, namely:
 * close_profile function was added to group relevant stuff
 * autohide was simplified. Now it hides completly and ignoress heightWhenHidden
 
-## 5.2
+
+## Version: 5.2
 
 * fixing segfault in menu plugin
 * extra spaces in lunchbar plugin were removed
@@ -163,7 +173,8 @@ This release features minor enhancements and bug fixes, namely:
 * plugins' install path is set to LIBDIR/fbpanel instead of LIBEXECDIR/fbpanel
 * fixing short flash of wrong background on startup
 
-## 5.1
+
+## Version: 5.1
 
 * Tooltips can have mark-uped text, like '<b>T</b>erminal'
 * Cpu plugin is fixed and working
@@ -173,7 +184,8 @@ This release features minor enhancements and bug fixes, namely:
 * fixed segfault in taskbar plugin
 * background pixmap drawing speed ups and bugfixes
 
-## 4.13
+
+## Version: 4.13
 
 New Features:
 
@@ -192,7 +204,8 @@ New Features:
 * clock startup delay was removed
 * menu: fixed segfault caused by timeout func that used stale pointer
 
-## 4.12
+
+## Version: 4.12
 
 New Features:
 
@@ -203,15 +216,18 @@ New Features:
 * 3 sec delayed menu creation to improve start-up time
 
 Fixed Bugs:
+
 * icons, taskbar do not free all tasks when destroyed
 
-## 4.11
+
+## Version: 4.11
 
 Fixed Bugs:
 
 * black background when no bg pixmap and transparency is unset
 
-## 4.10
+
+## Version: 4.10
 
 New Fetures:
 
@@ -245,7 +261,8 @@ Fixed Bugs:
 * bug in Makefile.common that generated wrong names in *.dep files
 * style changes are grouped and only last of them is processed
 
-## 4.9
+
+## Version: 4.9
 
 * new menu placement to not cover panel; used in menu and taskbar
 * taskbar: icons were added to task's menu (raise, iconify, close)
@@ -253,7 +270,8 @@ Fixed Bugs:
   in taskbar it fixes failure to see existing icon pixmap
 * 1704709: config checks for installed devel packages
 
-## 4.8
+
+## Version: 4.8
 
 * help text in configurator was made selectable
 * pager shows desktop wallpaper
@@ -265,7 +283,8 @@ Fixed Bugs:
 * taskbar 'icons only' mode was optimized
 * fbpanel config window has nice "star" icon
 
-## 4.7
+
+## Version: 4.7
 
 New Feature
 
@@ -273,7 +292,8 @@ New Feature
 * Using themed icons. Change icon theme and see fbpanel updates itself
 * default config files were updates to use new functionality
 
-## 4.6
+
+## Version: 4.6
 
 New Features
 
@@ -289,7 +309,8 @@ New Features
 * taskbar: cleaning up dnd code
 * launchbar: visual feedback on button press
 
-## 4.5
+
+## Version: 4.5
 
 Fixed bugs
 
@@ -310,13 +331,15 @@ New features
 * remove extra space around tray
 * using new icons from etiquette theme. droping old ones
 
-## 4.4
+
+## Version: 4.4
 
 New Feature
 
 * 64-bit awarenes
 
-## 4.3
+
+## Version: 4.3
 
 New Feature
 
@@ -331,7 +354,8 @@ Fixed Bugs
 * typo fixes
 * Makefile errors for shared and static plugin build
 
-## 4.2
+
+## Version: 4.2
 
 Fixed Bugs
 
@@ -350,21 +374,24 @@ New Feature
 * pad is inserted betwean tasks in a taskbar
 * clock was made flat
 
-## 4.1
+
+## Version: 4.1
 
 New Feature
 
 * gui configuration utility
 * transparency bug fixes
 
-## 4.0
+
+## Version: 4.0
 
 New Feature
 
 * plugins get root events via panel's proxy rather then directly
 * added configure option to disable cpu plugin compilation
 
-## 3.18
+
+## Version: 3.18
 
 New Feature
 
@@ -374,15 +401,19 @@ Fixed Bugs
 
 * [ 1067515 ] Fixed bug with cpu monitor plugin
 
-## 3.17
+
+## Version: 3.17
 
 Fixed Bugs
 
 * [ 1063620 ] 3.16 crashes with gaim 1.0.2 sys tray applet
+
 New Feature
+
 * [ 1062524 ] CPU usage monitor
 
-## 3.16
+
+## Version: 3.16
 
 New Feature
 
@@ -391,13 +422,15 @@ New Feature
 * icons plugin was implemented. it is invisible plugin used to  changes
   window icons with desktop-wide effect.
 
-## 3.15
+
+## Version: 3.15
 
 Fixed Bugs
 
 * [ 1061036 ] segfault if tray restarted
 
-## 3.14
+
+## Version: 3.14
 
 New Feature
 
@@ -410,7 +443,8 @@ Fixed Bugs
 
 * dynamic module load fix
 
-## 3.13
+
+## Version: 3.13
 
 New Feature
 
@@ -420,29 +454,34 @@ Fixed Bugs
 
 * [ 1055257 ] crash with nautilus+openbox
 
-## 3.12
+
+## Version: 3.12
 
 New Features
 
 * [ 976592 ] Right-click Context menu for the taskbar
 
-## 3.11
+
+## Version: 3.11
 
 * fixed [ 940441 ] pager loose track of windows
 
-## 3.10
+
+## Version: 3.10
 
 * fix for "996174: dclock's 'WARNING **: Invalid UTF8 string'"
 * config file fix
 
-## 3.9
+
+## Version: 3.9
 
 * fix bg change in non transparent mode
 * enable icon only in taskbar
 * ensure all-desktop presence if starting before wm (eg openbox)
 * wincmd segfault fix
 
-## 3.8
+
+## Version: 3.8
 
 * warnings clean-up
 * X11 memory leacher was fixed
@@ -451,90 +490,106 @@ New Features
 * gtkbar was ported to gtk2, so fbpanel is compiled with GTK_DISABLE_DEPRECETED
 * initial dll support
 
-## 3.7
+
+## Version: 3.7
 
 * rounded corners (optional)
 * taskbar view fix
 
-## 3.6
+
+## Version: 3.6
 
 * taskbar icon size fix
 * menu icon size fix
 * pager checks for drawable pixmap
 
-## 3.5
+
+## Version: 3.5
 
 * Drag-n-Drop for launchbar
 * menu plugin
 * removed limith for max task size in taskbar
 
-## 3.4
+
+## Version: 3.4
 
 * gtk2.2 linkage fix
 * strut fix
 * launchbar segfault on wrong config fix
 * '&' at the end of action var in launchbar config is depreciated
 
-## 3.3
+
+## Version: 3.3
 
 * taskbar icon size fix
 
-## 3.2
+
+## Version: 3.2
 
 * scroll mouse in pager changes desktops
 * packaging and makefiles now are ready for system wide install
   additionally ./configure was implemented
 * systray checks for another tray already running
 
-## 3.1
+
+## Version: 3.1
 
 * improving icon quility in taskbar
 * system tray (aka notification area) support
 * NET_WM_STRUT_PARTIAL and NET_WM_STRUT were implmented
 * taskbar update icon image on every icon change
 
-## 3.0
+
+## Version: 3.0
 
 * official version bump :-)
 
-## 3.0-rc-1
+
+## Version: 3.0-rc-1
 
 * porting to GTK2+. port is based on phako's patch
   "[ 678749 ] make it compile and work with gtk2"
 
-## 2.2
+
+## Version: 2.2
 
 * support for XEmbed docklets via gtktray utility
 
-## 2.1
+
+## Version: 2.1
 
 * tray plugin was written
 * documentation update
 * web site update
 
-## 2.0
+
+## Version: 2.0
 
 * complete engine rewrite
 * new plugin API
 * pager fixes
 
-## 1.4
+
+## Version: 1.4
 
 * bug-fixes for pager plugin
 
-## 1.3
+
+## Version: 1.3
 
 * middle-click in taskbar will toggle shaded state of a window
 * added image plugin - this is simple plugin that just shows an image
 * pager eye-candy fixes
 * close_module function update
 
-## 1.2
+
+## Version: 1.2
 
 * we've got new module - pager! Yeeaa-Haa!!
 * segfault on wrong config file was fixed
 
-## 1.1
+
+## Version: 1.1
 
 * parsing engine was rewritten
 * modules' static variables were converted to mallocs
@@ -542,26 +597,31 @@ New Features
 * ability to specify what modules to load
 * '~' is accepted in config files
 
-## 1.0
+
+## Version: 1.0
 
 * 1.0-rc2 was released as 1.0
 
-## 1.0-rc2
+
+## Version: 1.0-rc2
 
 * taskbar config file was added an option to switch tooltips on/off
 * added tooltips to taskbar (thanks to Joe MacDonald joe@deserted.net)
 
-## 1.0-rc1
+
+## Version: 1.0-rc1
 
 * copyright comments were changed
 
-## 1.0-rc0
+
+## Version: 1.0-rc0
 
 * added _NET_WM_STRUT support
 * panel now is unfocusable. this fixes iconify bug under sawfish
 * panel's height is calculated at run-time, instead of fixed 22
 
-## 0.11
+
+## Version: 0.11
 
 * improved EWMH/NETWM support
 * added openbox support
