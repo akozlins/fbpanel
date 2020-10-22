@@ -16,7 +16,7 @@
 #include "ev.h"
 #include "xconf.h"
 
-enum { ALLIGN_CENTER, ALLIGN_LEFT, ALLIGN_RIGHT  };
+enum { ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT  };
 enum { EDGE_BOTTOM, EDGE_LEFT, EDGE_RIGHT, EDGE_TOP };
 enum { WIDTH_PERCENT, WIDTH_REQUEST, WIDTH_PIXEL };
 enum { HEIGHT_PIXEL, HEIGHT_REQUEST };
@@ -50,7 +50,7 @@ typedef struct _panel
 
     int ax, ay, aw, ah;  /* prefferd allocation of a panel */
     int cx, cy, cw, ch;  /* current allocation (as reported by configure event) allocation */
-    int allign, edge, xmargin, ymargin;
+    int align, edge, xmargin, ymargin;
     GtkOrientation orientation;
     int widthtype, width;
     int heighttype, height;
@@ -169,7 +169,7 @@ extern Atom a_NET_WM_ICON;
 extern Atom a_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR;
 
 
-extern xconf_enum allign_enum[];
+extern xconf_enum align_enum[];
 extern xconf_enum edge_enum[];
 extern xconf_enum widthtype_enum[];
 extern xconf_enum heighttype_enum[];

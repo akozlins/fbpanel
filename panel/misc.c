@@ -71,10 +71,10 @@ Atom a_NET_WM_STRUT_PARTIAL;
 Atom a_NET_WM_ICON;
 Atom a_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR;
 
-xconf_enum allign_enum[] = {
-    { .num = ALLIGN_LEFT, .str = c_("left") },
-    { .num = ALLIGN_RIGHT, .str = c_("right") },
-    { .num = ALLIGN_CENTER, .str = c_("center")},
+xconf_enum align_enum[] = {
+    { .num = ALIGN_LEFT, .str = c_("left") },
+    { .num = ALIGN_RIGHT, .str = c_("right") },
+    { .num = ALIGN_CENTER, .str = c_("center")},
     { .num = 0, .str = NULL },
 };
 xconf_enum edge_enum[] = {
@@ -523,7 +523,7 @@ get_net_wm_window_type(Window win, net_wm_window_type *nwwt)
 
 
 static void
-calculate_width(int scrw, int wtype, int allign, int xmargin,
+calculate_width(int scrw, int wtype, int align, int xmargin,
       int *panw, int *x)
 {
     ENTER;
@@ -541,7 +541,7 @@ calculate_width(int scrw, int wtype, int allign, int xmargin,
     if (*panw > scrw)
         *panw = scrw;
 
-    if (allign != ALLIGN_CENTER) {
+    if (align != ALIGN_CENTER) {
         if (xmargin > scrw) {
             ERR( "xmargin is bigger then edge size %d > %d. Ignoring xmargin\n",
                   xmargin, scrw);
@@ -554,13 +554,13 @@ calculate_width(int scrw, int wtype, int allign, int xmargin,
             *panw = MIN(scrw - xmargin, *panw);
     }
     DBG("OUT panw=%d\n", *panw);
-    if (allign == ALLIGN_LEFT)
+    if (align == ALIGN_LEFT)
         *x += xmargin;
-    else if (allign == ALLIGN_RIGHT) {
+    else if (align == ALIGN_RIGHT) {
         *x += scrw - *panw - xmargin;
         if (*x < 0)
             *x = 0;
-    } else if (allign == ALLIGN_CENTER)
+    } else if (align == ALIGN_CENTER)
         *x += (scrw - *panw) / 2;
     RET();
 }
@@ -588,7 +588,7 @@ calculate_position(panel *np)
     if (np->edge == EDGE_TOP || np->edge == EDGE_BOTTOM) {
         np->aw = np->width;
         np->ax = minx;
-        calculate_width(sswidth, np->widthtype, np->allign, np->xmargin,
+        calculate_width(sswidth, np->widthtype, np->align, np->xmargin,
               &np->aw, &np->ax);
         np->ah = np->height;
         np->ah = MIN(PANEL_HEIGHT_MAX, np->ah);
@@ -601,7 +601,7 @@ calculate_position(panel *np)
     } else {
         np->ah = np->width;
         np->ay = miny;
-        calculate_width(ssheight, np->widthtype, np->allign, np->xmargin,
+        calculate_width(ssheight, np->widthtype, np->align, np->xmargin,
               &np->ah, &np->ay);
         np->aw = np->height;
         np->aw = MIN(PANEL_HEIGHT_MAX, np->aw);
