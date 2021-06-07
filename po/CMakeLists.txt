@@ -1,4 +1,19 @@
 
+find_program(XGETTEXT xgettext)
+if(NOT XGETTEXT)
+    return()
+endif()
+
+find_program(MSGMERGE msgmerge)
+if(NOT MSGMERGE)
+    return()
+endif()
+
+find_program(MSGFMT msgfmt)
+if(NOT MSGFMT)
+    return()
+endif()
+
 # generate .pot files from *.c and *.h files
 function(add_pot NAME)
     file(GLOB_RECURSE SOURCES
