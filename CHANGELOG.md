@@ -39,18 +39,15 @@
 
 New Features:
 
-* 2977832: meter plugin  - base plugin for icons slide show
+* 2977832: meter plugin - base plugin for icons slide show
 * 2977833: battery plugin
 * 2981332: volume plugin
 * 2981313: Enhancements to 'tclock' plugin - calendar and transparency
-* multiline taskbar: new config MinTaskHeight was added to set minimal
-  task/row height
+* multiline taskbar: new config MinTaskHeight was added to set minimal task/row height
 * multiline launchbar: row height is MaxIconSize
 * scrolling on panel changes desktops
-* dclock vertical layout was implemented. It still draws digits
-  horizontally if there is enough space
-* new global config MaxEelemHeight was added to limit plugin elements
-  (eg icons, messages) height
+* dclock vertical layout was implemented. It still draws digits horizontally if there is enough space
+* new global config MaxEelemHeight was added to limit plugin elements (eg icons, messages) height
 * 993836: add GTK frame to non-transparent chart plugins
 
 Fixed Bugs:
@@ -88,8 +85,7 @@ This release features major enhancements and bug fixes, namely:
 * GUI configurator code was reworked
 * common API to run external programs was added
 * new configuration system - xconf - was introduced
-* adding png icons for reboot and shutdown. They may be missing in
-  some icon themes.
+* adding png icons for reboot and shutdown. They may be missing in some icon themes.
 * all svg icons were removed
 * automatic profile created
 * show calendar as default action in dclock
@@ -108,8 +104,7 @@ This release features minor enhancements and bug fixes, namely:
 * script to logout from user session
 * ability to show seconds in dclock plugin
 * bug fixes in mem, taskbar and menu plugins
-* usage of current icon theme was ensured and private icons were
-  removed from package
+* usage of current icon theme was ensured and private icons were removed from package
 
 
 ## Version: 5.8
@@ -143,8 +138,7 @@ This release features minor enhancements and bug fixes, namely:
 ## Version: 5.5
 
 * adding static build option for debugging purposes e.g to use with valgrind
-* ability to set CFLAGS from command line was added. 
-  make CFLAGS=bla-bla works correctly
+* ability to set CFLAGS from command line was added. make CFLAGS=bla-bla works correctly
 * fixing memory leaks in taskbar, menu and icons plugin
 
 
@@ -160,10 +154,8 @@ This release features minor enhancements and bug fixes, namely:
 
 * when no icon exists in a theme, missing-image icon is substituted. theme-aware
 * prevent duplicate entries in menu
-* menu plugin uses simple icons, and rebuild entire menu upon theme change, 
-  rather then creating many heavy theme-aware icons, and let them update
-* cpu, net plugins: linux specific code was put into ifdefs and stub for another
-  case was created
+* menu plugin uses simple icons, and rebuild entire menu upon theme change, rather then creating many heavy theme-aware icons, and let them update
+* cpu, net plugins: linux specific code was put into ifdefs and stub for another case was created
 * system menu icon was renamed to logo.png from star.png
 * strip moved to separate target and not done automatically after compile
 * by default make leaves output as is, to see summaries only run 'make Q=1'
@@ -189,8 +181,7 @@ This release features minor enhancements and bug fixes, namely:
 * Tooltips can have mark-uped text, like '<b>T</b>erminal'
 * Cpu plugin is fixed and working
 * Added general chart plugin (used by cpu and net monitors)
-* Code layout was changed, new configure system and new makefiles set was 
-  adopted
+* Code layout was changed, new configure system and new makefiles set was adopted
 * fixed segfault in taskbar plugin
 * background pixmap drawing speed ups and bugfixes
 
@@ -199,9 +190,8 @@ This release features minor enhancements and bug fixes, namely:
 
 New Features:
 
-* support for "above all" and "below all" layering states. Global section
-  was added string variable
-      Layer = None | Above | Below
+* support for "above all" and "below all" layering states. Global section was added string variable
+  `Layer = None | Above | Below`
 * to speed start-up, panel does not have window icon, only configurator window has
 * Control-Button3 click launches configuration dialog
 * taskbar was changed to propagate Control-Button3 clicks to parent window i.e to panel
@@ -221,8 +211,10 @@ New Features:
 
 * smooth icon theme change without panel reload
 * autohide. Config section is part of 'Global' section
+```
     autoHide = false
     heightWhenHidden = 2
+```
 * 3 sec delayed menu creation to improve start-up time
 
 Fixed Bugs:
@@ -242,9 +234,9 @@ Fixed Bugs:
 New Fetures:
 
 * tclock: dclock was renamed to tclock = text clock
-* dclock: digital blue clock. adopted from blueclock by
-    Jochen Baier <email@Jochen-Baier.de>
+* dclock: digital blue clock. adopted from blueclock by Jochen Baier <email@Jochen-Baier.de>
 * dclock: custom clock color can be set with 'color' option
+```
   Plugin {
      type = dclock
      config {
@@ -253,10 +245,10 @@ New Fetures:
          color = wheat
      }
   }
-
+```
 * menu: items are sorted by name
 * menu: icon size set to 22
-* launchbar: drag-n-drop now accepts urls draged from web browsers
+* launchbar: drag-n-drop now accepts urls dragged from web browsers
 * style changes are grouped and only last of them is processed
 
 Fixed Bugs:
@@ -264,8 +256,7 @@ Fixed Bugs:
 * menu: forgotten g_free's were added
 * 1723786: linkage problems with --as-needed flag
 * 1724852: crash if root bg is not set
-* WM_STATE usage is dropped. NET_WM_STATE is used instead. affected plugins are
-  taskbar and pager
+* WM_STATE usage is dropped. NET_WM_STATE is used instead. affected plugins are taskbar and pager
 * fixed bug where pager used unupdated panel->desknum instead of pager->desknum
 * all Cardinal vars were changed to guint from int
 * bug in Makefile.common that generated wrong names in *.dep files
@@ -276,8 +267,7 @@ Fixed Bugs:
 
 * new menu placement to not cover panel; used in menu and taskbar
 * taskbar: icons were added to task's menu (raise, iconify, close)
-* access to WM_HINTS is done via XGetWMHints only and not via get_xa_property;
-  in taskbar it fixes failure to see existing icon pixmap
+* access to WM_HINTS is done via XGetWMHints only and not via get_xa_property; in taskbar it fixes failure to see existing icon pixmap
 * 1704709: config checks for installed devel packages
 
 
@@ -326,7 +316,7 @@ Fixed bugs
 
 * Makefile.common overwrite/ignore CFLAGS and LDFLAGS env. variables
 * rebuild dependency Makefiles (*.dep) if their prerequisites were changed
-* fixing gcc-4.1 compile warnings about signess
+* fixing gcc-4.1 compile warnings about signedness
 * removing tar from make's recursive goals
 * fixing NET_WM_STRUT code to work on 64 bit platforms
 
@@ -346,7 +336,7 @@ New features
 
 New Feature
 
-* 64-bit awarenes
+* 64-bit awareness
 
 
 ## Version: 4.3
@@ -429,8 +419,7 @@ New Feature
 
 * taskbar does not change window icons anymore.
 * invisible (no-gui) plugin type was introduced
-* icons plugin was implemented. it is invisible plugin used to  changes
-  window icons with desktop-wide effect.
+* icons plugin was implemented. it is invisible plugin used to changes window icons with desktop-wide effect.
 
 
 ## Version: 3.15
@@ -537,8 +526,7 @@ New Features
 ## Version: 3.2
 
 * scroll mouse in pager changes desktops
-* packaging and makefiles now are ready for system wide install
-  additionally ./configure was implemented
+* packaging and makefiles now are ready for system wide install additionally ./configure was implemented
 * systray checks for another tray already running
 
 

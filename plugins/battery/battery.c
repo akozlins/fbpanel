@@ -55,10 +55,11 @@ static gchar *batt_na[] = {
 #include "os_linux.c.inc"
 #else
 
-static void
+static gboolean
 battery_update_os(battery_priv *c)
 {
     c->exist = FALSE;
+    return FALSE;
 }
 
 #endif

@@ -1,7 +1,7 @@
 .\" man page originally for the Debian/GNU Linux system
 .TH FBPANEL "1" "May 2005" "fbpanel @PROJECT_VERSION@" "User Commands"
 .SH NAME
-fbpanel \- a NETWM compliant lightweight GTK2-based panel for UNIX desktop.
+fbpanel \- a NETWM compliant lightweight GTK2\-based panel for UNIX desktop.
 .SH SYNOPSIS
 .B fbpanel
 [\fIOPTION\fR]
@@ -35,39 +35,39 @@ http://fbpanel.sf.net/
 
 .SH OPTIONS
 .TP
-\fB\--help\fR
-\-- print help message and exit.
+\fB\-\-help\fR
+\-\- print help message and exit.
 .TP
-\fB\--version\fR
-\-- print version and exit.
+\fB\-\-version\fR
+\-\- print version and exit.
 .TP
-\fB\--log <number>\fR
-\-- set log level 0-5. 0 - none 5 - chatty
+\fB\-\-log <number>\fR
+\-\- set log level 0\-5. 0 \- none 5 \- chatty
 .TP
-\fB\--configure\fR
-\-- open configuration dialog
+\fB\-\-configure\fR
+\-\- open configuration dialog
 .TP
-\fB\--profile <name>\fR
-\-- use specified profile. The profile is loaded from the file ~/.config/fbpanel/<name>.
+\fB\-\-profile <name>\fR
+\-\- use specified profile. The profile is loaded from the file ~/.config/fbpanel/<name>.
 If that fails, fbpanel will load @DATADIR@/<name>.
-No -p option is equivalent to -p default
+No \-p option is equivalent to \-p default
 .TP
 \fB\-h\fR
-\-- same as --help
+\-\- same as \-\-help
 .TP
 \fB\-p\fR
-\-- same as --profile
+\-\- same as \-\-profile
 .TP
 \fB\-v\fR
-\-- same as --version
+\-\- same as \-\-version
 .TP
 \fB\-C\fR
-\-- same as --configure
+\-\- same as \-\-configure
 
 .SH CUSTOMIZATION
 To change default settings, copy profile file to your home directory
 .br
-      mkdir -p ~/.config/fbpanel
+      mkdir \-p ~/.config/fbpanel
       cp @DATADIR@/default ~/.config/fbpanel
 .br
 and edit it. Default profile file contains comments and explanation inside,
@@ -76,7 +76,7 @@ so it should be easy. For full list of options please visit fbpanel's home page.
 .SH FILES
 .TP
 @DATADIR@/
-Directory with system-wide resources and default settings
+Directory with system\-wide resources and default settings
 .TP
 ~/.config/fbpanel/
 Directory with the user's private profiles

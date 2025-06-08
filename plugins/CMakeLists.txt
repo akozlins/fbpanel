@@ -1,3 +1,4 @@
+#
 
 # generate list of plugins
 set(PLUGINS "")
@@ -34,5 +35,5 @@ add_custom_target(plugins
 )
 
 install(TARGETS ${PLUGINS}
-    DESTINATION lib/fbpanel
+    DESTINATION lib/${PROJECT_NAME}
 )

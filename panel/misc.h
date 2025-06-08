@@ -45,7 +45,7 @@ GtkWidget *fb_button_new(gchar *iname, gchar *fname, int width, int height,
 
 void menu_pos(GtkMenu *menu, gint *x, gint *y, gboolean *push_in, GtkWidget *widget);
 
-void configure();
+void configure(xconf *xc);
 gchar *indent(int level);
 
 FILE *get_profile_file(gchar *profile, char *perm);

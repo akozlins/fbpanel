@@ -42,11 +42,11 @@ void xconf_get_strdup(xconf *x, gchar **val);
 void xconf_set_int(xconf *x, int val);
 void xconf_set_enum(xconf *x, int val, xconf_enum *e);
 
-#define XCG(xc, name, var, type, extra...)                      \
-    xconf_get_ ## type(xconf_find(xc, name, 0), var, ## extra)
+#define XCG(xc, name, var, type, ...) \
+    xconf_get_ ## type(xconf_find(xc, name, 0), var, ##__VA_ARGS__)
 
-#define XCS(xc, name, var, type, extra...)                \
-    xconf_set_ ## type(xconf_get(xc, name), var, ## extra)
+#define XCS(xc, name, var, type, ...) \
+    xconf_set_ ## type(xconf_get(xc, name), var, ##__VA_ARGS__)
 
 
 #endif

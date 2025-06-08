@@ -1,3 +1,4 @@
+#
 
 find_program(XGETTEXT xgettext)
 if(NOT XGETTEXT)
@@ -27,7 +28,7 @@ function(add_pot NAME)
                 --from-code=UTF-8 --force-po
                 --keyword=_ --keyword=c_
                 --files-from=- --output=- |
-            sed '/^\"Content-Type:/ s/CHARSET/UTF-8/' > ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.pot
+            sed "/^\\\"Content-Type:/ s/CHARSET/UTF-8/" > ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.pot
         DEPENDS ${SOURCES}
     )
 endfunction()

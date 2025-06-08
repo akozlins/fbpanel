@@ -46,4 +46,3 @@ rm -f $PF
 echo "Session start up script"
 ps -o uid,pid,ppid,sess,cmd --pid $SPID
 kill -SIGTERM -$SPID $SPID
-

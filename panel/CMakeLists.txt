@@ -1,3 +1,4 @@
+#
 
 file(GLOB SOURCES
     *.h *.c
@@ -13,6 +14,9 @@ set_target_properties(fbpanel PROPERTIES
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(MODULES REQUIRED x11 gtk+-2.0 gmodule-2.0)
 
+target_compile_options(fbpanel PRIVATE
+    -pedantic -Wall
+)
 target_include_directories(fbpanel PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}
     .

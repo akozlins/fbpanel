@@ -38,7 +38,7 @@ power_supply* power_supply_new();
 void power_supply_free(gpointer p);
 
 /* Parses power supplies on the current system. */
-power_supply* power_supply_parse();
+power_supply* power_supply_parse(power_supply* ps);
 
 /*
  * Return TRUE if AC power is on (ie. at least one AC adapter is on).

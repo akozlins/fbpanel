@@ -70,4 +70,3 @@ function take_system_profile ()
 }
 
 take_system_profile $profile $profile || take_system_profile default $profile
-
